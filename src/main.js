@@ -61,6 +61,7 @@ const el = {
   stage: document.getElementById('stage'),
   cast: document.getElementById('cast'),
   fx: document.getElementById('fx-layer'),
+  fxBack: document.getElementById('fx-back'),
   timer: document.getElementById('timer'),
   message: document.getElementById('message'),
   deaths: document.getElementById('hud-deaths'),
@@ -70,8 +71,8 @@ const el = {
 const clock = createClock();
 const director = createDirector({ clock });
 const countdown = createCountdown(el.timer, clock);
-const stage = createStage({ cast: el.cast, fx: el.fx });
-const fx = createFx({ stage: el.stage, layer: el.fx });
+const stage = createStage({ cast: el.cast, layers: [el.fx, el.fxBack] });
+const fx = createFx({ stage: el.stage, layer: el.fx, back: el.fxBack });
 const hud = createHud({ deaths: el.deaths });
 const endingCard = createEndingCard(el.card, { onRestart: startRound });
 

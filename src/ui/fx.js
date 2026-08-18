@@ -13,7 +13,7 @@
  *  Luz piscando acima de ~3 Hz é gatilho fotossensível (ARCHITECTURE.md §6). */
 const FLASH_MIN_GAP_MS = 500;
 
-export function createFx({ stage, layer }) {
+export function createFx({ stage, layer, back }) {
   let lastFlash = -Infinity;
 
   function flash({ ms = 260 } = {}) {
@@ -61,5 +61,35 @@ export function createFx({ stage, layer }) {
     return boom;
   }
 
-  return { flash, shake, explode };
+  /**
+   * A base da tela inunda. `height` é a altura da água em unidades de design,
+   * medida a partir da LINHA DO CHÃO para cima — 140 dá água no peito do
+   * Pedro. A água sangra até a borda real da janela, como o chão.
+   */
+  function flood({ height = 140, ms = 900 } = {}) {
+    const el = document.createElement('div');
+    el.className = 'flood';
+    el.style.setProperty('--flood-h', height);
+    el.style.setProperty('--flood-ms', `${ms}ms`);
+    layer.appendChild(el);
+    return el;
+  }
+
+  /**
+   * Abre uma fenda. Vai na camada de TRÁS: quem sai dela precisa aparecer
+   * na frente dela, e o portal atrás do Pedro precisa ficar atrás do Pedro.
+   */
+  function portal({ x = 620, y = 320, w = 150, h = 230, ms = 520 } = {}) {
+    const el = document.createElement('div');
+    el.className = 'portal';
+    el.style.setProperty('--x', x);
+    el.style.setProperty('--y', y);
+    el.style.setProperty('--w', w);
+    el.style.setProperty('--h', h);
+    el.style.setProperty('--portal-ms', `${ms}ms`);
+    (back ?? layer).appendChild(el);
+    return el;
+  }
+
+  return { flash, shake, explode, flood, portal };
 }

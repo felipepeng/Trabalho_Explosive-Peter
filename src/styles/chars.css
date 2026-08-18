@@ -57,6 +57,9 @@
   paint-order: stroke;
 }
 
+/* contorno mais fino, para peça miúda (o tridente do Michas) */
+.rig .ink.slim { stroke-width: 3; }
+
 /* traço puro: sobrancelha, boca, olho semicerrado */
 .rig .line {
   fill: none;
@@ -65,10 +68,25 @@
   stroke-linecap: round;
 }
 
-/* olho de ponto */
+/* olho: ponto por padrão, mas a cor é trocável — é o que faz os olhos
+   vermelhos do Pedro Maligno serem dado e não um seletor por nome. */
 .rig .eye {
-  fill: var(--outline);
+  fill: var(--eye, var(--outline));
   stroke: none;
+}
+
+/* ---------- silhueta blocada ---------- */
+/* O Michas é do Minecraft: nada nele é arredondado. `rx` é propriedade
+   geométrica de SVG2 e vale como CSS — uma regra tira o arredondamento dos
+   seis membros de uma vez. Em navegador que não suportar, ele só continua
+   redondinho; nada quebra. */
+
+.shape-blocky .leg > rect,
+.shape-blocky .arm > rect,
+.shape-blocky .body > rect,
+.shape-blocky .skull {
+  rx: 0;
+  ry: 0;
 }
 
 /* ---------- poses de parado ---------- */

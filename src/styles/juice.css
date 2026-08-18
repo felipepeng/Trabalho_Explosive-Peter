@@ -124,7 +124,8 @@ body.is-frozen *::after {
 .actor.is-enter-left,
 .actor.is-enter-right,
 .actor.is-enter-above,
-.actor.is-enter-below {
+.actor.is-enter-below,
+.actor.is-enter-portal {
   animation-duration: var(--enter-ms, 700ms);
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   animation-fill-mode: both;
@@ -153,4 +154,88 @@ body.is-frozen *::after {
 @keyframes enter-below {
   from { transform: translate(-50%, calc(-100% + var(--from-below))); }
   to { transform: translate(-50%, -100%); }
+}
+
+/* ---------- inundação (verbo `flood`) ---------- */
+/* Nasce na linha do chão menos --flood-h e desce até a borda REAL da janela,
+   pelo mesmo motivo do #ground: sobra na base não pode virar barra preta.
+   Fica em #fx-layer, na frente do elenco — é água cobrindo as pernas. */
+
+#fx-layer .flood {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: calc(var(--oy) + (var(--ground-y) - var(--flood-h, 140)) * var(--u));
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(96, 186, 224, 0.5) 0%, rgba(24, 86, 138, 0.78) 100%);
+  border-top: calc(5 * var(--u)) solid rgba(190, 238, 255, 0.85);
+  animation: flood-rise var(--flood-ms, 900ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* translateY(100%) = a própria altura, então a água começa inteira abaixo da
+   janela e sobe. Não depende de saber quanto mede a sobra da base. */
+@keyframes flood-rise {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+#fx-layer .flood::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(-40 * var(--u));
+  background: repeating-linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.10) 0 calc(14 * var(--u)),
+    rgba(255, 255, 255, 0) calc(14 * var(--u)) calc(36 * var(--u))
+  );
+  animation: flood-shimmer 2600ms linear infinite;
+}
+
+@keyframes flood-shimmer {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-36 * var(--u))); }
+}
+
+/* ---------- fenda (verbo `portal`) ---------- */
+/* Vai em #fx-back: quem sai dela tem que aparecer NA FRENTE dela, e a fenda
+   do Pedro Maligno se abre atrás do Pedro (GDD §5).
+   Centralizada com margin, não com translate — o transform fica livre para a
+   animação de abertura. */
+
+#fx-back .portal {
+  position: absolute;
+  left: calc(var(--ox) + var(--x, 620) * var(--u));
+  top: calc(var(--oy) + var(--y, 320) * var(--u));
+  width: calc(var(--w, 150) * var(--u));
+  height: calc(var(--h, 230) * var(--u));
+  margin-left: calc(var(--w, 150) * var(--u) / -2);
+  margin-top: calc(var(--h, 230) * var(--u) / -2);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    #f2d9ff 0%, #a24be0 26%, #4b1d78 60%, #1a0a2e 100%);
+  box-shadow: 0 0 calc(30 * var(--u)) rgba(162, 75, 224, 0.75);
+  animation: portal-open var(--portal-ms, 520ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Fresta vertical que abre de lado: lê como rasgo, não como bolha. */
+@keyframes portal-open {
+  0% { transform: scale(calc(0.03 * var(--juice)), calc(0.04 * var(--juice))); opacity: 0; }
+  35% { transform: scale(0.1, 1); opacity: 1; }
+  100% { transform: scale(1, 1); opacity: 1; }
+}
+
+/* ---------- saindo da fenda ---------- */
+/* `portal` não é uma direção: o ator já está no lugar certo e só cresce ali,
+   a partir dos pés. Por isso não usa nenhum --from-*. */
+
+.actor.is-enter-portal {
+  animation-name: enter-portal;
+  transform-origin: 50% 100%;
+}
+
+@keyframes enter-portal {
+  0% { transform: translate(-50%, -100%) scale(0.15); opacity: 0; }
+  55% { opacity: 1; }
+  100% { transform: translate(-50%, -100%) scale(1); opacity: 1; }
 }

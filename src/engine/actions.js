@@ -15,15 +15,20 @@
  * ou escreve uma custom property; o @keyframes consome. Assim toda amplitude
  * continua passando por `var(--juice)`.
  *
- * D3 entrega os quatro primeiros: enter · say · shake · explode.
- * Os outros nove chegam quando a primeira cena precisar deles.
+ * D3: enter · say · shake · explode.
+ * D6: flood · portal — os dois que o Michas e o Pedro Maligno precisam.
  */
 
 /** Duração da entrada, quando nem o beat nem o personagem dizem. */
 const ENTER_MS = 700;
 
-/** Lados válidos de entrada. Qualquer outro cai na esquerda. */
-const SIDES = new Set(['left', 'right', 'above', 'below']);
+/**
+ * Modos de entrada. Os quatro primeiros são geométricos: o ator vem da borda
+ * REAL da janela daquele lado. `portal` não é uma direção — ele cresce no
+ * lugar onde já está, para quem sai de uma fenda em vez de vir de fora.
+ * Qualquer outro valor cai na esquerda.
+ */
+const MODES = new Set(['left', 'right', 'above', 'below', 'portal']);
 
 export const actions = {
   /**
@@ -38,7 +43,7 @@ export const actions = {
 
     // Precedência: o que o beat pediu > o jeito do personagem > o genérico.
     const wanted = from ?? el.dataset.enterFrom;
-    const side = SIDES.has(wanted) ? wanted : 'left';
+    const side = MODES.has(wanted) ? wanted : 'left';
     const gait = el.dataset.enterGait;
     const dur = ms ?? (Number(el.dataset.enterMs) || ENTER_MS);
 
@@ -104,5 +109,23 @@ export const actions = {
     }
 
     ctx.fx.explode(ctx.stage.get(target), { intensity });
+  },
+
+  /**
+   * `{ do:'flood', height:140, ms:900 }` — a base da tela inunda.
+   * `height` em unidades de design, contado da linha do chão para cima.
+   */
+  flood(ctx, { height, ms } = {}) {
+    if (ctx.signal?.aborted) return;
+    ctx.fx.flood({ height, ms });
+  },
+
+  /**
+   * `{ do:'portal', x:620, y:320, w:150, h:230 }` — abre uma fenda.
+   * Posição e tamanho em unidades de design, como tudo em `data/`.
+   */
+  portal(ctx, { x, y, w, h, ms } = {}) {
+    if (ctx.signal?.aborted) return;
+    ctx.fx.portal({ x, y, w, h, ms });
   },
 };

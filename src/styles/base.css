@@ -170,11 +170,15 @@ html, body {
 
 /* ---------- camadas ---------- */
 
-#fx-layer {
+#fx-layer,
+#fx-back {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
+
+/* Atrás dos atores (z 1 a 3) e à frente do chão. */
+#fx-back { z-index: 0; }
 
 #ending-card[hidden] { display: none; }
 

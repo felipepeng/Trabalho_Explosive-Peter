@@ -214,7 +214,9 @@ O `insertAdjacentHTML` usado aí é seguro porque o jogo não tem campo de texto
 
 **Quem mexe no DOM:** `stage.js` cria e destrói atores; `actions.js` só modifica o que já existe.
 
-**Âncoras do `index.html`:** `#stage #cast #fx-layer #hud #timer #hud-deaths #message #ending-card #ending-restart`, mais os moldes `#tpl-actor` e `#tpl-bomb`. Ator não é âncora: `#peter` só existe depois que a rodada monta o palco.
+**Duas camadas de efeito.** `#fx-back` fica antes de `#cast` e `#fx-layer` depois. A fenda do Pedro Maligno se abre *atrás* do Pedro e a água do Michas cobre as pernas de quem está em cena — um filho de `#fx-layer` não consegue passar para trás de `#cast`, então a camada de trás não é luxo, é a única forma. `stage.clear()` esvazia as duas.
+
+**Âncoras do `index.html`:** `#stage #cast #fx-back #fx-layer #hud #timer #hud-deaths #message #ending-card #ending-restart`, mais os moldes `#tpl-actor` e `#tpl-bomb`. Ator não é âncora: `#peter` só existe depois que a rodada monta o palco.
 
 **Convenções:** `id` para singletons · `data-actor="michas"` para atores · classe `.is-*` para estado · custom property para parâmetro de animação (`--shake-amp`).
 
@@ -341,6 +343,9 @@ export default { base: './' }
 | `K = min(3, n-2)` | `K` fixo em 3 | Anti-repetição sobrevive à ordem de corte |
 | Novidade contínua | Bônus booleano visto/não visto | Cena meio explorada continua sendo oferecida |
 | Um rig + `data/characters.js` | Um `<template>` por personagem | Personagem novo é um objeto; nada de HTML/CSS por personagem |
+| Cabeça é `<rect>` com `rx` = metade | `<circle>` | Desenha o mesmo círculo, e `rx: 0` entrega a cabeça blocada do Michas de graça |
+| `#fx-back` além de `#fx-layer` | `z-index` dentro de uma camada só | Filho não escapa da camada do pai; a fenda precisa ficar atrás do elenco |
+| `enter` com modo `portal` | Um verbo `spawn` separado | Quem sai da fenda cresce no lugar; continua sendo uma entrada |
 | `enter` padrão no personagem | Repetir `from` em toda timeline | "JP sempre sobe de baixo" é traço dele, e o motor segue sem importar `data/` |
 | Coleção dentro do ending card | Galeria como tela | Sem interação nova, sem sexto estado, mais barato |
 | Restart num `<button>` dentro do card | Card inteiro clicável | Alvo explícito; teclado e foco de graça; o card fica só como leitura |

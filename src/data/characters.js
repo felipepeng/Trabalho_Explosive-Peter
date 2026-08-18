@@ -15,7 +15,9 @@
  *              PERSONAGEM, não da cena — o JP sempre sobe de baixo da tela
  *              (GDD §5), então nenhuma timeline precisa repetir isso. Um beat
  *              de `enter` ainda pode passar por cima, se a cena quiser
- *   colors     --skin (corpo), --outline (contorno), --accent (o acessório)
+ *   shape      'blocky' tira o arredondamento dos membros (o Michas é do Minecraft)
+ *   colors     --skin (corpo), --outline (contorno), --accent (o acessório) e
+ *              --eye opcional (os olhos vermelhos do Pedro Maligno)
  *   face       fragmento SVG do rosto, dentro do <g class="face"> do rig
  *   accessory  fragmento SVG por cima de tudo (túnica, barba, boné, tridente)
  *
@@ -107,7 +109,61 @@ export const characters = {
       <path class="ink" d="M86 26 H114 A5 5 0 0 1 114 34 H86 Z" />
     `,
   },
+  /* -------------------------------------------------------------- *
+   * Michas dos Mares — salvador caótico. Comanda os mares com o
+   * tridente. Referência a Minecraft: tudo nele é blocado.
+   * -------------------------------------------------------------- */
+  michas: {
+    id: 'michas',
+    name: 'Michas dos Mares',
+    h: 200,
+    build: 1.15,
+    z: 3,
+    mark: { x: 660, y: 470 },
+    idle: 'breathe',
+    shape: 'blocky', // tira o arredondamento de TODOS os membros de uma vez
+    // "Emerge de uma onda que inunda a base da tela": a onda é o verbo `flood`,
+    // na timeline; o que é dele é subir junto com ela.
+    enter: { from: 'below', ms: 900 },
+    colors: { skin: '#5f9e7a', outline: '#12141c', accent: '#8f9aa8', eye: '#1b2a24' },
+    // Cara de bloco: olhos quadrados e boca reta. Nada de curva.
+    face: `
+      <rect class="eye" x="42" y="24" width="12" height="10" />
+      <rect class="eye" x="66" y="24" width="12" height="10" />
+      <path class="line" d="M46 48 H74" />
+    `,
+    // Tridente na mão direita: haste subindo e três pontas no alto.
+    accessory: `
+      <path class="ink slim" style="--part:#8f9aa8"
+            d="M101 130 V26 H94 V2 H100 V18 H101 V0 H107 V18 H108 V2 H114 V26 H107 V130 Z" />
+    `,
+  },
+
+  /* -------------------------------------------------------------- *
+   * Pedro Maligno — o antagonista. Pedro de um universo paralelo.
+   * Mesma silhueta, mesma respiração idiota. Só a cor, o sorriso e
+   * os olhos mudam — e é exatamente isso que faz a piada funcionar.
+   * -------------------------------------------------------------- */
+  maligno: {
+    id: 'maligno',
+    name: 'Pedro Maligno',
+    h: 190, // idêntico ao Pedro. É uma cópia, não uma versão maior
+    build: 1,
+    z: 3,
+    mark: { x: 620, y: 470 },
+    idle: 'breathe', // a MESMA respiração do Pedro, o que piora tudo
+    // Sai de uma fenda atrás do Pedro: cresce no lugar, não vem da borda.
+    enter: { from: 'portal', ms: 620 },
+    colors: { skin: '#4a2f6b', outline: '#0b0510', accent: '#8b2fd6', eye: '#ff2d2d' },
+    // Sorriso invertido e olhos vermelhos. O resto é o Pedro.
+    face: `
+      <circle class="eye" cx="48" cy="28" r="4.5" />
+      <circle class="eye" cx="72" cy="28" r="4.5" />
+      <path class="line" d="M38 56 Q60 34 82 56" />
+    `,
+    accessory: '',
+  },
 };
 
 /** Ordem de referência do elenco. O picker nunca lê isto — é só documentação viva. */
-export const CAST = ['peter', 'vinicius', 'jp'];
+export const CAST = ['peter', 'vinicius', 'michas', 'maligno', 'jp'];

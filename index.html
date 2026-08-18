@@ -14,6 +14,11 @@
     <main id="stage" aria-label="Palco">
       <div id="ground" aria-hidden="true"></div>
 
+      <!-- Efeitos que ficam ATRÁS do elenco. O portal do Pedro Maligno se abre
+           atrás do Pedro (GDD §5), e um filho de #fx-layer não consegue passar
+           para trás de #cast — precisa ser uma camada própria, antes dele. -->
+      <div id="fx-back" aria-hidden="true"></div>
+
       <!-- HUD: timer + contadores -->
       <div id="hud">
         <div id="timer" role="timer" aria-live="off">10</div>
@@ -58,7 +63,7 @@
             <g class="arm arm-r"><rect x="92" y="66" width="14" height="52" rx="7" /></g>
             <g class="body"><rect x="30" y="62" width="60" height="66" rx="16" /></g>
             <g class="head">
-              <circle class="skull" cx="60" cy="34" r="32" />
+              <rect class="skull" x="28" y="2" width="64" height="64" rx="32" ry="32" />
               <g class="face"></g>
             </g>
             <g class="accessory"></g>

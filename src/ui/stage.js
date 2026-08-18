@@ -53,6 +53,8 @@ function dressRig(character) {
   el.style.setProperty('--skin', character.colors?.skin ?? '#f5f1e6');
   el.style.setProperty('--outline', character.colors?.outline ?? '#12141c');
   el.style.setProperty('--accent', character.colors?.accent ?? '#cfc6ad');
+  if (character.colors?.eye) el.style.setProperty('--eye', character.colors.eye);
+  if (character.shape) el.classList.add(`shape-${character.shape}`);
 
   if (character.face) el.querySelector('.face').insertAdjacentHTML('afterbegin', character.face);
   if (character.accessory) {
@@ -81,7 +83,7 @@ function cloneTemplate(name) {
   return tpl.content.firstElementChild.cloneNode(true);
 }
 
-export function createStage({ cast, fx }) {
+export function createStage({ cast, layers = [] }) {
   /** @type {Map<string, HTMLElement>} */
   const actors = new Map();
 
@@ -104,10 +106,11 @@ export function createStage({ cast, fx }) {
   }
 
   return {
-    /** Limpa o palco inteiro: atores e efeitos. Chamado ao entrar em COUNTDOWN. */
+    /** Limpa o palco inteiro: atores e TODAS as camadas de efeito.
+     *  Chamado ao entrar em COUNTDOWN — é o que sustenta P4/I3. */
     clear() {
       cast.replaceChildren();
-      fx.replaceChildren();
+      layers.forEach((layer) => layer?.replaceChildren());
       actors.clear();
     },
 

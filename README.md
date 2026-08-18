@@ -26,11 +26,11 @@ Sem dependências de runtime: HTML/CSS/JS vanilla + Vite só como build.
 
 ## Status
 
-**D5 concluído.** Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, ending card e restart. A rodada é montada pelo `director` a partir de `src/data/scenes.js` (verbos `enter`, `say`, `shake`, `explode`), sorteada pelo `picker` com anti-repetição, e o progresso persiste em `localStorage` com o contador `X/N` no card.
+**D6 concluído — elenco completo.** (M2 fecha no D8, com as timelines escritas.) Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, ending card e restart. A rodada é montada pelo `director` a partir de `src/data/scenes.js` (verbos `enter`, `say`, `shake`, `explode`), sorteada pelo `picker` com anti-repetição, e o progresso persiste em `localStorage` com o contador `X/N` no card.
 
-O rig SVG é compartilhado: Pedro, Vinicius e JP saem do mesmo `<template>`, vestidos por `src/data/characters.js`.
+O rig SVG é compartilhado: os cinco personagens saem do mesmo `<template>`, vestidos por `src/data/characters.js`. Seis dos treze verbos existem: `enter`, `say`, `shake`, `explode`, `flood`, `portal`.
 
-Falta o conteúdo: 1 cena das 6, 1 final dos 14, e 2 personagens dos 5 (D6 a D8).
+Falta o conteúdo: 1 cena das 6 e 1 final dos 14 (D7 e D8).
 
 
 
