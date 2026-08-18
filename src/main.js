@@ -284,6 +284,7 @@ if (import.meta.env?.DEV) {
     themes: CARD_THEMES,
     sfx: audio.nomes,
     characters: Object.keys(characters),
+    emojiNaFala: Object.keys(characters).filter((id) => characters[id].emojiNaFala),
     maxRoundMs: MAX_ROUND_MS_DESIGN,
     dramaticPauseMs: DRAMATIC_PAUSE_MS,
     joinGap: JOIN_GAP,

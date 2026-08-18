@@ -46,50 +46,101 @@ export function createFx({ stage, layer, back }) {
   }
 
   /**
-   * Explosão: bola de fogo + flash + shake.
+   * Explosão: sete camadas de efeito, e a tremida nunca é opcional.
    *
    * A posição sai do alvo, mas `x`/`y` passam por cima — é o que permite
    * escrever fogo de artifício no céu sem inventar um verbo novo.
    * `ms` estica a bola de fogo (a explosão subaquática em câmera lenta).
    */
   function explode(target, { intensity = 8, x, y, ms } = {}) {
-    const boom = document.createElement('div');
-    boom.className = 'boom';
-
     const at = {
       x: x ?? target?.style.getPropertyValue('--x') ?? 500,
       y: y ?? target?.style.getPropertyValue('--y') ?? 470,
     };
-    boom.style.setProperty('--x', at.x || 500);
-    boom.style.setProperty('--y', at.y || 470);
-    if (ms) boom.style.setProperty('--boom-ms', `${ms}ms`);
+    const px = at.x || 500;
+    const py = at.y || 470;
 
-    layer.appendChild(boom);
+    // Toda peça nasce igual: posicionada na explosão e removida quando a
+    // própria animação acaba. `ev.target === el` porque animationend BORBULHA.
+    const peca = (cls, camada, vars = {}) => {
+      const el = document.createElement('div');
+      el.className = cls;
+      el.style.setProperty('--x', px);
+      el.style.setProperty('--y', py);
+      if (ms) el.style.setProperty('--boom-ms', `${ms}ms`);
+      for (const [nome, valor] of Object.entries(vars)) el.style.setProperty(nome, valor);
+      el.addEventListener('animationend', (ev) => {
+        if (ev.target === el) el.remove();
+      }, { once: true });
+      camada.appendChild(el);
+      return el;
+    };
 
-    // Onda de choque: um anel fino que corre para fora. Custa um <div> e é o
-    // que faz a explosão parecer TER FORÇA, em vez de só acender.
-    const onda = document.createElement('div');
-    onda.className = 'shock';
-    onda.style.setProperty('--x', at.x || 500);
-    onda.style.setProperty('--y', at.y || 470);
-    if (ms) onda.style.setProperty('--boom-ms', `${ms}ms`);
-    onda.addEventListener('animationend', () => onda.remove(), { once: true });
-    layer.appendChild(onda);
+    const boom = peca('boom', layer);      // a bola de fogo
+    peca('boom-core', layer);              // clarão branco no miolo, mais rápido
+    peca('rays', layer);                   // raios varrendo para fora
+    peca('shock', layer);                  // onda de choque
+    // A segunda onda sai atrasada: explosão de verdade não empurra uma vez só.
+    peca('shock', layer, { '--shock-delay': '120ms' });
+    peca('shock', layer, { '--shock-delay': '260ms' });
+    // Anel RASTEIRO: achatado, correndo pelo chão. O anel redondo diz que
+    // empurrou o ar; este diz que empurrou o mundo.
+    peca('shock-ground', layer);
+    // SEGUNDA DETONAÇÃO, fora do centro e atrasada. Uma bola de fogo só lê
+    // como "acendeu"; duas leem como "está explodindo ainda".
+    peca('boom', layer, {
+      '--boom-delay': '180ms',
+      '--x': px + 38,
+      '--y': py - 26,
+    });
 
-    // Estilhaços saindo em leque. São pedaços geométricos, não emoji: emoji na
-    // explosão é escolha do DADO, num beat de `burst`.
+    // Fumaça no #fx-back para passar POR TRÁS do elenco — um filho de
+    // #fx-layer não consegue, e fumaça na frente do Pedro esconderia a piada.
+    const baforadas = 7 + intensity;
+    for (let i = 0; i < baforadas; i += 1) {
+      peca('smoke', back ?? layer, {
+        '--dx': `${Math.round(-60 + Math.random() * 120)}`,
+        '--dy': `${Math.round(-40 - Math.random() * (40 + intensity * 6))}`,
+        '--smoke-size': `${Math.round(46 + Math.random() * 44)}`,
+        '--smoke-ms': `${Math.round(900 + Math.random() * 600)}ms`,
+        '--smoke-delay': `${Math.round(Math.random() * 220)}ms`,
+      });
+    }
+
+    // Estilhaços: pedaços geométricos, não emoji. Emoji na explosão é escolha
+    // do DADO, num beat de `burst`.
     burst({
-      x: at.x || 500,
-      y: at.y || 470,
-      count: Math.round(6 + intensity),
-      power: 120 + intensity * 14,
-      spread: 360,
-      gravity: 1,
-      ms: 900,
+      x: px, y: py,
+      count: Math.round(20 + intensity * 3.5),
+      power: 230 + intensity * 30,
+      spread: 360, gravity: 1.1, ms: 1100, size: 24,
+    });
+    // Segunda leva, miúda e rápida: é o que faz a explosão parecer densa em
+    // vez de meia dúzia de quadrados voando.
+    burst({
+      x: px, y: py,
+      count: Math.round(24 + intensity * 4),
+      power: 320 + intensity * 40,
+      spread: 360, gravity: 0.7, ms: 750, size: 9,
+    });
+    // Terceira leva: BRASAS. Fracas, pesadas e lentas — continuam caindo
+    // depois que o clarão acabou, e é isso que faz a explosão ter rastro em
+    // vez de simplesmente terminar.
+    burst({
+      x: px, y: py,
+      count: Math.round(10 + intensity * 2),
+      power: 120 + intensity * 16,
+      spread: 360, gravity: 2.2, ms: 1600, size: 6, tone: 'ember',
     });
 
     flash();
-    shake({ intensity });
+    // A TREMIDA NUNCA É OPCIONAL, e o piso é o que garante isso: mesmo uma
+    // explosão de intensidade 1 sacode a tela de verdade. O zoom que cobre a
+    // fresta preta na borda é proporcional à amplitude, no juice.css.
+    // Teto de 24 junto com o piso de 12: acima disso o zoom que cobre a
+    // borda passa de 26% e a tela vira um soco no olho que ESCONDE a
+    // explosão em vez de vendê-la. É o botão para girar se quiser mais.
+    shake({ intensity: Math.min(24, Math.max(12, intensity * 1.9 + 5)) });
     return boom;
   }
 
@@ -116,13 +167,16 @@ export function createFx({ stage, layer, back }) {
    */
   function burst({
     x = 500, y = 470, emojis = [], count = 10, power = 160,
-    spread = 360, dir = 0, gravity = 1, ms = 900, size = 26,
+    spread = 360, dir = 0, gravity = 1, ms = 900, size = 26, tone = '',
   } = {}) {
     const pedacos = document.createDocumentFragment();
 
     for (let i = 0; i < count; i += 1) {
       const bit = document.createElement('span');
-      bit.className = emojis.length ? 'bit is-emoji' : 'bit';
+      // `tone` só troca a PELE do pedaço (cor, brilho, formato) — a física é
+      // a mesma para estilhaço, brasa e gota. É o que evita um segundo motor
+      // de partículas só porque a água não é laranja.
+      bit.className = `bit${emojis.length ? ' is-emoji' : ''}${tone ? ` is-${tone}` : ''}`;
       if (emojis.length) bit.textContent = emojis[Math.floor(Math.random() * emojis.length)];
 
       // ângulo dentro do leque, medido a partir de "para cima"
@@ -180,14 +234,62 @@ export function createFx({ stage, layer, back }) {
    * medida a partir da LINHA DO CHÃO para cima — 140 dá água no peito do
    * Pedro. A água sangra até a borda real da janela, como o chão.
    */
+  /* A ONDA. A SUBIDA da água é encenação e por isso não multiplica por
+   * --juice (sem ela ninguém entende que o mar chegou). Tudo que vem depois
+   * — vagas cruzando, respingo, espuma, tremida — é juice puro: existe só
+   * para a chegada ser um acontecimento, e some junto em reduced-motion.
+   */
   function flood({ height = 140, ms = 900 } = {}) {
     const el = document.createElement('div');
     el.className = 'flood';
     el.style.setProperty('--flood-h', height);
     el.style.setProperty('--flood-ms', `${ms}ms`);
     layer.appendChild(el);
+
+    // A linha d'água em unidades de design: é de onde sai todo o respingo.
+    const linha = 450 - height;
+
+    // DUAS VAGAS cruzando a tela em sentidos opostos, a segunda atrasada.
+    for (const [de, dx, atraso] of [[-620, 1750, 0], [1180, -1800, 220]]) {
+      const vaga = document.createElement('div');
+      vaga.className = 'wave-sweep';
+      vaga.style.setProperty('--flood-h', height);
+      vaga.style.setProperty('--wave-from', de);
+      vaga.style.setProperty('--wave-dx', dx);
+      vaga.style.setProperty('--wave-ms', `${ms + 500}ms`);
+      vaga.style.setProperty('--wave-delay', `${atraso}ms`);
+      vaga.addEventListener('animationend', (ev) => {
+        if (ev.target === vaga) vaga.remove();
+      }, { once: true });
+      layer.appendChild(vaga);
+    }
+
+    // RESPINGO em cinco pontos da linha d'água, para cima e em leque. Cinco
+    // origens em vez de uma: um respingo central só lê como explosão de água.
+    for (let i = 0; i < 5; i += 1) {
+      burst({
+        x: 120 + i * 190,
+        y: linha,
+        count: 14,
+        power: 190 + Math.random() * 90,
+        spread: 90,
+        gravity: 1.4,
+        ms: 1200,
+        size: 12,
+        tone: 'water',
+      });
+    }
+    // ESPUMA: gotas miúdas, muitas, subindo devagar e ficando no ar.
+    burst({
+      x: 500, y: linha, count: 34, power: 260,
+      spread: 170, gravity: 0.5, ms: 1500, size: 6, tone: 'water',
+    });
+
+    // O mar chegando sacode a tela. Menos que uma explosão, mas sacode.
+    shake({ intensity: 8 });
     return el;
   }
+
 
   /**
    * Abre uma fenda. Vai na camada de TRÁS: quem sai dela precisa aparecer

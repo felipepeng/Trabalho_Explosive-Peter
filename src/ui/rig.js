@@ -2,8 +2,8 @@
  *
  * Um único `<template id="tpl-actor">` vestido com os dados de
  * `data/characters.js`: cor em custom property, proporção em `--h`/`--build`,
- * e o rosto e o acessório injetados nos slots `<g class="face">` e
- * `<g class="accessory">` (ARCHITECTURE.md §6).
+ * e o rosto, o cabelo e o acessório injetados nos slots `<g class="face">`,
+ * `<g class="hair-back">`, `<g class="hair">` e `<g class="accessory">` (ARCHITECTURE.md §6).
  *
  * Mora aqui, e não em `stage.js`, porque tem DOIS clientes: o palco, que monta
  * o elenco da rodada, e o ending card, que põe o personagem posando ao lado do
@@ -54,6 +54,17 @@ export function buildActor(id, { idle = true, anchor = true, tag = true } = {}) 
   if (character.shape) el.classList.add(`shape-${character.shape}`);
 
   if (character.face) el.querySelector('.face').insertAdjacentHTML('afterbegin', character.face);
+  // O cabelo das COSTAS entra antes de todo mundo, no primeiro filho do
+  // .frame — `hairBack` cai atrás do corpo e dos braços. Ele não pode ser filho
+  // da cabeça (SVG não tem z-index: quem desenha depois cobre), então a
+  // sincronia com a respiração é feita no CSS, aplicando a MESMA animação com
+  // a mesma duração e o mesmo atraso do `.head`.
+  if (character.hairBack) {
+    el.querySelector('.hair-back').insertAdjacentHTML('afterbegin', character.hairBack);
+  }
+  // O cabelo da frente entra DENTRO da cabeça, não na camada de acessório: é o
+  // que o faz acompanhar o `idle-breathe` (que anima .head) sem descolar do crânio.
+  if (character.hair) el.querySelector('.hair').insertAdjacentHTML('afterbegin', character.hair);
   if (character.accessory) {
     el.querySelector('.accessory').insertAdjacentHTML('afterbegin', character.accessory);
   }
