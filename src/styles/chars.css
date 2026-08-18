@@ -133,10 +133,16 @@
    Escolhida por `idle` em data/characters.js. */
 
 /* Pedro: respiração idiota e permanente — ele nunca reage a nada */
+/* O cabelo da frente mora dentro do <g class="head"> (index.html), então vem
+   junto de graça. O de trás (<g class="hair-back">) precisa ser desenhado ANTES do corpo
+   para cair atrás dele, então é o único caso em que a animação é REPLICADA — com
+   a mesma duração e o mesmo atraso, senão a cabeça e o cabelo saem de fase. */
 .idle-breathe .body,
+.idle-breathe .hair-back,
 .idle-breathe .head {
   animation: idle-breathe 2600ms ease-in-out infinite;
 }
+.idle-breathe .hair-back,
 .idle-breathe .head { animation-delay: 80ms; }
 
 @keyframes idle-breathe {

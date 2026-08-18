@@ -5,19 +5,34 @@
 
 /* ---------- shake ---------- */
 /* O palco ocupa a janela inteira, então sacudi-lo abriria uma fresta preta na
-   borda. O leve scale junto cobre o deslocamento máximo (~2.4% da largura). */
+   borda. Quem cobre é o zoom — e ele é PROPORCIONAL à amplitude, não fixo:
+   deslocamento máximo é 4 * --shake-d, e um scale de 1+k esconde k/2 da
+   largura de cada lado, então k precisa de pelo menos 0,008 * amp. O 0,011
+   abaixo é esse mínimo com folga. Foi o que destravou a tremida exagerada da
+   explosão: com o scale fixo de 5% de antes, amplitude acima de ~6 já
+   mostrava a borda.
+
+   O envelope decai: a pancada é nos primeiros 100ms e o resto é a tela se
+   acalmando. Sacudir com amplitude constante lê como "bug", não como impacto. */
 
 #stage.is-shaking {
-  animation: shake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  --shake-d: calc(var(--u) * var(--shake-amp, 6) * var(--juice));
+  --shake-zoom: calc(1 + 0.011 * var(--shake-amp, 6) * var(--juice));
+  animation: shake 520ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
   transform-origin: center;
 }
 
 @keyframes shake {
-  10%, 90% { transform: translate3d(calc(-1 * var(--u) * var(--shake-amp, 6) * var(--juice)), 0, 0) scale(calc(1 + 0.05 * var(--juice))); }
-  20%, 80% { transform: translate3d(calc(2 * var(--u) * var(--shake-amp, 6) * var(--juice)), 0, 0) scale(calc(1 + 0.05 * var(--juice))); }
-  30%, 50%, 70% { transform: translate3d(calc(-4 * var(--u) * var(--shake-amp, 6) * var(--juice)), 0, 0) scale(calc(1 + 0.05 * var(--juice))); }
-  40%, 60% { transform: translate3d(calc(4 * var(--u) * var(--shake-amp, 6) * var(--juice)), 0, 0) scale(calc(1 + 0.05 * var(--juice))); }
-  0%, 100% { transform: scale(calc(1 + 0.05 * var(--juice))); }
+  0%   { transform: translate3d(0, 0, 0) scale(var(--shake-zoom)); }
+  6%   { transform: translate3d(calc(-4 * var(--shake-d)), calc(2 * var(--shake-d)), 0) scale(var(--shake-zoom)); }
+  14%  { transform: translate3d(calc(4 * var(--shake-d)), calc(-2.4 * var(--shake-d)), 0) scale(var(--shake-zoom)); }
+  24%  { transform: translate3d(calc(-3.4 * var(--shake-d)), calc(-1.6 * var(--shake-d)), 0) scale(var(--shake-zoom)); }
+  36%  { transform: translate3d(calc(2.6 * var(--shake-d)), calc(1.8 * var(--shake-d)), 0) scale(var(--shake-zoom)); }
+  50%  { transform: translate3d(calc(-1.9 * var(--shake-d)), calc(-1.1 * var(--shake-d)), 0) scale(var(--shake-zoom)); }
+  64%  { transform: translate3d(calc(1.3 * var(--shake-d)), calc(0.7 * var(--shake-d)), 0) scale(calc(1 + (var(--shake-zoom) - 1) * 0.6)); }
+  78%  { transform: translate3d(calc(-0.8 * var(--shake-d)), calc(-0.4 * var(--shake-d)), 0) scale(calc(1 + (var(--shake-zoom) - 1) * 0.3)); }
+  90%  { transform: translate3d(calc(0.4 * var(--shake-d)), 0, 0) scale(1); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
 /* ---------- flash ---------- */
@@ -81,13 +96,148 @@ body.is-frozen *::after {
   border-radius: 50%;
   background: radial-gradient(circle, #fff 0%, #ffd36b 35%, #ff5a3c 65%, rgba(255, 90, 60, 0) 72%);
   transform: scale(0);
-  animation: boom var(--boom-ms, 700ms) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: boom var(--boom-ms, 700ms) cubic-bezier(0.16, 1, 0.3, 1) var(--boom-delay, 0ms) forwards;
 }
 
 @keyframes boom {
   0%   { transform: scale(0); opacity: 1; }
-  35%  { transform: scale(calc(6 + 6 * var(--juice))); opacity: 1; }
-  100% { transform: scale(calc(8 + 8 * var(--juice))); opacity: 0; }
+  30%  { transform: scale(calc(8 + 9 * var(--juice))); opacity: 1; }
+  100% { transform: scale(calc(11 + 13 * var(--juice))); opacity: 0; }
+}
+
+/* NÚCLEO BRANCO. Sai antes da bola de fogo e some antes dela: é o estouro,
+   contra o fogo que fica. Sem ele o centro da explosão é laranja, e explosão
+   de perto não é laranja no meio — é branca. */
+
+#fx-layer .boom-core {
+  position: absolute;
+  left: calc(var(--ox) + var(--x, 500) * var(--u));
+  top: calc(var(--oy) + var(--y, 470) * var(--u));
+  width: calc(30 * var(--u));
+  height: calc(30 * var(--u));
+  margin: calc(-15 * var(--u));
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #fff8e0 55%, rgba(255, 245, 210, 0) 70%);
+  transform: scale(0);
+  animation: boom-core calc(var(--boom-ms, 700ms) * 0.6) cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes boom-core {
+  0%   { transform: scale(0); opacity: 1; }
+  40%  { transform: scale(calc(6 + 7 * var(--juice))); opacity: 0.95; }
+  100% { transform: scale(calc(9 + 10 * var(--juice))); opacity: 0; }
+}
+
+/* RAIOS. Um leque de cunhas de luz varrendo para fora, feito com um único
+   conic-gradient — nada de doze <div>. Ele gira um pouco enquanto cresce, o
+   que dá a sensação de energia saindo, e não de uma estrela colada na tela. */
+
+#fx-layer .rays {
+  position: absolute;
+  left: calc(var(--ox) + var(--x, 500) * var(--u));
+  top: calc(var(--oy) + var(--y, 470) * var(--u));
+  width: calc(120 * var(--u));
+  height: calc(120 * var(--u));
+  margin: calc(-60 * var(--u));
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 236, 180, 0.85) 0deg 6deg, transparent 6deg 30deg,
+    rgba(255, 236, 180, 0.7) 30deg 34deg, transparent 34deg 60deg,
+    rgba(255, 236, 180, 0.85) 60deg 68deg, transparent 68deg 96deg,
+    rgba(255, 236, 180, 0.6) 96deg 100deg, transparent 100deg 132deg,
+    rgba(255, 236, 180, 0.85) 132deg 139deg, transparent 139deg 170deg,
+    rgba(255, 236, 180, 0.7) 170deg 174deg, transparent 174deg 205deg,
+    rgba(255, 236, 180, 0.85) 205deg 212deg, transparent 212deg 240deg,
+    rgba(255, 236, 180, 0.6) 240deg 244deg, transparent 244deg 274deg,
+    rgba(255, 236, 180, 0.85) 274deg 281deg, transparent 281deg 310deg,
+    rgba(255, 236, 180, 0.7) 310deg 314deg, transparent 314deg 360deg);
+  /* o miolo fica vazado: os raios saem de FORA do núcleo */
+  mask-image: radial-gradient(circle, transparent 12%, #000 26%, #000 100%);
+  transform: scale(0.15) rotate(0deg);
+  opacity: 0;
+  animation: rays calc(var(--boom-ms, 700ms) * 0.9) cubic-bezier(0.12, 0.9, 0.25, 1) forwards;
+}
+
+@keyframes rays {
+  0%   { transform: scale(0.15) rotate(0deg); opacity: 0.9; }
+  100% { transform: scale(calc(4.5 + 6 * var(--juice))) rotate(28deg); opacity: 0; }
+}
+
+/* FUMAÇA. Vive no #fx-back, ATRÁS do elenco (index.html): fumaça na frente do
+   Pedro esconderia justamente o que o jogador precisa ver. Sobe devagar e
+   sobrevive à bola de fogo — é o que dá peso ao que acabou de acontecer. */
+
+#fx-back .smoke {
+  position: absolute;
+  left: calc(var(--ox) + var(--x, 500) * var(--u));
+  top: calc(var(--oy) + var(--y, 470) * var(--u));
+  width: calc(var(--smoke-size, 60) * var(--u));
+  height: calc(var(--smoke-size, 60) * var(--u));
+  margin: calc(var(--smoke-size, 60) * var(--u) / -2);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(72, 66, 62, 0.85) 0%, rgba(48, 44, 42, 0.55) 55%, rgba(40, 36, 34, 0) 72%);
+  opacity: 0;
+  animation: smoke var(--smoke-ms, 1100ms) ease-out var(--smoke-delay, 0ms) forwards;
+}
+
+@keyframes smoke {
+  0%   { transform: translate(0, 0) scale(0.3); opacity: 0; }
+  18%  { opacity: 0.6; }
+  100% {
+    transform:
+      translate(calc(var(--dx, 0) * var(--u) * var(--juice)),
+                calc(var(--dy, -60) * var(--u) * var(--juice)))
+      scale(calc(1.4 + 1.2 * var(--juice)));
+    opacity: 0;
+  }
+}
+
+/* ANEL RASTEIRO. O mesmo empurrão da onda de choque, mas achatado e correndo
+   pelo chão: o anel redondo diz que empurrou o AR, este diz que empurrou o
+   MUNDO. Achatar é só um scaleY pequeno no keyframe — não precisa de elipse. */
+
+#fx-layer .shock-ground {
+  position: absolute;
+  left: calc(var(--ox) + var(--x, 500) * var(--u));
+  top: calc(var(--oy) + var(--y, 470) * var(--u));
+  width: calc(80 * var(--u));
+  height: calc(80 * var(--u));
+  margin: calc(-40 * var(--u));
+  border-radius: 50%;
+  border: calc(4 * var(--u)) solid rgba(255, 226, 176, 0.75);
+  box-shadow: 0 0 calc(26 * var(--u)) rgba(255, 150, 60, 0.5);
+  opacity: 0;
+  animation: shock-ground calc(var(--boom-ms, 700ms) * 1.15) cubic-bezier(0.08, 0.85, 0.2, 1) forwards;
+}
+
+@keyframes shock-ground {
+  0%   { transform: scale(0.15) scaleY(0.22); opacity: 0.9; border-width: calc(6 * var(--u)); }
+  100% {
+    transform: scale(calc(6 + 8 * var(--juice))) scaleY(0.22);
+    opacity: 0;
+    border-width: calc(0.6 * var(--u));
+  }
+}
+
+/* BRASA. Um estilhaço que sobrou aceso: menor, mais escura e muito mais lenta
+   que a fagulha. Ela ainda está caindo quando o clarão já acabou, e é isso que
+   dá RASTRO à explosão em vez de um fim seco. */
+
+#fx-layer .bit.is-ember {
+  background: radial-gradient(circle, #ffd9a0 0%, #ff7a2f 45%, #a3300c 100%);
+  box-shadow: 0 0 calc(10 * var(--u)) rgba(255, 120, 40, 0.9);
+  border-radius: 50%;
+}
+
+/* GOTA. Mesma física do estilhaço, outra pele — é o que a onda do Michas
+   cospe. Alongada para baixo, porque gota parada em forma de quadrado azul
+   não lê como água. */
+
+#fx-layer .bit.is-water {
+  background: linear-gradient(180deg, rgba(226, 249, 255, 0.98) 0%, rgba(120, 205, 240, 0.95) 55%, rgba(38, 128, 184, 0.9) 100%);
+  box-shadow: 0 0 calc(8 * var(--u)) rgba(190, 238, 255, 0.75);
+  border-radius: 55% 55% 50% 50% / 65% 65% 40% 40%;
 }
 
 /* Ator que foi pelos ares: some na hora do clarão. */
@@ -249,13 +399,16 @@ body.is-frozen *::after {
   border: calc(5 * var(--u)) solid rgba(255, 216, 150, 0.9);
   box-shadow: 0 0 calc(20 * var(--u)) rgba(255, 170, 80, 0.55);
   transform: scale(0.2);
-  animation: shock var(--boom-ms, 700ms) cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+  /* opacity 0 na base para a onda atrasada não ficar parada na tela
+     esperando a vez: o keyframe é quem acende. */
+  opacity: 0;
+  animation: shock var(--boom-ms, 700ms) cubic-bezier(0.1, 0.8, 0.2, 1) var(--shock-delay, 0ms) forwards;
 }
 
 @keyframes shock {
   0% { transform: scale(0.2); opacity: 0.95; border-width: calc(6 * var(--u)); }
   100% {
-    transform: scale(calc(3 + 5 * var(--juice)));
+    transform: scale(calc(4.5 + 7 * var(--juice)));
     opacity: 0;
     border-width: calc(1 * var(--u));
   }
@@ -354,6 +507,44 @@ body.is-frozen *::after {
 @keyframes flood-crest {
   from { transform: translate(0, 0); }
   to { transform: translate(calc(-23 * var(--u)), calc(-3 * var(--u) * var(--juice))); }
+}
+
+/* AS VAGAS. Duas massas de água atravessando a tela em sentidos opostos no
+   momento em que o mar chega, a segunda atrasada em 220ms. É o que separa
+   "um retângulo azul subiu" de "veio uma onda".
+
+   O PERCURSO horizontal não multiplica por --juice, pela mesma razão da
+   entrada de um ator: uma vaga que cruza 25% da tela para e fica parada no
+   meio, visível, em vez de atravessar. O que multiplica é o balanço e o
+   inchaço — o floreio, não a leitura. */
+
+#fx-layer .wave-sweep {
+  position: absolute;
+  left: calc(var(--ox) + var(--wave-from, -600) * var(--u));
+  top: calc(var(--oy) + (var(--ground-y) - var(--flood-h, 140) - 78) * var(--u));
+  width: calc(560 * var(--u));
+  height: calc(150 * var(--u));
+  border-radius: 50% 50% 44% 44% / 88% 88% 22% 22%;
+  background: linear-gradient(180deg,
+    rgba(232, 251, 255, 0.95) 0%,
+    rgba(140, 214, 242, 0.85) 38%,
+    rgba(30, 110, 165, 0.45) 78%,
+    rgba(24, 86, 138, 0) 100%);
+  box-shadow: 0 calc(-4 * var(--u)) calc(30 * var(--u)) rgba(190, 238, 255, 0.5);
+  opacity: 0;
+  animation: wave-sweep var(--wave-ms, 1400ms) cubic-bezier(0.25, 0.65, 0.3, 1) var(--wave-delay, 0ms) forwards;
+}
+
+@keyframes wave-sweep {
+  0%   { transform: translate(0, calc(50 * var(--u))) scaleY(0.45); opacity: 0; }
+  22%  { opacity: 0.95; }
+  70%  { opacity: 0.7; }
+  100% {
+    transform:
+      translate(calc(var(--wave-dx, 1700) * var(--u)), calc(-14 * var(--u) * var(--juice)))
+      scaleY(calc(0.9 + 0.5 * var(--juice)));
+    opacity: 0;
+  }
 }
 
 /* ---------- fenda (verbo `portal`) ---------- */

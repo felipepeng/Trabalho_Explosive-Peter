@@ -67,6 +67,7 @@
      --juice: um ator a 25% da distância pararia dentro da tela, visível, no
      lugar de "fora de cena". */
   .idle-breathe .body,
+  .idle-breathe .hair-back,
   .idle-breathe .head,
   .idle-sway .frame,
   .idle-seethe .frame,
@@ -198,6 +199,13 @@ html, body {
   font-size: calc(120 * var(--u));
   line-height: 0.9;
   letter-spacing: 0.02em;
+
+  /* O letter-spacing sobra DEPOIS do último dígito e empurraria os números
+     1,2 un. para a esquerda do eixo do palco — de onde o Pedro está. O padding
+     devolve essa sobra do outro lado. 2,4 un. = 0.02em de 120 un. de fonte,
+     escrito em --u porque dentro do #timer, que mudou o próprio font-size,
+     `em` sairia multiplicado. */
+  padding-left: calc(2.4 * var(--u));
   color: var(--c-paper);
   font-variant-numeric: tabular-nums;
   text-shadow:

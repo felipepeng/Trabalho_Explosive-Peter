@@ -30,6 +30,7 @@ export function validate(scenes, {
   themes = [],
   sfx = [],
   characters = [],
+  emojiNaFala = [],
   maxRoundMs = 15000,
   dramaticPauseMs = 600,
   joinGap = 400,
@@ -41,6 +42,9 @@ export function validate(scenes, {
   const knownThemes = new Set(themes);
   const knownSfx = new Set(sfx);
   const knownChars = new Set(characters);
+  // Quem pode usar emoji na fala. Chega por parâmetro, como todo o resto: o
+  // validador não pode conhecer personagem pelo nome.
+  const bocaComEmoji = new Set(emojiNaFala);
   const seenEndingIds = new Map();
 
   for (const scene of scenes) {
@@ -98,7 +102,7 @@ export function validate(scenes, {
       }
 
       if (!ending.line) problems.push(`${label}: falta line (a fala do card)`);
-      else if (EMOJI.test(ending.line)) {
+      else if (EMOJI.test(ending.line) && !bocaComEmoji.has(quem)) {
         problems.push(`${label}: line com emoji ("${ending.line}") — line é fala, não interface`);
       }
 
@@ -115,10 +119,12 @@ export function validate(scenes, {
     }
   }
 
-  /** Emoji pode em interface, nunca em fala — nem em `say`, nem em `line`. */
+  /** Emoji pode em interface, nunca em fala — nem em `say`, nem em `line`.
+   *  A exceção é quem declara `emojiNaFala` em characters.js (hoje só o
+   *  Vinicius, que fecha frase de efeito com um). */
   function checkFala(label, beat) {
     if (beat.do !== 'say' || !beat.text) return;
-    if (EMOJI.test(beat.text)) {
+    if (EMOJI.test(beat.text) && !bocaComEmoji.has(beat.who)) {
       problems.push(`${label}: fala com emoji ("${beat.text}") — proibido em say`);
     }
   }

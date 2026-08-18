@@ -130,7 +130,7 @@ Não existe arquivo de áudio: os 11 SFX (`tick`, `tick-urgente`, `boom`, `whoos
 ## Regras que quebram o jogo se ignoradas
 
 - **`id` de final é permanente** — é chave do save do jogador. `title` é livre.
-- **Emoji**: pode em `kicker`, `button`, `icon`, HUD e mensagens. **Proibido em fala de personagem** — tanto no `text` de um beat `say` quanto na `line` do final. O validador reprova os dois.
+- **Emoji**: pode em `kicker`, `button`, `icon`, HUD e mensagens. **Proibido em fala de personagem** — tanto no `text` de um beat `say` quanto na `line` do final. O validador reprova os dois. **Uma exceção**: quem declara `emojiNaFala: true` em `characters.js` pode usar emoji na fala. Hoje só o Vinicius, o Estoico, que fecha frase de efeito com um. A permissão é do PERSONAGEM, não da cena — o validador recebe a lista por parâmetro e não conhece ninguém pelo nome.
 - **Verbo nunca consulta `scene.id` nem `ending.id`.** Deu vontade de escrever esse `if`? Parametrize pelo beat ou crie um verbo novo. Verbo também retorna sem fazer nada se `ctx.signal.aborted`.
 - **Nenhum seletor de CSS conhece um id de final.** O card declara tokens e `[data-theme]` os reescreve; as paletas válidas estão em `config.js` (`CARD_THEMES`) e em `base.css` — as duas listas precisam bater.
 - **`setTimer` mexe no mostrador, não no relógio.** Quem decide quando a rodada estoura é o `climaxAt`. Em `maligno-portal` os dois números foram casados à mão (mostrador zera em 7700 ms, clímax em 7800 ms) e o validador **não** consegue conferir isso.

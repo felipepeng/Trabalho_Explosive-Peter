@@ -77,14 +77,21 @@
 
     <!-- O RIG COMPARTILHADO. Um só, para os cinco personagens (GDD §5).
          O que varia vem de src/data/characters.js: cor, proporção, o rosto
-         dentro de <g class="face"> e o acessório dentro de <g class="accessory">.
-         Quem preenche os dois é ui/stage.js. -->
+         dentro de <g class="face">, o cabelo da frente dentro de <g class="hair"> (DENTRO da
+         cabeça, para acompanhar respiração e virada de cabeça) e o acessório de
+         corpo dentro de <g class="accessory">. O cabelo que cai para as costas
+         vai no <g class="hair-back">, antes de todo mundo.
+         Quem preenche os quatro é ui/rig.js. -->
     <template id="tpl-actor">
       <div class="actor">
         <svg class="rig" viewBox="0 0 120 180">
           <!-- .frame existe só para o --build esticar o boneco de lado sem
                bagunçar o transform-origin dos membros -->
           <g class="frame">
+            <!-- CABELO DE TRÁS: primeiro filho do .frame, então cai ATRÁS do corpo e
+                 dos braços. Respira junto com a cabeça por CSS (.idle-breathe), não por
+                 parentesco — é o preço de um SVG não ter z-index. -->
+            <g class="hair-back"></g>
             <g class="leg leg-l"><rect x="42" y="120" width="14" height="48" rx="7" /></g>
             <g class="leg leg-r"><rect x="64" y="120" width="14" height="48" rx="7" /></g>
             <g class="arm arm-l"><rect x="14" y="66" width="14" height="52" rx="7" /></g>
@@ -93,6 +100,8 @@
             <g class="head">
               <rect class="skull" x="28" y="2" width="64" height="64" rx="32" ry="32" />
               <g class="face"></g>
+              <!-- cabelo/chapéu: mora aqui porque é parte da CABEÇA -->
+              <g class="hair"></g>
             </g>
             <g class="accessory"></g>
           </g>

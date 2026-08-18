@@ -108,14 +108,14 @@ export const scenes = [
     // falando. Quem decide quando a rodada estoura é este número, não o timer.
     climaxAt: 12800,
     timeline: [
-      // A estátua chega antes de todo mundo (500ms absolutos) e não faz mais
-      // nada. 🗿 e 🍷 são CENÁRIO e FIGURINO: os emojis do Vinicius não voam.
-      { at: -3500, do: 'prop', emoji: '🗿', x: 120, y: 470, size: 104 },
+      // A 🍷 do Vinicius é FIGURINO: mora na mão dele, no rig. A 🗿 já foi
+      // cenário aqui, solta no canto da tela — saiu de cena e virou o emoji
+      // do `kicker` dos três finais desta cena, que é texto de interface.
       // 2,2s para atravessar: devagar é o traço dele, não sobra de tempo
       { at: 0, do: 'enter', who: 'vinicius', x: 700, ms: 2200 },
       { at: 2600, do: 'say', who: 'vinicius', text: 'A dor é apenas opinião.', ms: 3000 },
       { at: 5200, do: 'grab', who: 'vinicius', target: 'bomb' },
-      { at: 6200, do: 'say', who: 'vinicius', text: 'Está tudo sob controle.', ms: 2600 },
+      { at: 6200, do: 'say', who: 'vinicius', text: 'Está tudo sob controle. 👌', ms: 2600 },
     ],
     endings: [
       {
@@ -129,7 +129,7 @@ export const scenes = [
         colors: { top: '#3b3d46', bot: '#121317', ink: '#f2efe4', accent: '#d8d0b6' },
         cast: { who: 'vinicius', pose: 'zen', at: 'right' },
         line: 'A explosão também é indiferente.',
-        kicker: 'A BOMBA PERDEU O DEBATE 🧘',
+        kicker: 'A BOMBA PERDEU O DEBATE 🗿',
         button: 'FILOSOFAR MAIS UMA VEZ 🧘',
         timeline: [
           { at: 0, do: 'say', who: 'vinicius', text: 'A bomba explode. Eu não.', ms: 3000 },
@@ -154,7 +154,7 @@ export const scenes = [
         colors: { top: '#4a3a26', bot: '#14100b', ink: '#fdf1de', accent: '#f0c987' },
         cast: { who: 'vinicius', pose: 'wave', at: 'right' },
         line: 'Alguém tinha que ir. Não precisava ser você.',
-        kicker: 'ELE PEDIU LICENÇA ANTES 🕯️',
+        kicker: 'ELE PEDIU LICENÇA ANTES 🗿',
         button: 'ACENDER OUTRA VELA 🕯️',
         timeline: [
           { at: 0, do: 'say', who: 'vinicius', text: 'Amor fati.', ms: 2200 },
@@ -179,7 +179,7 @@ export const scenes = [
         colors: { top: '#57330a', bot: '#140a06', ink: '#ffeed8', accent: '#ffa63c' },
         cast: { who: 'peter', pose: 'burnt', at: 'left' },
         line: 'Ele analisou muito bem. Enquanto eu explodia.',
-        kicker: 'ANALISOU ATÉ EXPLODIR ⏳',
+        kicker: 'ANALISOU ATÉ EXPLODIR 🗿',
         button: 'PENSAR UM POUCO MENOS ⏳',
         timeline: [
           { at: 0, do: 'say', who: 'vinicius', text: 'Não estava sob meu controle.', ms: 2800 },
@@ -551,7 +551,7 @@ export const scenes = [
           { at: 60, do: 'hide', who: 'peter' },
           { at: 60, do: 'hide', who: 'maligno' },
           { at: 200, do: 'show', who: 'peter', x: 180 },
-          { at: 200, do: 'show', who: 'maligno', x: 470 },
+          { at: 200, do: 'show', who: 'maligno', x: 500 },
           // a troca de lugar é o momento-chave: os dois universos se cruzando
           {
             at: 220, do: 'burst', x: 325, y: 380,
