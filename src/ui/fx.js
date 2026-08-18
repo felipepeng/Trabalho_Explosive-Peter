@@ -45,20 +45,41 @@ export function createFx({ stage, layer, back }) {
     });
   }
 
-  /** Explosão: bola de fogo na posição do alvo + flash + shake.
-   *  Placeholder do D1, e o que a cena `ninguem-veio` usa de verdade. */
-  function explode(target, { intensity = 8 } = {}) {
+  /**
+   * Explosão: bola de fogo + flash + shake.
+   *
+   * A posição sai do alvo, mas `x`/`y` passam por cima — é o que permite
+   * escrever fogo de artifício no céu sem inventar um verbo novo.
+   * `ms` estica a bola de fogo (a explosão subaquática em câmera lenta).
+   */
+  function explode(target, { intensity = 8, x, y, ms } = {}) {
     const boom = document.createElement('div');
     boom.className = 'boom';
-    if (target) {
-      // Herda a posição do alvo nas mesmas unidades de design.
-      boom.style.setProperty('--x', target.style.getPropertyValue('--x') || 500);
-      boom.style.setProperty('--y', target.style.getPropertyValue('--y') || 470);
-    }
+
+    const at = {
+      x: x ?? target?.style.getPropertyValue('--x') ?? 500,
+      y: y ?? target?.style.getPropertyValue('--y') ?? 470,
+    };
+    boom.style.setProperty('--x', at.x || 500);
+    boom.style.setProperty('--y', at.y || 470);
+    if (ms) boom.style.setProperty('--boom-ms', `${ms}ms`);
+
     layer.appendChild(boom);
     flash();
     shake({ intensity });
     return boom;
+  }
+
+  /**
+   * Corte para tela preta, e FICA preto — o card do final aparece por cima.
+   * Não é um flash escuro: não tem teto de frequência nem volta sozinho.
+   */
+  function blackout({ ms = 400 } = {}) {
+    const el = document.createElement('div');
+    el.className = 'blackout';
+    el.style.setProperty('--blackout-ms', `${ms}ms`);
+    layer.appendChild(el);
+    return el;
   }
 
   /**
@@ -91,5 +112,5 @@ export function createFx({ stage, layer, back }) {
     return el;
   }
 
-  return { flash, shake, explode, flood, portal };
+  return { flash, shake, explode, blackout, flood, portal };
 }

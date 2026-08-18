@@ -18,6 +18,7 @@
  * D3: enter · say · shake · explode.
  * D6: flood · portal — os dois que o Michas e o Pedro Maligno precisam.
  * D7: exit · grab · flash · pose — o que as primeiras timelines pediram.
+ * D8: setTimer · hide · show · blackout — o Michas e o Pedro Maligno.
  */
 
 /** Duração da entrada, quando nem o beat nem o personagem dizem. */
@@ -102,14 +103,57 @@ export const actions = {
    * `vaporize` é declarativo de propósito: é o dado que decide quem some, não
    * um `if (ending.survives)` escondido aqui dentro (regra 1).
    */
-  explode(ctx, { target = 'bomb', intensity = 8, vaporize = [] }) {
+  explode(ctx, { target = 'bomb', intensity = 8, vaporize = [], x, y, ms }) {
     if (ctx.signal?.aborted) return;
 
     for (const name of vaporize) {
       ctx.stage.get(name)?.classList.add('is-vaporized');
     }
 
-    ctx.fx.explode(ctx.stage.get(target), { intensity });
+    ctx.fx.explode(ctx.stage.get(target), { intensity, x, y, ms });
+  },
+
+  /**
+   * `{ do:'setTimer', to:6, rate:4 }` — reescreve o mostrador.
+   *
+   * O countdown é um componente, não uma sequência de beats: este verbo só
+   * troca os três números que ele desenha. É assim que `mal-paradoxo`
+   * acelera de 6 para 0 sem inventar dez beats (ARCHITECTURE.md §6).
+   *
+   * ATENÇÃO: isto é o MOSTRADOR, não o relógio. Quem decide quando a rodada
+   * estoura é o `climaxAt` da cena — os dois precisam bater, e o validador
+   * não tem como conferir isso.
+   */
+  setTimer(ctx, { to, rate }) {
+    if (ctx.signal?.aborted) return;
+    ctx.countdown.set({ to, rate });
+  },
+
+  /** `{ do:'hide', who:'peter' }` — some na hora, sem transição. */
+  hide(ctx, { who }) {
+    if (ctx.signal?.aborted || !who) return;
+    ctx.stage.get(who)?.classList.add('is-hidden');
+  },
+
+  /**
+   * `{ do:'show', who:'peter', x:380 }` — reaparece, opcionalmente em outro
+   * lugar. `hide` + `show` com x trocado é uma troca de posições instantânea,
+   * que é o que `mal-troca` precisa.
+   */
+  show(ctx, { who, x, y }) {
+    if (ctx.signal?.aborted || !who) return;
+
+    const el = ctx.stage.get(who);
+    if (!el) return;
+    if (x !== undefined) el.style.setProperty('--x', x);
+    if (y !== undefined) el.style.setProperty('--y', y);
+    el.classList.remove('is-hidden');
+  },
+
+  /** `{ do:'blackout', ms:400 }` — corte para tela preta, e fica preto. */
+  blackout(ctx, { ms } = {}) {
+    if (ctx.signal?.aborted) return;
+    ctx.fx.blackout({ ms });
   },
 
   /**

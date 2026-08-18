@@ -277,10 +277,13 @@
 .actor.is-grabbing .arm-l { transform: rotate(76deg); }
 .actor.is-grabbing .arm-r { transform: rotate(-76deg); }
 
+/* O transform é o MESMO de um ator solto — translate(-50%, -100%) — de
+   propósito: assim os @keyframes de entrada e saída funcionam sem exceção
+   quando o objeto carregado é jogado para o céu ou sai de cena junto. */
 .actor > .actor.is-held {
   left: 50%;
-  top: 47%; /* altura do peito no rig */
-  transform: translate(-50%, -50%);
+  top: 78%; /* a base do objeto na altura do quadril de quem segura */
+  transform: translate(-50%, -100%);
   --build: 1; /* não herda o achatamento de quem está carregando */
   z-index: 4; /* na frente do corpo de quem segura */
 }
@@ -316,6 +319,21 @@
 @keyframes pose-throw {
   0% { transform: rotate(calc(10deg * var(--juice, 1))); }
   100% { transform: rotate(calc(-14deg * var(--juice, 1))); }
+}
+
+/* virou item de Minecraft: menor, girando e flutuando */
+.actor.pose-item > .rig {
+  height: calc(72 * var(--u));
+  animation: pose-item 1600ms ease-in-out infinite;
+}
+
+@keyframes pose-item {
+  0%, 100% { transform: scaleX(var(--build, 1)) translateY(0) rotate(0deg); }
+  50% {
+    transform: scaleX(var(--build, 1))
+               translateY(calc(-12 * var(--u)))
+               rotate(calc(10deg * var(--juice, 1)));
+  }
 }
 
 /* pavio cortado: some o pavio e a faísca. A bomba continua ali, muda o pavio. */

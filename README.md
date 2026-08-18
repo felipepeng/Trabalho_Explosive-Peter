@@ -26,11 +26,11 @@ Sem dependências de runtime: HTML/CSS/JS vanilla + Vite só como build.
 
 ## Status
 
-**D7 concluído.** (M2 fecha no D8, com as duas últimas cenas.) Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, ending card e restart. A rodada é montada pelo `director` a partir de `src/data/scenes.js` (verbos `enter`, `say`, `shake`, `explode`), sorteada pelo `picker` com anti-repetição, e o progresso persiste em `localStorage` com o contador `X/N` no card.
+**D8 concluído — marco M2.** Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, ending card e restart. A rodada é montada pelo `director` a partir de `src/data/scenes.js` (verbos `enter`, `say`, `shake`, `explode`), sorteada pelo `picker` com anti-repetição, e o progresso persiste em `localStorage` com o contador `X/N` no card.
 
-O rig SVG é compartilhado: os cinco personagens saem do mesmo `<template>`, vestidos por `src/data/characters.js`. Dez verbos existem: `enter`, `exit`, `say`, `grab`, `shake`, `flash`, `explode`, `pose`, `flood`, `portal`.
+O rig SVG é compartilhado: os cinco personagens saem do mesmo `<template>`, vestidos por `src/data/characters.js`. Quatorze verbos existem — todos os do GDD §7.1 menos `sfx`, mais `pose` e `blackout`.
 
-Conteúdo escrito: **3 cenas das 6, 7 finais dos 14**. Faltam `michas-mar` e `maligno-portal` (D8) e a cena curta rara `bomba-impaciente`.
+Conteúdo escrito: **5 cenas, 14 finais** — todo o catálogo do GDD §6 menos a cena curta rara `bomba-impaciente`, que está na ordem de corte.
 
 Um validador roda no boot em dev e reprova verbo inexistente, `id` de final repetido, posição fora do espaço de design e — o que mais importa — qualquer combinação cena × final que passe de 15 segundos.
 

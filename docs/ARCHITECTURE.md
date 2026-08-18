@@ -113,9 +113,13 @@ O final é sorteado **junto com a cena**, no início da rodada.
 
 **`actions.js`** — os verbos do GDD §7.1, mais o `pose`. Um objeto plano de funções `(ctx, beat) => void`.
 
-Escritos: `enter · exit · say · grab · shake · flash · explode · pose · flood · portal`. Faltam `sfx` (D9), `setTimer` (`mal-paradoxo`, D8) e `hide`/`show`, que ainda não foram pedidos por nenhuma timeline.
+Escritos: `enter · exit · say · grab · shake · flash · explode · pose · setTimer · hide · show · blackout · flood · portal`. Dos 13 do GDD só falta `sfx` (D9).
 
 **`pose`** não estava na lista original e substitui uma família inteira: `{ do:'pose', who:'jp', as:'jump' }` liga a classe `pose-jump` e o gesto mora num `@keyframes`. Sem ele, cada gesto novo (pular, esticar, arremessar, cortar o pavio) viraria um verbo, e o vocabulário cresceria com o conteúdo em vez de ficar estável.
+
+**`blackout`** também é novo, e pela mesma lógica do `pose`: um flash preto que não volta não é um `flash` (que tem teto de frequência e sempre desaparece). São 8 linhas, e é o corte para tela preta do `mal-censurado`.
+
+⚠️ **`setTimer` mexe no MOSTRADOR, não no relógio.** Quem decide quando a rodada estoura é o `climaxAt` da cena. Em `maligno-portal` os dois números foram calculados na mão para bater (o mostrador zera em 7700 ms, o clímax é 7800 ms) — e o validador **não** consegue conferir isso, porque teria que simular o countdown. É o único acoplamento manual do conteúdo.
 
 **`grab` reparenta.** O alvo vira filho de quem pegou. Não é detalhe de implementação: é o que faz um `exit` seguinte levar a bomba junto sem nenhum verbo saber disso — `vin-memento` ("abraça a bomba, sai de cena e explode sozinho") custa dois beats por causa disso.
 

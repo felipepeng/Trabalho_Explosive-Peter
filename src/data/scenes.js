@@ -193,4 +193,159 @@ export const scenes = [
       },
     ],
   },
+
+  /* ================================================================ *
+   * §6.3 — Michas dos Mares.
+   * A base da tela inunda aos 3s e ele emerge com o tridente. É a
+   * cena com mais finais (4), e a única com um raro.
+   * ================================================================ */
+  {
+    id: 'michas-mar',
+    character: 'michas',
+    weight: 3,
+    invadeAt: 3000,
+    climaxAt: 10000,
+    timeline: [
+      { at: 0, do: 'flood', height: 140, ms: 1100 },
+      { at: 500, do: 'enter', who: 'michas', x: 760 },
+      { at: 1200, do: 'say', who: 'michas', text: 'O MAR OBEDECE.', ms: 1800 },
+      { at: 4400, do: 'grab', who: 'michas', target: 'bomb' },
+    ],
+    endings: [
+      {
+        // Arremessa a bomba ao céu com o tridente. Fogo de artifício.
+        // Três estouros seguidos em posições diferentes do céu — a piada é
+        // de ritmo, não de efeito novo.
+        id: 'mic-correnteza',
+        title: 'ENCANTAMENTO NÍVEL III',
+        weight: 3,
+        survives: true,
+        timeline: [
+          { at: 0, do: 'pose', who: 'michas', as: 'throw' },
+          { at: 250, do: 'exit', who: 'bomb', to: 'above', ms: 600 },
+          { at: 1000, do: 'explode', x: 640, y: 120, intensity: 3, vaporize: ['bomb'] },
+          { at: 1300, do: 'explode', x: 480, y: 175, intensity: 2 },
+          { at: 1650, do: 'explode', x: 790, y: 140, intensity: 2 },
+        ],
+      },
+      {
+        // O mar apaga o pavio, mas afoga o Pedro. Bomba desarmada, Pedro morto.
+        id: 'mic-afogado',
+        title: 'NÃO ERA ESSE TIPO DE SALVAMENTO',
+        weight: 3,
+        survives: false,
+        timeline: [
+          { at: 0, do: 'flood', height: 210, ms: 900 },
+          { at: 700, do: 'pose', who: 'bomb', as: 'cut' },
+          { at: 900, do: 'say', who: 'michas', text: 'PAVIO APAGADO.', ms: 2000 },
+          { at: 1500, do: 'exit', who: 'peter', to: 'below', ms: 900 },
+        ],
+      },
+      {
+        // A bomba não liga para a água. Explosão subaquática em câmera lenta.
+        id: 'mic-subaquatica',
+        title: "À PROVA D'ÁGUA",
+        weight: 2,
+        survives: false,
+        timeline: [
+          { at: 0, do: 'flood', height: 210, ms: 900 },
+          { at: 900, do: 'say', who: 'michas', text: 'ISSO NÃO DEVERIA—', ms: 1600 },
+          {
+            at: 1400,
+            do: 'explode',
+            target: 'bomb',
+            intensity: 6,
+            ms: 2200, // câmera lenta: a bola de fogo abre em 2,2s em vez de 0,7s
+            vaporize: ['peter', 'bomb', 'michas'],
+          },
+        ],
+      },
+      {
+        // RARO. A bomba vira item flutuante, Michas cata e sai andando.
+        id: 'mic-drop',
+        title: 'DROP RARO',
+        weight: 1,
+        survives: true,
+        timeline: [
+          { at: 0, do: 'pose', who: 'bomb', as: 'item' },
+          { at: 500, do: 'say', who: 'michas', text: 'DROPOU.', ms: 1800 },
+          { at: 1400, do: 'exit', who: 'michas', to: 'right', ms: 1200 },
+        ],
+      },
+    ],
+  },
+
+  /* ================================================================ *
+   * §6.4 — Pedro Maligno.
+   * Uma fenda roxa se abre atrás do Pedro aos 5s e ele sai dela. É a
+   * cena RÁPIDA do jogo: ele mexe no relógio assim que chega, então o
+   * clímax vem aos 7,8s em vez dos 10s de todas as outras. O timer é
+   * mentiroso (GDD §3.2) e esta é a cena que prova.
+   * ================================================================ */
+  {
+    id: 'maligno-portal',
+    character: 'maligno',
+    weight: 3,
+    invadeAt: 5000,
+    // O mostrador zera em 7700ms por causa do setTimer abaixo. Os dois números
+    // precisam bater na mão: o validador não tem como conferir isso.
+    climaxAt: 7800,
+    timeline: [
+      { at: 0, do: 'portal', x: 380, y: 320, w: 150, h: 240 },
+      { at: 300, do: 'enter', who: 'maligno', x: 380 },
+      { at: 900, do: 'say', who: 'maligno', text: 'Oi, eu.', ms: 1600 },
+      // de ~3,8 para 6, correndo 4× mais rápido: zera aos 7700ms
+      { at: 1200, do: 'setTimer', to: 6, rate: 4 },
+      { at: 1300, do: 'shake', intensity: 3 },
+    ],
+    endings: [
+      {
+        // Acelera o timer de 6 para 0. Explosão dupla, os dois morrem.
+        id: 'mal-paradoxo',
+        title: 'PARADOXO',
+        weight: 3,
+        survives: false,
+        timeline: [
+          { at: 0, do: 'explode', target: 'bomb', intensity: 9, vaporize: ['peter', 'bomb'] },
+          { at: 700, do: 'explode', x: 380, y: 400, intensity: 7, vaporize: ['maligno'] },
+        ],
+      },
+      {
+        // Troca de lugar com o Pedro. O bom é salvo, o maligno explode rindo.
+        id: 'mal-troca',
+        title: 'TROCA DE UNIVERSOS',
+        weight: 3,
+        survives: true,
+        timeline: [
+          { at: 0, do: 'flash', ms: 200 },
+          { at: 60, do: 'hide', who: 'peter' },
+          { at: 60, do: 'hide', who: 'maligno' },
+          { at: 200, do: 'show', who: 'peter', x: 180 },
+          { at: 200, do: 'show', who: 'maligno', x: 470 },
+          { at: 500, do: 'say', who: 'maligno', text: 'HAHAHA— ah.', ms: 1600 },
+          {
+            at: 1400,
+            do: 'explode',
+            target: 'bomb',
+            intensity: 9,
+            vaporize: ['bomb', 'maligno'],
+          },
+        ],
+      },
+      {
+        // Desarma a bomba só para fazer algo pior. Corte para tela preta.
+        // Pedro tecnicamente não explodiu — por isso `survives: null`, e o
+        // contador de mortes e de salvamentos não se mexe. É a piada.
+        id: 'mal-censurado',
+        title: '[DADOS CORROMPIDOS]',
+        weight: 2,
+        survives: null,
+        timeline: [
+          { at: 0, do: 'pose', who: 'bomb', as: 'cut' },
+          { at: 300, do: 'say', who: 'maligno', text: 'Isso seria rápido demais.', ms: 1800 },
+          { at: 1500, do: 'blackout', ms: 260 },
+        ],
+      },
+    ],
+  },
 ];

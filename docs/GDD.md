@@ -65,7 +65,7 @@ O jogo inicia sozinho ao carregar a página — sem menu, sem botão de start, s
 | 2 | Motor de cenas data-driven | `SceneDirector` executando timeline declarativa em milissegundos |
 | 3 | Sorteio com anti-repetição | Cooldown de histórico + peso + bônus de novidade |
 | 4 | **5 personagens** | Pedro (vítima) + Vinicius + Michas + Pedro Maligno + JP |
-| 5 | **6 cenas / 14 finais** | Catálogo completo em §6 |
+| 5 | **6 cenas / 15 finais** | Catálogo completo em §6. Entregues até o D8: 5 cenas / 14 finais (falta a §6.6) |
 | 6 | Meta-progressão | localStorage: finais vistos, contador `X/N`, "Pedros perdidos" |
 | 7 | Galeria de finais | Grade com finais descobertos; os não vistos aparecem como `???` |
 | 8 | Arte SVG/CSS com rig compartilhado | Sem emoji nos sprites (emoji permitido em texto) |
@@ -178,7 +178,7 @@ Sobe de baixo da tela aos ~3s, já gritando.
 | --- | --- | --- | --- |
 | `bomb-cedo` | **ELA NÃO ESPEROU** ⭐ | 1 (raro) | A bomba explode aos 4s, no meio do countdown. Rodada de 6 segundos |
 
-**Total: 14 finais**, sendo 2 raros. Meta de conteúdo mínima para a entrega: **10 finais**. Os quatro últimos (`vin-dicotomia`, `mic-drop`, `mal-censurado`, `bomb-cedo`) são o colchão sacrificável se o prazo apertar.
+**Total: 15 finais** listados acima, sendo 2 raros — o §4.1 e o cabeçalho desta seção dizem 14 porque não contavam o `bomb-cedo` da §6.6. Os 14 escritos até o D8 são todos menos ele. Meta de conteúdo mínima para a entrega: **10 finais**. Os quatro últimos (`vin-dicotomia`, `mic-drop`, `mal-censurado`, `bomb-cedo`) são o colchão sacrificável se o prazo apertar.
 
 ---
 
