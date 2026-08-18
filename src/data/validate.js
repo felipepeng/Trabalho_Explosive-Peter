@@ -18,10 +18,18 @@ const AT_KEYS = ['x', 'y'];
 /** Pictográficos em geral. Não pega tudo, mas pega o que um humano digita. */
 const EMOJI = /\p{Extended_Pictographic}/u;
 
+/** As células da grade do ending card (base.css). `at` fora desta lista cai
+ *  na direita sem avisar ninguém — e o final ficaria com o personagem no
+ *  lugar errado sem nenhum erro na tela. */
+const CAST_AT = [
+  'left', 'right', 'top', 'top-left', 'top-right', 'bottom-left', 'bottom-right',
+];
+
 export function validate(scenes, {
   verbs = [],
   themes = [],
   sfx = [],
+  characters = [],
   maxRoundMs = 15000,
   dramaticPauseMs = 600,
   joinGap = 400,
@@ -32,6 +40,7 @@ export function validate(scenes, {
   const known = new Set(verbs);
   const knownThemes = new Set(themes);
   const knownSfx = new Set(sfx);
+  const knownChars = new Set(characters);
   const seenEndingIds = new Map();
 
   for (const scene of scenes) {
@@ -73,6 +82,26 @@ export function validate(scenes, {
       }
       checkSfx(label, ending.sfx);
 
+      // O card do D11 é uma pessoa falando: sem `cast.who` não há quem fale,
+      // e sem `line` o personagem aparece mudo. Nenhum dos dois quebra o jogo
+      // (P5), mas os dois estragam a tela — e o momento de descobrir isso é
+      // enquanto o final está sendo escrito.
+      const quem = ending.cast?.who;
+      if (!quem) problems.push(`${label}: falta cast.who (quem posa e fala no card)`);
+      else if (knownChars.size && !knownChars.has(quem)) {
+        problems.push(`${label}: cast.who "${quem}" não existe em characters.js`);
+      }
+
+      const onde = ending.cast?.at;
+      if (onde && !CAST_AT.includes(onde)) {
+        problems.push(`${label}: cast.at "${onde}" não existe (${CAST_AT.join(' | ')})`);
+      }
+
+      if (!ending.line) problems.push(`${label}: falta line (a fala do card)`);
+      else if (EMOJI.test(ending.line)) {
+        problems.push(`${label}: line com emoji ("${ending.line}") — line é fala, não interface`);
+      }
+
       // Emoji em fala de personagem é proibido (regra de tom do projeto).
       for (const beat of ending.timeline ?? []) checkFala(label, beat);
 
@@ -86,7 +115,7 @@ export function validate(scenes, {
     }
   }
 
-  /** Emoji pode em interface, nunca em `say`. Ver o cabeçalho de scenes.js. */
+  /** Emoji pode em interface, nunca em fala — nem em `say`, nem em `line`. */
   function checkFala(label, beat) {
     if (beat.do !== 'say' || !beat.text) return;
     if (EMOJI.test(beat.text)) {

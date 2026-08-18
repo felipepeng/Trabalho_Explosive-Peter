@@ -7,10 +7,16 @@ export const COUNTDOWN_MS = 10_000;
 export const URGENT_AT = 3;
 
 /** Rede de segurança: rodada que passar disso é forçada ao clímax. */
-export const MAX_ROUND_MS = 20_000;
+export const MAX_ROUND_MS = 26_000;
 
-/** Teto de design, vigiado pelo validador em dev (ARCHITECTURE.md §9). */
-export const MAX_ROUND_MS_DESIGN = 15_000;
+/** Teto de design, vigiado pelo validador em dev (ARCHITECTURE.md §9).
+ *
+ *  Era 15s (GDD, pilar 2) e virou 20s: as falas passavam rápido demais para
+ *  serem lidas, e o clímax agora cai DEPOIS do mostrador zerar de propósito —
+ *  o timer chegar a zero e a cena continuar é a piada, não um bug. O teto
+ *  continua existindo e continua sendo defendido pelo validador; o que mudou
+ *  foi o número. */
+export const MAX_ROUND_MS_DESIGN = 20_000;
 
 /** Gap entre o último beat da cena e o início do final, quando não há climaxAt. */
 export const JOIN_GAP = 400;

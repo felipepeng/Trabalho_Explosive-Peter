@@ -31,10 +31,10 @@ import {
 import { createClock, bindVisibility } from './engine/clock.js';
 import { createDirector, buildRound } from './engine/director.js';
 import { actions } from './engine/actions.js';
-import { pickScene, pickEnding, weightedPick } from './engine/picker.js';
+import { pickScene, pickEnding } from './engine/picker.js';
 import { createAudio, bindUnlock } from './engine/audio.js';
 import { scenes } from './data/scenes.js';
-import { messages } from './data/messages.js';
+import { characters } from './data/characters.js';
 import { validate } from './data/validate.js';
 import * as progress from './state/progress.js';
 import { createCountdown } from './ui/countdown.js';
@@ -72,7 +72,6 @@ const el = {
   fx: document.getElementById('fx-layer'),
   fxBack: document.getElementById('fx-back'),
   timer: document.getElementById('timer'),
-  message: document.getElementById('message'),
   deaths: document.getElementById('hud-deaths'),
   card: document.getElementById('ending-card'),
 };
@@ -88,7 +87,7 @@ const countdown = createCountdown(el.timer, clock);
 const stage = createStage({ cast: el.cast, layers: [el.fx, el.fxBack] });
 const fx = createFx({ stage: el.stage, layer: el.fx, back: el.fxBack });
 const audio = createAudio();
-const hud = createHud({ deaths: el.deaths, message: el.message });
+const hud = createHud({ deaths: el.deaths });
 const endingCard = createEndingCard(el.card, { onRestart: startRound, endings: ALL_ENDINGS });
 
 let phase = PHASE.BOOT;
@@ -110,10 +109,6 @@ const session = {
   history: [],
   /** último final visto em cada cena, para não repetir o desfecho */
   lastEndingByScene: Object.create(null),
-  /** o final da rodada ANTERIOR, que decide o tom da barra inferior */
-  lastEnding: null,
-  /** e a última frase, para não repetir duas vezes seguidas */
-  lastMessage: null,
 };
 
 
@@ -169,45 +164,6 @@ function pickRound() {
   return { scene, ending };
 }
 
-/**
- * A frase da barra inferior comenta a rodada ANTERIOR. As tags elegíveis se
- * somam: na décima rodada depois de uma morte valem `after-death` e
- * `milestone` juntas.
- */
-function pickMessage() {
-  const saved = progress.get();
-  const last = session.lastEnding;
-  const tags = [];
-
-  if (!last) tags.push('boot');
-  else if (last.survives === true) tags.push('after-save');
-  else if (last.survives === false) tags.push('after-death');
-  else tags.push('after-null');
-
-  if (last && saved.rounds > 0 && saved.rounds % 10 === 0) tags.push('milestone');
-  if (last && saved.seenEndings.length >= TOTAL_ENDINGS) tags.push('complete');
-
-  const elegiveis = messages.filter((m) => tags.includes(m.tag));
-  const semRepetir = elegiveis.filter((m) => m.text !== session.lastMessage);
-  const escolhida = weightedPick(
-    semRepetir.length ? semRepetir : elegiveis,
-    (m) => m.weight ?? 1,
-  );
-
-  session.lastMessage = escolhida?.text ?? null;
-
-  return {
-    text: escolhida?.text ?? 'Não tem como salvar ele.',
-    vars: {
-      rounds: saved.rounds + 1,
-      deaths: saved.deaths,
-      saves: saved.saves,
-      seen: saved.seenEndings.length,
-      total: TOTAL_ENDINGS,
-    },
-  };
-}
-
 /* ------------------------------------------------------------------ *
  * Transições
  * ------------------------------------------------------------------ */
@@ -232,8 +188,6 @@ function startRound() {
   stage.setUpRound();
   countdown.reset(COUNTDOWN_MS / 1000);
   countdown.mount();
-  const frase = pickMessage();
-  hud.setMessage(frase.text, frase.vars);
 
   const { scene, ending } = pickRound();
   const { beats, invadeAt, climaxAt, endsAt } = buildRound(scene, ending, { joinGap: JOIN_GAP });
@@ -301,7 +255,6 @@ function toEnding(id) {
 
   const saved = progress.get();
   hud.setDeaths(saved.deaths);
-  session.lastEnding = round.ending;
 
   // O veredito tem som: o final pode escolher o seu, senão sai do `survives`.
   audio.play(round.ending.sfx ?? VEREDITO[String(round.ending.survives)]);
@@ -330,6 +283,7 @@ if (import.meta.env?.DEV) {
     verbs: Object.keys(actions),
     themes: CARD_THEMES,
     sfx: audio.nomes,
+    characters: Object.keys(characters),
     maxRoundMs: MAX_ROUND_MS_DESIGN,
     dramaticPauseMs: DRAMATIC_PAUSE_MS,
     joinGap: JOIN_GAP,
@@ -345,7 +299,7 @@ if (import.meta.env?.DEV) {
   //   beat({ do: 'say', who: 'peter', text: 'oi', ms: 1500 })
   const beat = (b) => actions[b.do]?.({ clock, stage, fx, countdown, signal: round?.signal }, b);
   Object.assign(window, {
-    clock, countdown, stage, fx, audio, director, actions, scenes, messages,
+    clock, countdown, stage, fx, audio, director, actions, scenes,
     beat, progress, session,
     get phase() { return phase; },
     get round() { return round; },

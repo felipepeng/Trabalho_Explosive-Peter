@@ -1,28 +1,23 @@
 /* Explosive Peter — o HUD fora do timer.
  *
- * O "Pedros perdidos" do canto e a barra inferior (GDD §7.4 e §3.2).
+ * Sobrou pouco: o "Pedros perdidos" do canto (GDD §7.4).
  *
- * A interpolação das frases mora aqui de propósito (ARCHITECTURE.md §4):
- * `data/messages.js` guarda o texto com `{rounds}` cru, e quem sabe os números
- * da rodada é o HUD. Assim o dado continua inerte.
+ * D11: a barra inferior saiu daqui. Ela virou SLOGAN FIXO escrito no
+ * index.html — "Não tem como salvar Ele." em toda rodada, sem exceção — e a
+ * linha de cima do HUD ("O Pedro não tem muito tempo") também é estática.
+ * Nenhuma das duas comenta a rodada, e nenhuma revela QUAL cena está rodando:
+ * o nome do final só aparece depois que o Pedro morre, no card.
+ *
+ * O preço dessa decisão está anotado no cabeçalho de `data/messages.js`.
  */
 
-export function createHud({ deaths, message }) {
+export function createHud({ deaths }) {
   return {
     setDeaths(n) {
       if (!deaths) return;
       // Escondido enquanto é zero: não há piada em "Pedros perdidos: 0".
       deaths.hidden = !n;
       deaths.textContent = `💀 Pedros perdidos: ${n}`;
-    },
-
-    /** `setMessage('Pedro nº {rounds}.', { rounds: 12 })` */
-    setMessage(text, vars = {}) {
-      if (!message || !text) return;
-      message.textContent = String(text).replace(
-        /\{(\w+)\}/g,
-        (cru, chave) => (chave in vars ? vars[chave] : cru),
-      );
     },
   };
 }

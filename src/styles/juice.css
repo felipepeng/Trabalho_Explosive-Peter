@@ -177,6 +177,123 @@ body.is-frozen *::after {
   to { transform: translate(-50%, -100%); }
 }
 
+/* ---------- partículas (verbo `burst`) ---------- */
+/* Um <span> por pedaço, e toda a física é este @keyframes: sai do ponto, sobe
+   no leque sorteado pelo JS, e cai. Três paradas em vez de duas para o
+   caminho virar ARCO — com duas, tudo voa em linha reta e parece deslizar.
+
+   `--juice` multiplica a distância, então quem pediu menos movimento vê o
+   estilhaço mal sair do lugar em vez de atravessar a tela. */
+
+#fx-layer .bit {
+  position: absolute;
+  left: calc(var(--ox) + var(--x, 500) * var(--u));
+  top: calc(var(--oy) + var(--y, 470) * var(--u));
+  width: calc(var(--bit-size, 26) * var(--u));
+  height: calc(var(--bit-size, 26) * var(--u));
+  margin: calc(var(--bit-size, 26) * var(--u) / -2);
+
+  background: var(--c-hot);
+  border-radius: 32%;
+  box-shadow: 0 0 calc(6 * var(--u)) rgba(255, 170, 90, 0.8);
+
+  animation: bit-fly var(--bit-ms, 900ms) cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+}
+
+/* emoji não tem fundo nem sombra colorida: ele JÁ é o desenho */
+#fx-layer .bit.is-emoji {
+  background: none;
+  box-shadow: none;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--bit-size, 26) * var(--u));
+  line-height: 1;
+  filter: drop-shadow(0 0 calc(5 * var(--u)) rgba(255, 255, 255, 0.45));
+}
+
+@keyframes bit-fly {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(0.6);
+    opacity: 1;
+  }
+  45% {
+    transform:
+      translate(calc(var(--dx, 0) * 0.62 * var(--u) * var(--juice)),
+                calc(var(--dy, 0) * 0.62 * var(--u) * var(--juice)))
+      rotate(calc(var(--spin, 180deg) * 0.5))
+      scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform:
+      translate(calc(var(--dx, 0) * var(--u) * var(--juice)),
+                calc((var(--dy, 0) + var(--drop, 100)) * var(--u) * var(--juice)))
+      rotate(var(--spin, 180deg))
+      scale(0.55);
+    opacity: 0;
+  }
+}
+
+/* ---------- onda de choque (dentro do verbo `explode`) ---------- */
+/* Um anel fino que corre para fora. O clarão diz "acendeu"; o anel diz
+   "empurrou" — são coisas diferentes e a explosão precisa das duas. */
+
+#fx-layer .shock {
+  position: absolute;
+  left: calc(var(--ox) + var(--x, 500) * var(--u));
+  top: calc(var(--oy) + var(--y, 470) * var(--u));
+  width: calc(60 * var(--u));
+  height: calc(60 * var(--u));
+  margin: calc(-30 * var(--u));
+  border-radius: 50%;
+  border: calc(5 * var(--u)) solid rgba(255, 216, 150, 0.9);
+  box-shadow: 0 0 calc(20 * var(--u)) rgba(255, 170, 80, 0.55);
+  transform: scale(0.2);
+  animation: shock var(--boom-ms, 700ms) cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes shock {
+  0% { transform: scale(0.2); opacity: 0.95; border-width: calc(6 * var(--u)); }
+  100% {
+    transform: scale(calc(3 + 5 * var(--juice)));
+    opacity: 0;
+    border-width: calc(1 * var(--u));
+  }
+}
+
+/* ---------- cenário de emoji (verbo `prop`) ---------- */
+/* PARADO. Ancorado pelo pé, como um ator, para poder ser posto na mesma marca
+   de qualquer personagem. */
+
+#fx-back .prop-cena,
+#fx-layer .prop-cena {
+  position: absolute;
+  left: calc(var(--ox) + var(--x, 500) * var(--u));
+  top: calc(var(--oy) + var(--y, 470) * var(--u));
+  transform: translate(-50%, -100%);
+  font-size: calc(var(--prop-size, 60) * var(--u));
+  line-height: 1;
+  filter: drop-shadow(0 calc(4 * var(--u)) 0 rgba(0, 0, 0, 0.45));
+  animation: prop-pop 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes prop-pop {
+  from { transform: translate(-50%, -100%) scale(0.4); opacity: 0; }
+  to { transform: translate(-50%, -100%) scale(1); opacity: 1; }
+}
+
+/* `sway: true` troca o pop pelo balánço — duas animações no mesmo transform
+   brigariam, e a segunda ganharia sem avisar. */
+#fx-back .prop-cena.is-sway,
+#fx-layer .prop-cena.is-sway {
+  animation: prop-sway 3200ms ease-in-out infinite alternate;
+}
+
+@keyframes prop-sway {
+  from { transform: translate(-50%, -100%) rotate(calc(-2deg * var(--juice))); }
+  to { transform: translate(-50%, -100%) rotate(calc(2deg * var(--juice))); }
+}
+
 /* ---------- inundação (verbo `flood`) ---------- */
 /* Nasce na linha do chão menos --flood-h e desce até a borda REAL da janela,
    pelo mesmo motivo do #ground: sobra na base não pode virar barra preta.
@@ -216,6 +333,27 @@ body.is-frozen *::after {
 @keyframes flood-shimmer {
   from { transform: translateX(0); }
   to { transform: translateX(calc(-36 * var(--u))); }
+}
+
+/* A CRISTA. Uma faixa de bolotas na linha da água, indo e voltando: é o que
+   transforma "retângulo azul subindo" em "água mexendo". Fica meio corpo acima
+   da borda para a linha nunca parecer reta. */
+#fx-layer .flood::after {
+  content: "";
+  position: absolute;
+  left: calc(-60 * var(--u));
+  right: calc(-60 * var(--u));
+  top: calc(-9 * var(--u));
+  height: calc(18 * var(--u));
+  background:
+    radial-gradient(closest-side, rgba(190, 238, 255, 0.95) 92%, rgba(190, 238, 255, 0) 100%)
+    0 0 / calc(46 * var(--u)) calc(18 * var(--u)) repeat-x;
+  animation: flood-crest 1900ms ease-in-out infinite alternate;
+}
+
+@keyframes flood-crest {
+  from { transform: translate(0, 0); }
+  to { transform: translate(calc(-23 * var(--u)), calc(-3 * var(--u) * var(--juice))); }
 }
 
 /* ---------- fenda (verbo `portal`) ---------- */

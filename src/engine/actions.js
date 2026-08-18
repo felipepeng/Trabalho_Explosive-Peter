@@ -43,6 +43,21 @@ const soar = (ctx, beat, padrao) => {
   ctx.audio?.play(beat.sfx === undefined ? padrao : beat.sfx);
 };
 
+/**
+ * Onde um beat acontece: em cima de um ator (`who`) ou numa marca crua
+ * (`x`/`y`). Sempre em unidades de design, nunca em pixel.
+ */
+const ondeFica = (ctx, { who, x, y }) => {
+  const ator = who ? ctx.stage.get(who) : null;
+  // `Number('')` é 0, e 0 aqui significa "o ator não tem marca", não "canto da
+  // tela" — por isso o `|| null` antes de cair no padrão.
+  const marca = (prop) => Number(ator?.style.getPropertyValue(prop)) || null;
+  return {
+    x: x ?? marca('--x') ?? 500,
+    y: y ?? marca('--y') ?? 470,
+  };
+};
+
 export const actions = {
   /**
    * Põe um ator em cena vindo de fora da janela.
@@ -260,9 +275,57 @@ export const actions = {
    * `{ do:'flood', height:140, ms:900 }` — a base da tela inunda.
    * `height` em unidades de design, contado da linha do chão para cima.
    */
+  /**
+   * `{ do:'burst', who:'bomb', emojis:['X'], count:14, power:220, dir:0 }`
+   *
+   * Partículas num MOMENTO-CHAVE: a bomba estourando, o soco, a onda batendo,
+   * o respingo. Não é enfeite de fundo — se estiver ligado o tempo todo, some
+   * o impacto de quando importa.
+   *
+   * Sem `emojis` sai estilhaço geométrico; com `emojis` sai emoji voando.
+   * `gravity: -1` faz o pedaço SUBIR, que é como bolha vira bolha.
+   */
+  burst(ctx, beat) {
+    if (ctx.signal?.aborted) return;
+    ctx.fx.burst({ ...beat, ...ondeFica(ctx, beat) });
+    soar(ctx, beat, null); // mudo por padrão: quem faz barulho é a ação, não o confete
+  },
+
+  /**
+   * `{ do:'prop', emoji:'X', x:120, y:470, size:90 }` — cenário parado.
+   *
+   * O oposto do `burst`: entra, fica e não voa. Nasceu para a estátua que
+   * assiste à cena do Vinicius sem mover um músculo. `front: true` traz para a
+   * frente do elenco; o padrão é atrás, porque cenário não tapa ator.
+   */
+  prop(ctx, beat) {
+    if (ctx.signal?.aborted) return;
+    ctx.fx.prop(beat);
+    soar(ctx, beat, null);
+  },
+
   flood(ctx, beat = {}) {
     if (ctx.signal?.aborted) return;
-    ctx.fx.flood({ height: beat.height, ms: beat.ms });
+    const altura = beat.height ?? 140;
+    ctx.fx.flood({ height: altura, ms: beat.ms });
+
+    // A água CHEGANDO é momento-chave: respingo na linha da água, subindo.
+    // `drops: false` desliga, porque a mesma água pode subir de novo depois e
+    // dois respingos seguidos viram enfeite.
+    if (beat.drops !== false) {
+      ctx.fx.burst({
+        x: beat.x ?? 500,
+        y: 450 - altura,
+        emojis: Array.isArray(beat.drops) ? beat.drops : ['💧', '🫧'],
+        count: 14,
+        power: 150,
+        spread: 150,
+        dir: 0,
+        gravity: 1,
+        size: 22,
+        ms: 850,
+      });
+    }
     soar(ctx, beat, 'splash');
   },
 
