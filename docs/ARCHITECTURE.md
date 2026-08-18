@@ -200,6 +200,10 @@ Duas consequências que valem virar regra:
 - **Medida em CSS é `calc(N * var(--u))`, nunca `em`.** `em` parece equivalente e não é: dentro de um elemento que mudou o próprio `font-size` (o `#timer`, por exemplo), `em` passa a valer aquele novo tamanho e a medida sai multiplicada por 100.
 - **Fora-de-tela se ancora na borda real da janela**, não na área segura (classes `.is-off-left/right/above/below`). Um ator escondido em `x: -200` apareceria parado na sobra lateral de uma janela larga.
 
+Entrada em cena é a mesma ideia: cada ator publica `--from-left/right/above/below` — a distância entre a marca dele e a borda real da janela — e o verbo `enter` só liga `.is-enter-<lado>`. A animação é `transform` puro, e a distância se recalcula sozinha quando a janela muda de tamanho.
+
+⚠️ **`animationend` borbulha.** O palco tem descendentes animados (flash, tique do timer, respiração do Pedro); quem usa o evento para desligar a própria classe precisa filtrar por `ev.target`. Sem isso, o flash de 260 ms corta a tremida de 320 ms.
+
 **Quem mexe no DOM:** `stage.js` cria e destrói atores (clonando `<template>` do `index.html`); `actions.js` só modifica o que já existe.
 
 **Âncoras do `index.html`:** `#stage #peter #bomb #timer #message #fx-layer #hud #ending-card`.
@@ -303,6 +307,7 @@ export default { base: './' }
 | Novidade contínua | Bônus booleano visto/não visto | Cena meio explorada continua sendo oferecida |
 | Coleção dentro do ending card | Galeria como tela | Sem interação nova, sem sexto estado, mais barato |
 | Restart num `<button>` dentro do card | Card inteiro clicável | Alvo explícito; teclado e foco de graça; o card fica só como leitura |
+| `explode` recebe `vaporize: [...]` | O verbo consultar `ending.survives` | Quem some é dado da timeline; o verbo continua sem saber que final está rodando |
 | `survives: true/false/null` | `outcome` de 3 valores | `null` deixa `mal-censurado` não mexer no contador — que é a piada |
 | Forçar `ninguem-veio` no `main.js` | `if` de `id` no picker | Motor não conhece o catálogo |
 | Teto de 15 s no validador | Cronometrar à mão | O número mais importante do GDD vira erro em dev |

@@ -93,6 +93,15 @@ html, body {
   top: calc(var(--oy) + var(--y) * var(--u));
   transform: translate(-50%, -100%);
   will-change: transform;
+
+  /* Deslocamento necessário para o ator sair da JANELA (não da área segura)
+     por cada lado. O verbo `enter` anima daqui até a marca, só com transform.
+     Depende da marca do ator, então é medida por elemento — e é por isso que
+     mora aqui, junto do left/top que a define. */
+  --from-left: calc(-1 * (var(--ox) + var(--x) * var(--u) + var(--off-pad, 220) * var(--u)));
+  --from-right: calc(100vw - var(--ox) - var(--x) * var(--u) + var(--off-pad, 220) * var(--u));
+  --from-above: calc(-1 * (var(--oy) + var(--y) * var(--u) + var(--off-pad, 220) * var(--u)));
+  --from-below: calc(100vh - var(--oy) - var(--y) * var(--u) + var(--off-pad, 220) * var(--u));
 }
 
 .actor > .rig {
@@ -104,7 +113,7 @@ html, body {
 
 /* Fora-de-tela para entradas e saídas: ancorado na borda REAL da janela, não
    na área segura — senão um ator "escondido" apareceria parado na sobra
-   lateral de uma janela larga. O verbo `enter` (D3) usa estas classes. */
+   lateral de uma janela larga. Usadas pelos verbos `hide`/`exit`. */
 .actor.is-off-left  { left: calc(-1 * var(--off-pad, 220) * var(--u)); }
 .actor.is-off-right { left: calc(100vw + var(--off-pad, 220) * var(--u)); }
 .actor.is-off-below { top: calc(100vh + var(--off-pad, 220) * var(--u)); }

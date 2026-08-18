@@ -16,11 +16,19 @@ const MARKS = {
   bomb: { x: 620, y: 470 },
 };
 
+/** Marca de quem ainda não tem uma: em pé no chão, no meio do palco. */
+const DEFAULT_MARK = { x: 500, y: 470 };
+
 export function createStage({ cast, fx }) {
   /** @type {Map<string, HTMLElement>} */
   const actors = new Map();
 
-  function spawn(name, mark = MARKS[name] ?? { x: 500, y: 470 }) {
+  /** `mark` parcial é bem-vindo: `{ x: 320 }` mantém o y da marca padrão. */
+  function spawn(name, mark) {
+    const at = { ...(MARKS[name] ?? DEFAULT_MARK) };
+    if (mark?.x !== undefined) at.x = mark.x;
+    if (mark?.y !== undefined) at.y = mark.y;
+
     const tpl = document.getElementById(`tpl-${name}`);
     if (!tpl) {
       // P5: ator que falta não derruba a rodada.
@@ -28,8 +36,8 @@ export function createStage({ cast, fx }) {
       return null;
     }
     const el = tpl.content.firstElementChild.cloneNode(true);
-    el.style.setProperty('--x', mark.x);
-    el.style.setProperty('--y', mark.y);
+    el.style.setProperty('--x', at.x);
+    el.style.setProperty('--y', at.y);
     cast.appendChild(el);
     actors.set(name, el);
     return el;

@@ -33,12 +33,16 @@ export function createFx({ stage, layer }) {
     stage.classList.remove('is-shaking');
     void stage.offsetWidth; // reinicia a animação mesmo se já estava sacudindo
     stage.classList.add('is-shaking');
+
     // Sem setTimeout: a própria animação avisa quando acabou (P3).
-    stage.addEventListener(
-      'animationend',
-      () => stage.classList.remove('is-shaking'),
-      { once: true },
-    );
+    // `animationend` BORBULHA: o flash, o tique do timer e a bola de fogo são
+    // todos descendentes do palco e terminariam a tremida antes da hora. Só o
+    // evento do próprio #stage conta.
+    stage.addEventListener('animationend', function done(ev) {
+      if (ev.target !== stage) return;
+      stage.removeEventListener('animationend', done);
+      stage.classList.remove('is-shaking');
+    });
   }
 
   /** Explosão: bola de fogo na posição do alvo + flash + shake.

@@ -115,3 +115,42 @@ body.is-frozen *::after {
   from { transform: scale(calc(1 - 0.25 * var(--juice))) rotate(calc(-2deg * var(--juice))); }
   to { transform: scale(1) rotate(0deg); }
 }
+
+/* ---------- entrada em cena (verbo `enter`) ---------- */
+/* O ator já nasce na marca dele; a animação vem da borda REAL da janela até
+   lá, só com transform. As distâncias (--from-*) são calculadas por ator em
+   base.css, a partir da própria marca. */
+
+.actor.is-enter-left,
+.actor.is-enter-right,
+.actor.is-enter-above,
+.actor.is-enter-below {
+  animation-duration: var(--enter-ms, 700ms);
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+.actor.is-enter-left { animation-name: enter-left; }
+.actor.is-enter-right { animation-name: enter-right; }
+.actor.is-enter-above { animation-name: enter-above; }
+.actor.is-enter-below { animation-name: enter-below; }
+
+@keyframes enter-left {
+  from { transform: translate(calc(-50% + var(--from-left)), -100%); }
+  to { transform: translate(-50%, -100%); }
+}
+
+@keyframes enter-right {
+  from { transform: translate(calc(-50% + var(--from-right)), -100%); }
+  to { transform: translate(-50%, -100%); }
+}
+
+@keyframes enter-above {
+  from { transform: translate(-50%, calc(-100% + var(--from-above))); }
+  to { transform: translate(-50%, -100%); }
+}
+
+@keyframes enter-below {
+  from { transform: translate(-50%, calc(-100% + var(--from-below))); }
+  to { transform: translate(-50%, -100%); }
+}

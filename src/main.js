@@ -7,9 +7,9 @@
  * segue correndo durante a invasão), não três processadores. Este arquivo só
  * reage: troca a classe do <body> e agenda a transição seguinte no clock.
  *
- * D2: a cena `ninguem-veio` está hardcoded logo abaixo, como manda o GDD §11.
- * No D3 ela vira dado em `data/scenes.js` e quem a executa é o director —
- * este arquivo não deve crescer por causa de conteúdo novo.
+ * D3: o conteúdo saiu daqui. A rodada agora é `data/scenes.js` costurado pelo
+ * `buildRound` e executado pelo director. Este arquivo não deve crescer por
+ * causa de cena nova — só por causa de fase nova, e não há fase nova prevista.
  */
 
 import {
@@ -17,26 +17,17 @@ import {
   MAX_ROUND_MS,
   FREEZE_MS,
   DRAMATIC_PAUSE_MS,
+  JOIN_GAP,
+  FIRST_RUN_SCENE,
 } from './config.js';
 import { createClock, bindVisibility } from './engine/clock.js';
+import { createDirector, buildRound } from './engine/director.js';
+import { actions } from './engine/actions.js';
+import { scenes } from './data/scenes.js';
 import { createCountdown } from './ui/countdown.js';
 import { createStage } from './ui/stage.js';
 import { createFx } from './ui/fx.js';
 import { createEndingCard } from './ui/ending-card.js';
-
-/* ------------------------------------------------------------------ *
- * A cena de fundação (GDD §6.1)
- * ------------------------------------------------------------------ */
-
-const NINGUEM_VEIO = {
-  id: 'ninguem-veio',
-  character: null, // ninguém invade: COUNTDOWN vai direto ao CLIMAX
-  ending: {
-    id: 'ninguem-veio',
-    title: 'NINGUÉM VEIO',
-    survives: false,
-  },
-};
 
 /* ------------------------------------------------------------------ *
  * Fases
@@ -68,6 +59,7 @@ const el = {
 };
 
 const clock = createClock();
+const director = createDirector({ clock });
 const countdown = createCountdown(el.timer, clock);
 const stage = createStage({ cast: el.cast, fx: el.fx });
 const fx = createFx({ stage: el.stage, layer: el.fx });
@@ -79,13 +71,30 @@ let phase = PHASE.BOOT;
  *  desatualizado e desiste — é o que sustenta I1 e o watchdog. */
 let roundId = 0;
 
-/** A rodada corrente. No D4 passa a vir do picker. */
+/** A rodada corrente: { scene, ending, climaxAt, endsAt, signal }. */
 let round = null;
+
+/** Aborta os beats da rodada anterior. Trocado a cada `startRound`. */
+let roundAbort = null;
 
 bindVisibility(clock, {
   onHide: () => el.body.classList.add('is-tab-hidden'),
   onShow: () => el.body.classList.remove('is-tab-hidden'),
 });
+
+/* ------------------------------------------------------------------ *
+ * Escolha da rodada
+ * ------------------------------------------------------------------ */
+
+const byId = (id) => scenes.find((s) => s.id === id);
+
+/** D4: aqui entram o picker e o `progress.firstRun`. Por ora, sempre a cena
+ *  de fundação — que é justamente o que o GDD §3.2 manda na primeira rodada. */
+function pickRound() {
+  const scene = byId(FIRST_RUN_SCENE) ?? scenes[0];
+  const ending = scene.endings[0];
+  return { scene, ending };
+}
 
 /* ------------------------------------------------------------------ *
  * Transições
@@ -102,6 +111,10 @@ function setPhase(next) {
 function startRound() {
   const id = ++roundId;
 
+  // Beat de rodada velha que já estava na fila do frame corrente morre aqui.
+  roundAbort?.abort();
+  roundAbort = new AbortController();
+
   endingCard.hide();
   clock.reset();
   stage.setUpRound();
@@ -109,44 +122,48 @@ function startRound() {
   countdown.mount();
   el.message.textContent = 'Não tem como salvar ele.';
 
-  round = NINGUEM_VEIO; // D4: aqui entra o picker
+  const { scene, ending } = pickRound();
+  const { beats, invadeAt, climaxAt, endsAt } = buildRound(scene, ending, { joinGap: JOIN_GAP });
+  round = { scene, ending, climaxAt, endsAt, signal: roundAbort.signal };
+
   setPhase(PHASE.COUNTDOWN);
 
-  // `ninguem-veio` não tem personagem: o timer zerar É o clímax.
-  countdown.onZero(() => toClimax(id));
+  // Os verbos chegam ao director por parâmetro — ele não conhece `actions`.
+  director.run(beats, { clock, stage, fx, countdown, signal: round.signal }, actions);
+
+  // Cena com personagem entra em SCENE quando ele invade. Cena sem personagem
+  // vai de COUNTDOWN direto ao CLIMAX (o desvio do diagrama da §5).
+  if (scene.character) clock.at(invadeAt, () => setPhase(PHASE.SCENE));
+
+  clock.at(climaxAt, () => toClimax(id));
+  clock.at(endsAt + DRAMATIC_PAUSE_MS, () => toEnding(id));
 
   // Watchdog (ARCHITECTURE.md §5): rede de segurança para bug, não teto de
   // ritmo. Se a rodada travar, o jogador vê uma explosão, não uma tela morta.
   clock.at(MAX_ROUND_MS, () => {
     if (id !== roundId || phase === PHASE.ENDING) return;
     console.warn('[main] watchdog: rodada passou de', MAX_ROUND_MS, 'ms');
+    // P5: no pior caso, explode o Pedro. O jogador nunca olha tela morta.
     toClimax(id);
+    actions.explode({ clock, stage, fx, countdown, signal: round.signal }, { vaporize: ['peter', 'bomb'] });
+    clock.after(DRAMATIC_PAUSE_MS, () => toEnding(id));
   });
 
   clock.start();
 }
 
-/** CLIMAX: explosão, freeze-frame, pausa dramática. */
+/** CLIMAX: o final já está rodando em beats. Aqui só o freeze-frame e o timer. */
 function toClimax(id) {
   if (id !== roundId || phase === PHASE.CLIMAX || phase === PHASE.ENDING) return;
   setPhase(PHASE.CLIMAX);
 
   countdown.hold();
 
-  const survives = round.ending.survives === true;
-  if (!survives) {
-    stage.get('peter')?.classList.add('is-vaporized');
-    stage.get('bomb')?.classList.add('is-vaporized');
-    fx.explode(stage.get('bomb'), { intensity: 8 });
-  }
-
-  // Freeze-frame de 150ms em tempo real, e só depois a pausa dramática de
-  // 600ms em tempo de jogo. Os dois saem do mesmo clock (P3).
+  // Freeze-frame de 150ms em tempo real; a pausa dramática de 600ms já está
+  // agendada em tempo de jogo e só volta a correr quando o clock destrava.
   clock.freeze(FREEZE_MS);
   el.body.classList.add('is-frozen');
   clock.after(0, () => el.body.classList.remove('is-frozen'));
-
-  clock.after(DRAMATIC_PAUSE_MS, () => toEnding(id));
 }
 
 /** ENDING. I2: daqui só se sai por clique. */
@@ -170,5 +187,13 @@ function toEnding(id) {
 startRound();
 
 if (import.meta.env?.DEV) {
-  Object.assign(window, { clock, countdown, stage, fx, get phase() { return phase; } });
+  // Bancada de teste dos verbos enquanto não há cena com personagem:
+  //   beat({ do: 'shake', intensity: 10 })
+  //   beat({ do: 'say', who: 'peter', text: 'oi', ms: 1500 })
+  const beat = (b) => actions[b.do]?.({ clock, stage, fx, countdown, signal: round?.signal }, b);
+  Object.assign(window, {
+    clock, countdown, stage, fx, director, actions, scenes, beat,
+    get phase() { return phase; },
+    get round() { return round; },
+  });
 }

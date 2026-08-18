@@ -26,7 +26,7 @@ Sem dependências de runtime: HTML/CSS/JS vanilla + Vite só como build.
 
 ## Status
 
-**D2 concluído — loop fechado (marco M0).** Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, cena `ninguem-veio`, ending card e restart.
+**D3 concluído — motor de cenas data-driven.** Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, ending card e restart — e a rodada agora é montada pelo `director` a partir de `src/data/scenes.js`, com os verbos `enter`, `say`, `shake` e `explode`.
 
 
 
