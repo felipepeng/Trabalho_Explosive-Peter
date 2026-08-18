@@ -57,17 +57,24 @@ export function noveltyMultiplier(scene, seen) {
 export function pickScene(scenes, { history = [], seen = new Set(), random } = {}) {
   if (!scenes.length) return null;
 
+  // `weight: 0` quer dizer NUNCA sorteável, e isso precisa valer também para o
+  // fallback de pool vazio — senão a cena voltaria justamente na hora em que o
+  // anti-repetição aperta. É como `ninguem-veio` fica restrita à primeira
+  // rodada sem o picker conhecer o id dela.
+  const eligible = scenes.filter((s) => (s.weight ?? 1) > 0);
+  const pickable = eligible.length ? eligible : scenes;
+
   // K = min(3, n-2): o cooldown sobrevive à ordem de corte do GDD §9.1, que
   // pode encolher o catálogo. Com poucas cenas, um K fixo em 3 esvaziaria o
   // pool toda rodada e o anti-repetição viraria decoração.
-  const k = Math.max(0, Math.min(3, scenes.length - 2));
+  const k = Math.max(0, Math.min(3, pickable.length - 2));
 
   const recent = k ? history.slice(-k) : [];
   const lastScene = scenes.find((s) => s.id === history[history.length - 1]);
   const lastKey = lastScene ? keyOf(lastScene) : null;
 
-  const pool = scenes.filter((s) => !recent.includes(s.id) && keyOf(s) !== lastKey);
-  const candidates = pool.length ? pool : scenes; // o pool nunca fica vazio
+  const pool = pickable.filter((s) => !recent.includes(s.id) && keyOf(s) !== lastKey);
+  const candidates = pool.length ? pool : pickable; // o pool nunca fica vazio
 
   return weightedPick(
     candidates,

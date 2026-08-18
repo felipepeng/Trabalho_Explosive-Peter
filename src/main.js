@@ -20,6 +20,7 @@
 import {
   COUNTDOWN_MS,
   MAX_ROUND_MS,
+  MAX_ROUND_MS_DESIGN,
   FREEZE_MS,
   DRAMATIC_PAUSE_MS,
   JOIN_GAP,
@@ -30,6 +31,7 @@ import { createDirector, buildRound } from './engine/director.js';
 import { actions } from './engine/actions.js';
 import { pickScene, pickEnding } from './engine/picker.js';
 import { scenes } from './data/scenes.js';
+import { validate } from './data/validate.js';
 import * as progress from './state/progress.js';
 import { createCountdown } from './ui/countdown.js';
 import { createStage } from './ui/stage.js';
@@ -239,6 +241,17 @@ function toEnding(id) {
 
 progress.load();
 hud.setDeaths(progress.get().deaths);
+
+// Só em dev: o orçamento de 15s e o vocabulário de verbos viram erro de
+// console enquanto o conteúdo está sendo escrito, não playtest no D10.
+if (import.meta.env?.DEV) {
+  validate(scenes, {
+    verbs: Object.keys(actions),
+    maxRoundMs: MAX_ROUND_MS_DESIGN,
+    dramaticPauseMs: DRAMATIC_PAUSE_MS,
+    joinGap: JOIN_GAP,
+  });
+}
 
 // O jogo começa sozinho: sem menu, sem botão de start, sem tela de título.
 startRound();

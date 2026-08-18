@@ -17,6 +17,7 @@
  *
  * D3: enter · say · shake · explode.
  * D6: flood · portal — os dois que o Michas e o Pedro Maligno precisam.
+ * D7: exit · grab · flash · pose — o que as primeiras timelines pediram.
  */
 
 /** Duração da entrada, quando nem o beat nem o personagem dizem. */
@@ -109,6 +110,82 @@ export const actions = {
     }
 
     ctx.fx.explode(ctx.stage.get(target), { intensity });
+  },
+
+  /**
+   * `{ do:'exit', who:'vinicius', to:'right', ms:1500, gait:'walk' }`
+   * Sai de cena pela borda REAL da janela e FICA fora: a animação usa
+   * fill both, então ninguém reaparece por descuido.
+   */
+  exit(ctx, { who, to = 'right', ms = 900, gait }) {
+    if (ctx.signal?.aborted || !who) return;
+
+    const el = ctx.stage.get(who);
+    if (!el) {
+      console.warn(`[actions] exit sem ator em cena: "${who}"`);
+      return;
+    }
+
+    const side = MODES.has(to) && to !== 'portal' ? to : 'right';
+    el.style.setProperty('--enter-ms', `${ms}ms`); // mesma duração dos dois lados
+    el.classList.add(`is-exit-${side}`);
+    if (gait) el.classList.add(`gait-${gait}`);
+  },
+
+  /**
+   * `{ do:'grab', who:'vinicius', target:'bomb' }`
+   *
+   * O alvo vira FILHO de quem pegou. Isso não é detalhe de implementação: é
+   * o que faz o `exit` seguinte levar a bomba junto sem nenhum verbo saber
+   * disso, e é o que permite escrever `vin-memento` ("abraça a bomba, sai de
+   * cena e explode sozinho") com dois beats.
+   */
+  grab(ctx, { who, target = 'bomb' }) {
+    if (ctx.signal?.aborted || !who) return;
+
+    const holder = ctx.stage.get(who);
+    const item = ctx.stage.get(target);
+    if (!holder || !item) {
+      console.warn(`[actions] grab impossível: "${who}" pegando "${target}"`);
+      return;
+    }
+
+    // A posição em unidades de design acompanha o objeto, senão a explosão
+    // seguinte estouraria no chão, onde a bomba ESTAVA.
+    const hx = Number(holder.style.getPropertyValue('--x'));
+    const hy = Number(holder.style.getPropertyValue('--y'));
+    const hh = Number(holder.style.getPropertyValue('--h')) || 160;
+    if (Number.isFinite(hx)) item.style.setProperty('--x', hx);
+    if (Number.isFinite(hy)) item.style.setProperty('--y', Math.round(hy - hh * 0.47));
+
+    holder.classList.add('is-grabbing');
+    item.classList.add('is-held');
+    holder.appendChild(item);
+  },
+
+  /** `{ do:'flash', ms:260 }` — clarão de tela cheia, com teto de 2 por segundo. */
+  flash(ctx, { ms } = {}) {
+    if (ctx.signal?.aborted) return;
+    ctx.fx.flash({ ms });
+  },
+
+  /**
+   * `{ do:'pose', who:'jp', as:'jump' }` — liga uma pose declarada em CSS.
+   *
+   * Um verbo em vez de um por gesto (pular, esticar, arremessar, cortar).
+   * A regra continua valendo: o verbo não sabe QUAL pose está ligando, e
+   * pose nova é um @keyframes, não uma linha de JavaScript.
+   * `off: true` desliga.
+   */
+  pose(ctx, { who, as, off = false }) {
+    if (ctx.signal?.aborted || !who || !as) return;
+
+    const el = ctx.stage.get(who);
+    if (!el) {
+      console.warn(`[actions] pose sem ator em cena: "${who}"`);
+      return;
+    }
+    el.classList.toggle(`pose-${as}`, !off);
   },
 
   /**

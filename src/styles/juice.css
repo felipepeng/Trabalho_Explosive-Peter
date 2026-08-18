@@ -239,3 +239,41 @@ body.is-frozen *::after {
   55% { opacity: 1; }
   100% { transform: translate(-50%, -100%) scale(1); opacity: 1; }
 }
+
+/* ---------- saída de cena (verbo `exit`) ---------- */
+/* Mesmas distâncias --from-* da entrada, no sentido contrário. `both` mantém
+   o ator fora no fim: ninguém volta por descuido. */
+
+.actor.is-exit-left,
+.actor.is-exit-right,
+.actor.is-exit-above,
+.actor.is-exit-below {
+  animation-duration: var(--enter-ms, 900ms);
+  animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.5);
+  animation-fill-mode: both;
+}
+
+.actor.is-exit-left { animation-name: exit-left; }
+.actor.is-exit-right { animation-name: exit-right; }
+.actor.is-exit-above { animation-name: exit-above; }
+.actor.is-exit-below { animation-name: exit-below; }
+
+@keyframes exit-left {
+  from { transform: translate(-50%, -100%); }
+  to { transform: translate(calc(-50% + var(--from-left)), -100%); }
+}
+
+@keyframes exit-right {
+  from { transform: translate(-50%, -100%); }
+  to { transform: translate(calc(-50% + var(--from-right)), -100%); }
+}
+
+@keyframes exit-above {
+  from { transform: translate(-50%, -100%); }
+  to { transform: translate(-50%, calc(-100% + var(--from-above))); }
+}
+
+@keyframes exit-below {
+  from { transform: translate(-50%, -100%); }
+  to { transform: translate(-50%, calc(-100% + var(--from-below))); }
+}

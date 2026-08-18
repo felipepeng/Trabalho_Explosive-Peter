@@ -50,7 +50,7 @@ O jogo inicia sozinho ao carregar a página — sem menu, sem botão de start, s
 ### 3.2 Regras de ritmo (anti-tédio)
 
 - **O timer é mentiroso.** Algumas cenas invadem aos 3s, outras aos 7s. Uma cena rara explode aos 4s sem aviso nenhum. Previsibilidade mata a piada na décima rodada.
-- **A primeira rodada da vida do jogador é sempre a cena `ninguem-veio`** (ver §6.1). Ela estabelece a regra — "realmente não tem como salvar ele" — para que todas as outras cenas funcionem como quebra de expectativa.
+- **A primeira rodada da vida do jogador é sempre a cena `ninguem-veio`** (ver §6.1), e ela não volta mais. Estabelece a regra — "realmente não tem como salvar ele" — para que todas as outras cenas funcionem como quebra de expectativa.
 - **A mensagem inferior é dinâmica.** Começa em "Não tem como salvar ele" e depois muda por rodada ("Ele tentou.", "Isso foi pior.", "Pedro nº 38"). É a fonte de humor mais barata do projeto — aproveite.
 
 ---
@@ -129,7 +129,7 @@ O timer chega a zero. Nada acontece. Pedro explode.
 | --- | --- | --- | --- |
 | `ninguem-veio` | **NINGUÉM VEIO** | 1 | Explosão seca, sem música, sem graça. É o ponto de referência de todo o humor do jogo |
 
-**Forçada na primeira rodada de um jogador novo.** Depois entra no sorteio com peso baixo.
+**Só aparece na primeira rodada de um jogador novo, e nunca mais.** Peso `0`: o `main.js` a força enquanto `firstRun` for verdadeiro e o picker nunca mais a devolve. A explosão seca estabelece a regra do jogo uma vez — repeti-la depois que o jogador já entendeu não é a piada, é o tédio que a piada existe para evitar.
 
 ### 6.2 `vinicius-segura` — Vinicius, o Estoico
 

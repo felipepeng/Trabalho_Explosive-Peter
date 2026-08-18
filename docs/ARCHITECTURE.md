@@ -111,7 +111,13 @@ beats = cena.timeline.map(b => b.at + invadeAt)
 
 O final é sorteado **junto com a cena**, no início da rodada.
 
-**`actions.js`** — os 13 verbos do GDD §7.1: `enter · exit · say · grab · shake · flash · explode · flood · portal · sfx · setTimer · hide · show`. Um objeto plano de funções `(ctx, beat) => void`.
+**`actions.js`** — os verbos do GDD §7.1, mais o `pose`. Um objeto plano de funções `(ctx, beat) => void`.
+
+Escritos: `enter · exit · say · grab · shake · flash · explode · pose · flood · portal`. Faltam `sfx` (D9), `setTimer` (`mal-paradoxo`, D8) e `hide`/`show`, que ainda não foram pedidos por nenhuma timeline.
+
+**`pose`** não estava na lista original e substitui uma família inteira: `{ do:'pose', who:'jp', as:'jump' }` liga a classe `pose-jump` e o gesto mora num `@keyframes`. Sem ele, cada gesto novo (pular, esticar, arremessar, cortar o pavio) viraria um verbo, e o vocabulário cresceria com o conteúdo em vez de ficar estável.
+
+**`grab` reparenta.** O alvo vira filho de quem pegou. Não é detalhe de implementação: é o que faz um `exit` seguinte levar a bomba junto sem nenhum verbo saber disso — `vin-memento` ("abraça a bomba, sai de cena e explode sozinho") custa dois beats por causa disso.
 
 Três regras de verbo:
 
@@ -301,7 +307,7 @@ Se ninguém encostar na tela, a primeira rodada sai muda — e em `ninguem-veio`
 
 ## 9. Validador
 
-`data/validate.js`, ~30 linhas, roda no boot só em `dev`. Reprova: `id` de final duplicado, verbo inexistente, `weight`/`survives` faltando, `climaxAt` antes do último beat da cena, posição fora do espaço de design.
+`data/validate.js` roda no boot só em `dev`. Recebe a lista de verbos e as constantes por parâmetro — `data/` não pode importar `engine/`. Reprova: `id` de final duplicado, verbo inexistente, `weight`/`survives` faltando, `climaxAt` antes do último beat da cena, posição fora do espaço de design.
 
 E o principal — **o orçamento de 15 segundos**. Para cada combinação cena × final, soma a duração total e falha acima de `MAX_ROUND_MS_DESIGN = 15000`:
 
@@ -346,12 +352,15 @@ export default { base: './' }
 | Cabeça é `<rect>` com `rx` = metade | `<circle>` | Desenha o mesmo círculo, e `rx: 0` entrega a cabeça blocada do Michas de graça |
 | `#fx-back` além de `#fx-layer` | `z-index` dentro de uma camada só | Filho não escapa da camada do pai; a fenda precisa ficar atrás do elenco |
 | `enter` com modo `portal` | Um verbo `spawn` separado | Quem sai da fenda cresce no lugar; continua sendo uma entrada |
+| Um verbo `pose` genérico | `jump`, `throw`, `reach`, `cut`… | Gesto novo é um `@keyframes`, não JavaScript; o vocabulário para de crescer |
+| `grab` vira o alvo em filho | Mover o alvo a cada beat | Saída, tremida e pose carregam o objeto junto, de graça |
 | `enter` padrão no personagem | Repetir `from` em toda timeline | "JP sempre sobe de baixo" é traço dele, e o motor segue sem importar `data/` |
 | Coleção dentro do ending card | Galeria como tela | Sem interação nova, sem sexto estado, mais barato |
 | Restart num `<button>` dentro do card | Card inteiro clicável | Alvo explícito; teclado e foco de graça; o card fica só como leitura |
 | `explode` recebe `vaporize: [...]` | O verbo consultar `ending.survives` | Quem some é dado da timeline; o verbo continua sem saber que final está rodando |
 | `survives: true/false/null` | `outcome` de 3 valores | `null` deixa `mal-censurado` não mexer no contador — que é a piada |
 | Forçar `ninguem-veio` no `main.js` | `if` de `id` no picker | Motor não conhece o catálogo |
+| `weight: 0` = nunca sorteável | Um campo `firstRunOnly` filtrado no `main.js` | "Aparece só na primeira rodada" vira dado puro; o picker segue sem conhecer o catálogo |
 | Teto de 15 s no validador | Cronometrar à mão | O número mais importante do GDD vira erro em dev |
 | Input engolido fora de `ENDING` | Handler global "esperto" | Pilar 1 virando código |
 | `base: './'` | `base` com nome do repo | Some o 404 de asset só-em-produção |
