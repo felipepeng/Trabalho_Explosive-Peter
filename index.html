@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="theme-color" content="#12141c" />
+    <title>Explosive Peter</title>
+    <meta name="description" content="Não tem como salvar ele." />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./src/styles/base.css" />
+    <link rel="stylesheet" href="./src/styles/chars.css" />
+    <link rel="stylesheet" href="./src/styles/juice.css" />
+  </head>
+  <body class="state-boot">
+    <main id="stage" aria-label="Palco">
+      <div id="ground" aria-hidden="true"></div>
+
+      <!-- HUD: timer + contadores -->
+      <div id="hud">
+        <div id="timer" role="timer" aria-live="off">10</div>
+        <div id="hud-stats"><span id="hud-deaths" hidden></span></div>
+      </div>
+
+      <!-- Elenco da rodada. Esvaziado e repovoado a cada COUNTDOWN (P4/I3):
+           nenhum estado visual sobrevive de uma rodada para a outra. -->
+      <div id="cast"></div>
+
+      <!-- efeitos (flash, explosão, água, portal) -->
+      <div id="fx-layer" aria-hidden="true"></div>
+
+      <!-- barra inferior -->
+      <p id="message">Não tem como salvar ele.</p>
+
+      <!-- final da rodada. O card em si não é clicável: quem reinicia é o
+           botão, e só ele. -->
+      <div id="ending-card" hidden>
+        <p id="ending-kicker">FINAL</p>
+        <h1 id="ending-title"></h1>
+        <p id="ending-count"></p>
+        <button id="ending-restart" type="button">DE NOVO</button>
+      </div>
+    </main>
+
+    <!-- ================= templates de ator ================= -->
+
+    <template id="tpl-peter">
+      <div id="peter" class="actor" data-actor="peter">
+        <svg class="rig" viewBox="0 0 120 180" aria-label="Pedro">
+          <g class="leg leg-l"><rect x="42" y="120" width="14" height="48" rx="7" /></g>
+          <g class="leg leg-r"><rect x="64" y="120" width="14" height="48" rx="7" /></g>
+          <g class="arm arm-l"><rect x="14" y="66" width="14" height="52" rx="7" /></g>
+          <g class="arm arm-r"><rect x="92" y="66" width="14" height="52" rx="7" /></g>
+          <g class="body"><rect x="30" y="62" width="60" height="66" rx="16" /></g>
+          <g class="head">
+            <circle cx="60" cy="34" r="32" />
+            <circle class="eye" cx="48" cy="28" r="4.5" />
+            <circle class="eye" cx="72" cy="28" r="4.5" />
+            <path class="mouth" d="M38 40 Q60 62 82 40" />
+          </g>
+        </svg>
+      </div>
+    </template>
+
+    <template id="tpl-bomb">
+      <div id="bomb" class="actor" data-actor="bomb">
+        <svg class="rig" viewBox="0 0 100 120" aria-label="Bomba">
+          <path class="fuse" d="M62 34 C74 18 86 22 88 8" />
+          <circle class="spark" cx="88" cy="8" r="6" />
+          <rect class="cap" x="52" y="26" width="18" height="14" rx="3" />
+          <circle class="shell" cx="46" cy="76" r="38" />
+          <circle class="shine" cx="32" cy="62" r="9" />
+        </svg>
+      </div>
+    </template>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

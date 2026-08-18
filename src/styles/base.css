@@ -1,0 +1,252 @@
+/* Explosive Peter — base: palco, espaço de design e HUD.
+ *
+ * O palco ocupa a JANELA INTEIRA — sem moldura, sem letterbox.
+ *
+ * Como isso convive com o espaço de design fixo de 1000 × 600 (ARCHITECTURE.md §6):
+ *
+ *   --u   é 1 unidade de design em pixels, escalada para que as 1000 × 600
+ *         unidades SEMPRE caibam na janela (nada de conteúdo é cortado).
+ *   --ox  --oy  centralizam essa área de 1000 × 600 — a "área segura" onde o
+ *         conteúdo de data/ é escrito. Numa janela mais larga que 5:3, sobra
+ *         espaço nas laterais.
+ *
+ * A sobra NÃO vira barra preta: o céu e o chão sangram até as bordas reais da
+ * janela. A área segura é onde a encenação acontece; o resto é cenário.
+ *
+ * Regra prática: toda medida em CSS e em data/ é `calc(N * var(--u))`,
+ * onde N é a unidade de design do GDD. Nunca px, vw ou %.
+ */
+
+:root {
+  --design-w: 1000;
+  --design-h: 600;
+
+  /* 1 unidade de design, em pixels */
+  --u: min(calc(100vw / var(--design-w)), calc(100vh / var(--design-h)));
+
+  /* canto superior esquerdo da área segura de 1000 × 600 */
+  --ox: calc((100vw - var(--design-w) * var(--u)) / 2);
+  --oy: calc((100vh - var(--design-h) * var(--u)) / 2);
+
+  /* linha do chão, em unidades de design */
+  --ground-y: 450;
+
+  --c-sky-top: #2b3350;
+  --c-sky-bot: #171a26;
+  --c-ground: #3a2f4d;
+  --c-ground-deep: #241d33;
+  --c-ground-edge: #4d3f66;
+  --c-ink: #12141c;
+  --c-paper: #f5f1e6;
+  --c-hot: #ff5a3c;
+
+  --juice: 1;
+
+  --font-display: "Impact", "Haettenschweiler", "Arial Black", system-ui, sans-serif;
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --juice: 0.25; }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--c-ink);
+  color: var(--c-paper);
+  font-family: var(--font-ui);
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- palco: a janela inteira ---------- */
+
+#stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--c-sky-top) 0%, var(--c-sky-bot) 100%);
+}
+
+/* O chão nasce na linha do chão da área segura e desce até a borda da janela,
+   por mais alta que ela seja. É isso que mata a barra preta de baixo. */
+#ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--oy) + var(--ground-y) * var(--u));
+  bottom: 0;
+  background: linear-gradient(180deg, var(--c-ground) 0%, var(--c-ground-deep) 100%);
+  border-top: calc(4 * var(--u)) solid var(--c-ground-edge);
+}
+
+/* ---------- atores: posicionados em unidades de design ---------- */
+
+.actor {
+  position: absolute;
+  left: calc(var(--ox) + var(--x) * var(--u));
+  top: calc(var(--oy) + var(--y) * var(--u));
+  transform: translate(-50%, -100%);
+  will-change: transform;
+}
+
+.actor > .rig {
+  display: block;
+  height: calc(var(--h, 160) * var(--u));
+  width: auto;
+  overflow: visible;
+}
+
+/* Fora-de-tela para entradas e saídas: ancorado na borda REAL da janela, não
+   na área segura — senão um ator "escondido" apareceria parado na sobra
+   lateral de uma janela larga. O verbo `enter` (D3) usa estas classes. */
+.actor.is-off-left  { left: calc(-1 * var(--off-pad, 220) * var(--u)); }
+.actor.is-off-right { left: calc(100vw + var(--off-pad, 220) * var(--u)); }
+.actor.is-off-below { top: calc(100vh + var(--off-pad, 220) * var(--u)); }
+.actor.is-off-above { top: calc(-1 * var(--off-pad, 220) * var(--u)); }
+
+/* ---------- HUD ---------- */
+
+#hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--oy) + 24 * var(--u));
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+#timer {
+  font-family: var(--font-display);
+  font-size: calc(120 * var(--u));
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  color: var(--c-paper);
+  text-shadow: 0 calc(6 * var(--u)) 0 rgba(0, 0, 0, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+
+#timer.is-urgent { color: var(--c-hot); }
+
+#hud-stats {
+  position: absolute;
+  top: 0;
+  right: calc(var(--ox) + 24 * var(--u));
+  font-size: calc(20 * var(--u));
+  opacity: 0.55;
+}
+
+/* ---------- barra inferior ---------- */
+
+#message {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--oy) + 18 * var(--u));
+  margin: 0;
+  text-align: center;
+  font-size: calc(30 * var(--u));
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--c-paper);
+  text-shadow: 0 calc(3 * var(--u)) 0 rgba(0, 0, 0, 0.5);
+  padding: 0 calc(40 * var(--u));
+}
+
+/* ---------- camadas ---------- */
+
+#fx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#ending-card[hidden] { display: none; }
+
+/* ---------- ending card ---------- */
+/* Cobre a janela inteira, mas NÃO é clicável: o alvo do restart é o botão. */
+
+#ending-card {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10 * var(--u));
+  background: rgba(9, 10, 15, 0.82);
+  text-align: center;
+  padding: 0 calc(40 * var(--u));
+  border: 0;
+  color: inherit;
+}
+
+#ending-kicker {
+  margin: 0;
+  font-size: calc(22 * var(--u));
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  opacity: 0.6;
+}
+
+#ending-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: calc(84 * var(--u));
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-shadow: 0 calc(6 * var(--u)) 0 rgba(0, 0, 0, 0.5);
+  max-width: calc(880 * var(--u));
+}
+
+#ending-count {
+  margin: 0;
+  font-size: calc(26 * var(--u));
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+#ending-count[hidden] { display: none; }
+
+/* O único alvo de clique do jogo inteiro. */
+#ending-restart {
+  margin: calc(18 * var(--u)) 0 0;
+  font-family: var(--font-display);
+  font-size: calc(34 * var(--u));
+  letter-spacing: 0.06em;
+  color: var(--c-ink);
+  background: var(--c-paper);
+  padding: calc(14 * var(--u)) calc(40 * var(--u));
+  border: calc(4 * var(--u)) solid var(--c-ink);
+  border-radius: calc(999 * var(--u));
+  box-shadow: 0 calc(6 * var(--u)) 0 rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+
+#ending-restart:hover {
+  background: var(--c-hot);
+  color: var(--c-paper);
+}
+
+#ending-restart:active {
+  transform: translateY(calc(4 * var(--u)));
+  box-shadow: 0 calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.55);
+}
+
+#ending-restart:focus-visible {
+  outline: calc(4 * var(--u)) solid var(--c-hot);
+  outline-offset: calc(4 * var(--u));
+}
+
+#ending-restart:disabled {
+  cursor: default;
+  opacity: 0.6;
+}

@@ -1,0 +1,103 @@
+/* Explosive Peter — atores.
+   Rig compartilhado: <g> nomeados head / body / arm-l / arm-r / leg-l / leg-r.
+   transform-origin no ombro (braços) e no quadril (pernas) — GDD §5. */
+
+.rig {
+  --skin: #f5f1e6;
+  --outline: #12141c;
+  --accent: #cfc6ad;
+}
+
+.rig g > rect,
+.rig g > circle {
+  fill: var(--skin);
+  stroke: var(--outline);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+.rig .eye {
+  fill: var(--outline);
+  stroke: none;
+}
+
+.rig .mouth {
+  fill: none;
+  stroke: var(--outline);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.rig .arm-l { transform-origin: 21px 70px; }
+.rig .arm-r { transform-origin: 99px 70px; }
+.rig .leg-l { transform-origin: 49px 124px; }
+.rig .leg-r { transform-origin: 71px 124px; }
+.rig .head { transform-origin: 60px 46px; }
+
+/* ---------- Pedro: a vítima ---------- */
+
+#peter {
+  --h: 190;
+  z-index: 2;
+}
+
+#peter .rig {
+  --skin: #f7f4ea;
+  --accent: #e0d8c2;
+}
+
+/* respiração idiota e permanente — ele nunca reage a nada */
+#peter .body,
+#peter .head {
+  animation: peter-breathe calc(2600ms) ease-in-out infinite;
+}
+#peter .head { animation-delay: 80ms; }
+
+@keyframes peter-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(calc(-2px * var(--juice, 1))); }
+}
+
+/* ---------- Bomba ---------- */
+
+#bomb {
+  --h: 130;
+  z-index: 1;
+}
+
+#bomb .shell {
+  fill: #1b1d28;
+  stroke: #000;
+  stroke-width: 5;
+}
+
+#bomb .cap {
+  fill: #6b6250;
+  stroke: #12141c;
+  stroke-width: 5;
+}
+
+#bomb .shine {
+  fill: rgba(245, 241, 230, 0.22);
+  stroke: none;
+}
+
+#bomb .fuse {
+  fill: none;
+  stroke: #b9a77e;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+#bomb .spark {
+  fill: #ffd36b;
+  stroke: none;
+  filter: drop-shadow(0 0 8px #ff8a3c);
+  animation: fuse-spark 220ms steps(2, end) infinite;
+}
+
+@keyframes fuse-spark {
+  0%   { r: 6px; opacity: 1; }
+  100% { r: calc(6px + 3px * var(--juice, 1)); opacity: 0.65; }
+}

@@ -1,0 +1,117 @@
+/* Explosive Peter — juice.
+   Regra: JS nunca escreve style.transform. JS escreve custom properties
+   (--shake-amp, --flash-ms) e liga classes .is-*; os keyframes aqui consomem.
+   Toda amplitude é multiplicada por var(--juice) — ARCHITECTURE.md §6. */
+
+/* ---------- shake ---------- */
+/* O palco ocupa a janela inteira, então sacudi-lo abriria uma fresta preta na
+   borda. O leve scale junto cobre o deslocamento máximo (~2.4% da largura). */
+
+#stage.is-shaking {
+  animation: shake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform-origin: center;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(calc(-1 * var(--u) * var(--shake-amp, 6) * var(--juice)), 0, 0) scale(calc(1 + 0.05 * var(--juice))); }
+  20%, 80% { transform: translate3d(calc(2 * var(--u) * var(--shake-amp, 6) * var(--juice)), 0, 0) scale(calc(1 + 0.05 * var(--juice))); }
+  30%, 50%, 70% { transform: translate3d(calc(-4 * var(--u) * var(--shake-amp, 6) * var(--juice)), 0, 0) scale(calc(1 + 0.05 * var(--juice))); }
+  40%, 60% { transform: translate3d(calc(4 * var(--u) * var(--shake-amp, 6) * var(--juice)), 0, 0) scale(calc(1 + 0.05 * var(--juice))); }
+  0%, 100% { transform: scale(calc(1 + 0.05 * var(--juice))); }
+}
+
+/* ---------- flash ---------- */
+/* Teto duro de 2 flashes por segundo é imposto no verbo `flash`, não aqui. */
+
+#fx-layer .flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: flash-out var(--flash-ms, 260ms) ease-out forwards;
+}
+
+@keyframes flash-out {
+  0% { opacity: calc(0.9 * var(--juice)); }
+  100% { opacity: 0; }
+}
+
+/* ---------- freeze-frame ---------- */
+/* O clock pausa; isto só garante que nada continue animando por conta própria. */
+
+body.is-frozen *,
+body.is-frozen *::before,
+body.is-frozen *::after {
+  animation-play-state: paused !important;
+}
+
+/* ---------- countdown ---------- */
+
+#timer.is-tick {
+  animation: timer-tick 180ms ease-out;
+}
+
+@keyframes timer-tick {
+  0% { transform: scale(calc(1 + 0.18 * var(--juice))); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- transições de estado ---------- */
+
+/* Fade-in de 200ms do GDD §3.1. No #stage e não em .state-boot porque o jogo
+   sai de BOOT no mesmo tick em que carrega — a classe não dura um frame. */
+#stage { animation: boot-fade 200ms ease-out both; }
+
+@keyframes boot-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------- explosão ---------- */
+/* Placeholder honesto: uma bola de fogo que cresce e apaga. A arte definitiva
+   é problema do D9 — o que precisa estar certo agora é o timing. */
+
+#fx-layer .boom {
+  position: absolute;
+  left: calc(var(--ox) + var(--x, 500) * var(--u));
+  top: calc(var(--oy) + var(--y, 470) * var(--u));
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  margin: calc(-20 * var(--u));
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffd36b 35%, #ff5a3c 65%, rgba(255, 90, 60, 0) 72%);
+  transform: scale(0);
+  animation: boom 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes boom {
+  0%   { transform: scale(0); opacity: 1; }
+  35%  { transform: scale(calc(6 + 6 * var(--juice))); opacity: 1; }
+  100% { transform: scale(calc(8 + 8 * var(--juice))); opacity: 0; }
+}
+
+/* Ator que foi pelos ares: some na hora do clarão. */
+.actor.is-vaporized {
+  opacity: 0;
+  transition: opacity 60ms linear;
+}
+
+/* ---------- entrada do ending card ---------- */
+
+#ending-card:not([hidden]) {
+  animation: card-in 240ms ease-out both;
+}
+
+@keyframes card-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+#ending-card:not([hidden]) #ending-title {
+  animation: title-pop 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes title-pop {
+  from { transform: scale(calc(1 - 0.25 * var(--juice))) rotate(calc(-2deg * var(--juice))); }
+  to { transform: scale(1) rotate(0deg); }
+}
