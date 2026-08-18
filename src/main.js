@@ -77,6 +77,11 @@ const el = {
   card: document.getElementById('ending-card'),
 };
 
+/** O catálogo de finais achatado, na ordem estável em que a coleção o mostra.
+ *  Fica ANTES da montagem porque o ending card o recebe no construtor. */
+const ALL_ENDINGS = scenes.flatMap((s) => s.endings ?? []);
+const TOTAL_ENDINGS = ALL_ENDINGS.length;
+
 const clock = createClock();
 const director = createDirector({ clock });
 const countdown = createCountdown(el.timer, clock);
@@ -84,7 +89,7 @@ const stage = createStage({ cast: el.cast, layers: [el.fx, el.fxBack] });
 const fx = createFx({ stage: el.stage, layer: el.fx, back: el.fxBack });
 const audio = createAudio();
 const hud = createHud({ deaths: el.deaths, message: el.message });
-const endingCard = createEndingCard(el.card, { onRestart: startRound });
+const endingCard = createEndingCard(el.card, { onRestart: startRound, endings: ALL_ENDINGS });
 
 let phase = PHASE.BOOT;
 
@@ -111,9 +116,6 @@ const session = {
   lastMessage: null,
 };
 
-/** Denominador do contador `X/N`: sai do catálogo, não de uma constante — o
- *  número cresce sozinho conforme o D7 e o D8 escrevem os finais. */
-const TOTAL_ENDINGS = scenes.reduce((n, s) => n + (s.endings?.length ?? 0), 0);
 
 bindVisibility(clock, {
   onHide: () => {
@@ -310,6 +312,7 @@ function toEnding(id) {
     seen: saved.seenEndings.length,
     total: TOTAL_ENDINGS,
     isNew,
+    seenIds: progress.seenSet(),
   });
 }
 

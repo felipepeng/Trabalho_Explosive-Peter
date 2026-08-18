@@ -269,7 +269,9 @@ progress.seenSet()          // Set pronto para o picker
 - `deaths`/`saves` só se movem quando `survives !== null`.
 - ⚠️ **`lastDiscoveryRound` entra no schema no D4 mesmo sem uso.** Um número inutilizado custa zero; adicioná-lo depois custa `version: 2` e o reset do save de todos os playtesters.
 
-**A coleção de finais mora dentro do ending card**, não numa tela separada: uma fileira de quadradinhos abaixo do `FINAL 3/14`, com `???` no que falta. Decorativa e não clicável. Assim não há interação nova (GDD §4.2 proíbe), não há sexto estado, e o gancho de "falta um" aparece toda rodada em vez de ficar atrás de um botão.
+**A coleção de finais mora dentro do ending card**, não numa tela separada: uma fileira de quadradinhos abaixo do `X/N`, com `?` no que falta. Decorativa e não clicável (`pointer-events: none`). Assim não há interação nova (GDD §4.2 proíbe), não há sexto estado, e o gancho de "falta um" aparece toda rodada em vez de ficar atrás de um botão.
+
+Cada célula descoberta mostra o `icon` do final e ganha a cor do `theme` dele, então a fileira vira um mapa do catálogo. **A ordem é a do catálogo e é estável**: a mesma célula é sempre o mesmo final, e o jogador aprende "falta aquele ali no canto" — o que não funcionaria se a grade se reordenasse conforme a descoberta. Com `flex-wrap`, um catálogo maior quebra em duas linhas em vez de empurrar o título para fora da tela.
 
 **Cada final se veste com o próprio tema.** O final traz `theme`, `kicker` e `button` em `data/scenes.js`; o card só declara TOKENS (`--card-top/bot/ink/accent/btn-ink/font`) e `[data-theme]` os reescreve. Nenhum seletor de CSS conhece um id de final: **sete paletas** — `fogo · pedra · festa · mar · drop · fenda · corrompido` — cobrem os catorze.
 
@@ -397,8 +399,7 @@ export default { base: './' }
 
 | O quê | Quando | Nota |
 | --- | --- | --- |
-| Grade de finais no ending card | D10 | 14 células precisam caber sem empurrar o título. Se pesar, corta a grade e fica só o `X/14` |
-| `prefers-reduced-motion` | D9 | Escopo que o GDD não previu. ~20 min, melhor retorno por minuto da lista |
+| — | — | Nada pendente: os quatro itens desta lista foram decididos no D4, no D9 e no D10 |
 
 ---
 

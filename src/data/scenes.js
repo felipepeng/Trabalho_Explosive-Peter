@@ -17,11 +17,11 @@
  * está em y 450; quem está de pé no palco tem y 470.
  *
  * `id` de final é PERMANENTE — é chave do save do jogador. `title` é livre.
- * A classificação de `survives` dos 14 finais está em ARCHITECTURE.md §7.1.
+ * A classificação de `survives` dos 15 finais está em ARCHITECTURE.md §7.1.
  *
  * Cada final também traz a PRÓPRIA TELA: `theme` (uma das paletas declaradas
- * em base.css), `kicker` (a linha acima do título) e `button` (o texto do
- * botão de reinício).
+ * em base.css), `kicker` (a linha acima do título), `button` (o texto do botão
+ * de reinício) e `icon` (o emoji da célula dele na galeria).
  *
  * ⚠️ EMOJI: pode em kicker, botão e em qualquer texto de interface. NUNCA no
  * `text` de um beat `say` — fala de personagem é sem emoji, senão o Vinicius
@@ -56,6 +56,7 @@ export const scenes = [
         title: 'NINGUÉM VEIO',
         weight: 1,
         survives: false,
+        icon: '💥',
         theme: 'fogo',
         kicker: 'SEM SALVAÇÃO 💥',
         button: 'DE NOVO 🔁',
@@ -91,6 +92,7 @@ export const scenes = [
         title: 'CONTIDO PELO ESTOICISMO',
         weight: 3,
         survives: true,
+        icon: '🧘',
         theme: 'pedra',
         kicker: 'PEDRO SOBREVIVEU 🧘',
         button: 'MAIS UMA 🔁',
@@ -107,6 +109,7 @@ export const scenes = [
         title: 'MEMENTO MORI',
         weight: 3,
         survives: true,
+        icon: '🕯️',
         theme: 'pedra',
         kicker: 'SACRIFÍCIO ESTOICO 🕯️',
         button: 'MAIS UMA 🔁',
@@ -123,6 +126,7 @@ export const scenes = [
         title: 'A DICOTOMIA DO CONTROLE',
         weight: 2,
         survives: false,
+        icon: '⏳',
         theme: 'fogo',
         kicker: 'PEDRO PERDIDO 💥',
         button: 'DE NOVO 🔁',
@@ -166,6 +170,7 @@ export const scenes = [
         title: 'BAIXO IMPACTO',
         weight: 3,
         survives: false,
+        icon: '📏',
         theme: 'fogo',
         kicker: 'PEDRO PERDIDO 💥',
         button: 'DE NOVO 🔁',
@@ -186,6 +191,7 @@ export const scenes = [
         title: 'CORTOU O FIO ERRADO',
         weight: 3,
         survives: false,
+        icon: '✂️',
         theme: 'fogo',
         kicker: 'PEDRO PERDIDO ✂️',
         button: 'DE NOVO 🔁',
@@ -209,6 +215,7 @@ export const scenes = [
         title: 'ARREMESSO DE PEDRO',
         weight: 2,
         survives: true,
+        icon: '🥏',
         theme: 'festa',
         kicker: 'PEDRO SOBREVIVEU 🥏',
         button: 'MAIS UMA 🔁',
@@ -249,6 +256,7 @@ export const scenes = [
         title: 'ENCANTAMENTO NÍVEL III',
         weight: 3,
         survives: true,
+        icon: '🎆',
         theme: 'festa',
         kicker: 'PEDRO SOBREVIVEU 🎆',
         button: 'MAIS UMA 🌊',
@@ -266,6 +274,7 @@ export const scenes = [
         title: 'NÃO ERA ESSE TIPO DE SALVAMENTO',
         weight: 3,
         survives: false,
+        icon: '🌊',
         theme: 'mar',
         kicker: 'PEDRO AFOGADO 🌊',
         button: 'DE NOVO 🔁',
@@ -282,6 +291,7 @@ export const scenes = [
         title: "À PROVA D'ÁGUA",
         weight: 2,
         survives: false,
+        icon: '🫧',
         theme: 'mar',
         kicker: 'PEDRO PERDIDO 🫧',
         button: 'DE NOVO 🔁',
@@ -304,6 +314,7 @@ export const scenes = [
         title: 'DROP RARO',
         weight: 1,
         survives: true,
+        icon: '⭐',
         theme: 'drop',
         kicker: 'DROP RARO ⭐',
         button: 'FARMAR MAIS ⛏️',
@@ -346,6 +357,7 @@ export const scenes = [
         title: 'PARADOXO',
         weight: 3,
         survives: false,
+        icon: '🌀',
         theme: 'fenda',
         kicker: 'OS DOIS PERDIDOS 💥',
         button: 'DE NOVO 🔁',
@@ -360,6 +372,7 @@ export const scenes = [
         title: 'TROCA DE UNIVERSOS',
         weight: 3,
         survives: true,
+        icon: '🔮',
         theme: 'fenda',
         kicker: 'PEDRO SOBREVIVEU 🔮',
         button: 'MAIS UMA 🔁',
@@ -387,6 +400,7 @@ export const scenes = [
         title: '[DADOS CORROMPIDOS]',
         weight: 2,
         survives: null,
+        icon: '🚫',
         theme: 'corrompido',
         kicker: 'REGISTRO PERDIDO 🚫',
         button: '[ REINICIAR ] ⏵',
@@ -423,6 +437,7 @@ export const scenes = [
         title: 'ELA NÃO ESPEROU',
         weight: 1,
         survives: false,
+        icon: '⏱️',
         theme: 'fogo',
         kicker: 'SEM AVISO ⏱️',
         button: 'DE NOVO 🔁',

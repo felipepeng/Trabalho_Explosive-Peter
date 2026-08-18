@@ -5,7 +5,20 @@
     <meta name="theme-color" content="#12141c" />
     <title>Explosive Peter</title>
     <meta name="description" content="Não tem como salvar ele." />
-    <link rel="icon" href="data:," />
+
+    <!-- O jogo existe para virar link mandado no grupo (GDD §1), então o
+         preview do link é parte da entrega, não enfeite. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Explosive Peter" />
+    <meta property="og:description" content="Não tem como salvar ele." />
+    <meta property="og:locale" content="pt_BR" />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- Favicon como SVG embutido: um asset a menos para o Pages servir errado. -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='44' cy='62' r='33' fill='%231b1d28'/%3E%3Ccircle cx='32' cy='50' r='8' fill='%23f5f1e6' opacity='.22'/%3E%3Crect x='52' y='22' width='17' height='13' rx='3' fill='%236b6250'/%3E%3Cpath d='M62 28 C74 12 86 16 88 5' stroke='%23b9a77e' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='88' cy='5' r='8' fill='%23ffd36b'/%3E%3C/svg%3E"
+    />
     <link rel="stylesheet" href="./src/styles/base.css" />
     <link rel="stylesheet" href="./src/styles/chars.css" />
     <link rel="stylesheet" href="./src/styles/juice.css" />
@@ -41,6 +54,8 @@
         <p id="ending-kicker">FINAL</p>
         <h1 id="ending-title"></h1>
         <p id="ending-count"></p>
+        <!-- coleção de finais: decorativa, nunca clicável -->
+        <ul id="ending-gallery" aria-label="Finais descobertos"></ul>
         <button id="ending-restart" type="button">DE NOVO</button>
       </div>
     </main>

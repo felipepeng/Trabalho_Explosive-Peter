@@ -9,6 +9,8 @@
  * aqui — este arquivo só sabe ONDE escrever, nunca O QUE.
  */
 
+import { createGallery } from './gallery.js';
+
 /** Quando o final não declara `kicker`, o veredito sai do `survives`. */
 const KICKER_PADRAO = {
   true: 'PEDRO SOBREVIVEU 🎉',
@@ -19,11 +21,12 @@ const KICKER_PADRAO = {
 const BOTAO_PADRAO = 'DE NOVO 🔁';
 const TEMA_PADRAO = 'fogo';
 
-export function createEndingCard(el, { onRestart }) {
+export function createEndingCard(el, { onRestart, endings = [] }) {
   const kicker = el.querySelector('#ending-kicker');
   const title = el.querySelector('#ending-title');
   const count = el.querySelector('#ending-count');
   const button = el.querySelector('#ending-restart');
+  const gallery = createGallery(el.querySelector('#ending-gallery'));
 
   let armed = false;
 
@@ -41,8 +44,9 @@ export function createEndingCard(el, { onRestart }) {
      * @param {number} o.seen      quantos finais o jogador já descobriu
      * @param {number} o.total     quantos existem no catálogo
      * @param {boolean} o.isNew    este final foi descoberto AGORA
+     * @param {Set<string>} o.seenIds ids descobertos, para a coleção
      */
-    show({ ending, seen = 0, total = 0, isNew = false }) {
+    show({ ending, seen = 0, total = 0, isNew = false, seenIds = new Set() }) {
       el.dataset.theme = ending.theme ?? TEMA_PADRAO;
 
       kicker.textContent = ending.kicker ?? KICKER_PADRAO[String(ending.survives)];
@@ -58,6 +62,8 @@ export function createEndingCard(el, { onRestart }) {
       el.classList.toggle('is-new', isNew);
       el.classList.toggle('is-complete', completo);
       if (isNew) count.textContent = `✨ NOVO · ${count.textContent}`;
+
+      gallery.render({ endings, seen: seenIds, currentId: ending.id });
 
       el.hidden = false;
       armed = true;
