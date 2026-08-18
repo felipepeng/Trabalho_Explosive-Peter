@@ -25,8 +25,6 @@
   </head>
   <body class="state-boot">
     <main id="stage" aria-label="Palco">
-      <div id="ground" aria-hidden="true"></div>
-
       <!-- Efeitos que ficam ATRÁS do elenco. O portal do Pedro Maligno se abre
            atrás do Pedro (GDD §5), e um filho de #fx-layer não consegue passar
            para trás de #cast — precisa ser uma camada própria, antes dele. -->
@@ -34,6 +32,10 @@
 
       <!-- HUD: timer + contadores -->
       <div id="hud">
+        <!-- Linha fixa: não comenta a rodada, avisa que o relógio está correndo.
+             Junto com a barra de baixo, são as duas únicas frases de tela
+             durante a rodada — nada revela QUAL cena é antes do Pedro morrer. -->
+        <p id="hud-tagline">O Pedro não tem muito tempo</p>
         <div id="timer" role="timer" aria-live="off">10</div>
         <div id="hud-stats"><span id="hud-deaths" hidden></span></div>
       </div>
@@ -45,18 +47,29 @@
       <!-- efeitos (flash, explosão, água, portal) -->
       <div id="fx-layer" aria-hidden="true"></div>
 
-      <!-- barra inferior -->
-      <p id="message">Não tem como salvar ele.</p>
+      <!-- Barra inferior: SLOGAN FIXO. Não é mais reescrito por JS a cada
+           rodada — é a tese do jogo, e repeti-la sempre é a piada. -->
+      <p id="message">Não tem como salvar Ele.</p>
 
       <!-- final da rodada. O card em si não é clicável: quem reinicia é o
            botão, e só ele. -->
       <div id="ending-card" hidden>
-        <p id="ending-kicker">FINAL</p>
-        <h1 id="ending-title"></h1>
-        <p id="ending-count"></p>
-        <!-- coleção de finais: decorativa, nunca clicável -->
-        <ul id="ending-gallery" aria-label="Finais descobertos"></ul>
-        <button id="ending-restart" type="button">DE NOVO</button>
+        <!-- Quem matou (ou salvou) o Pedro posa aqui e fala a `line` do final
+             num balão. O `title` virou legenda pequena: a atração da tela é o
+             personagem, não uma manchete.
+
+             O card é uma GRADE 3×3: o texto mora sempre na célula do meio, e o
+             `cast.at` do final joga o personagem numa das outras oito. Assim o
+             texto fica centralizado sempre e nada precisa se sobrepor. -->
+        <div id="ending-cast"></div>
+        <div id="ending-text">
+          <p id="ending-kicker">FINAL</p>
+          <h1 id="ending-title"></h1>
+          <p id="ending-count"></p>
+          <!-- coleção de finais: decorativa, nunca clicável -->
+          <ul id="ending-gallery" aria-label="Finais descobertos"></ul>
+          <button id="ending-restart" type="button">DE NOVO</button>
+        </div>
       </div>
     </main>
 

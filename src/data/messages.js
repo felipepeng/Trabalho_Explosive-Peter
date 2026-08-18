@@ -1,5 +1,18 @@
 /* Explosive Peter — as frases da barra inferior.
  *
+ * ⚠️  FORA DO AR DESDE O D11, DE PROPÓSITO. Ninguém importa este arquivo.
+ *
+ * A barra inferior virou slogan fixo ("Não tem como salvar Ele.", escrito
+ * direto no index.html) e a linha de cima do HUD também é estática. A decisão
+ * troca variação por identidade: a mesma tese repetida em toda rodada, e nada
+ * na tela dizendo qual cena está rodando antes do Pedro morrer.
+ *
+ * O arquivo fica aqui inteiro porque o custo de guardá-lo é zero e o de
+ * reescrevê-lo não é: para religar a barra dinâmica basta devolver ao main.js
+ * o `pickMessage` (histórico em `git log`) e um `hud.setMessage`.
+ *
+ * O que está abaixo descreve como ele FUNCIONAVA:
+ *
  * Dado inerte (P1). É a fonte de humor mais barata do projeto (GDD §3.2), e a
  * única que muda toda rodada sem custar um beat.
  *

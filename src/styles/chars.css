@@ -26,9 +26,13 @@
 /* Seletores estreitos de propósito: o rosto e o acessório entram como SVG de
    data/, com fill próprio, e não podem ser pegos por uma regra genérica. */
 
-.rig .leg > rect,
+/* PELE, ROUPA E CALÇA são três cores, não uma. Todo mundo aqui é humano: a
+   cabeça e os braços são pele, o tronco é camisa e as pernas são calça.
+
+   A cascata de defaults (`--pants` cai em `--cloth`, que cai em `--skin`) faz
+   personagem antigo, escrito com uma cor só, continuar funcionando: quem não
+   declara roupa fica pelado da cor da pele, como era antes. */
 .rig .arm > rect,
-.rig .body > rect,
 .rig .skull {
   fill: var(--skin);
   stroke: var(--outline);
@@ -36,6 +40,41 @@
   stroke-linejoin: round;
   paint-order: stroke;
 }
+
+.rig .body > rect {
+  fill: var(--cloth, var(--skin));
+  stroke: var(--outline);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+.rig .leg > rect {
+  fill: var(--pants, var(--cloth, var(--skin)));
+  stroke: var(--outline);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+/* ---------- emoji como parte do desenho ---------- */
+/* Um <text> dentro do próprio SVG do ator, escrito em `accessory` no
+   characters.js. Por estar DENTRO do rig, ele escala, gira e sai de cena junto
+   com o personagem — é a taça NA MÃO do Vinicius, não um emoji voando pela
+   tela (que é outra coisa: o verbo `burst`). */
+.rig .prop {
+  font-size: 34px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  /* o emoji tem cor própria; herdar fill/stroke do rig o transformaria num
+     borrão com contorno */
+  fill: none;
+  stroke: none;
+  paint-order: normal;
+}
+
+.rig .prop.big { font-size: 48px; }
+.rig .prop.small { font-size: 24px; }
 
 .rig .arm-l { transform-origin: 21px 70px; }
 .rig .arm-r { transform-origin: 99px 70px; }
@@ -199,6 +238,41 @@
   100% { r: calc(6px + 3px * var(--juice, 1)); opacity: 0.65; }
 }
 
+/* ---------- plaquinha de nick (estilo Minecraft) ---------- */
+/* Filha do ator, como o balão: acompanha entrada, tremida, saída e
+   vaporização sem nenhum verbo saber que ela existe.
+
+   `--tag-h` é a altura DECLARADA da plaquinha, e o balão lê esse número para
+   subir acima dela. Por isso o padding e o line-height abaixo são fixos em
+   unidades de design: se a caixa crescer sem o token crescer junto, o balão
+   volta a cobrir o nick. Ator sem nick (a bomba) não ganha `.has-tag`, o token
+   fica em 0 e o balão dele não sobe à toa. */
+
+.actor { --tag-h: 0px; }
+.actor.has-tag { --tag-h: calc(26 * var(--u)); }
+
+.nametag {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5 * var(--u));
+  transform: translateX(-50%);
+  z-index: 4;
+
+  white-space: nowrap;
+  font-family: var(--font-nick);
+  font-size: calc(16 * var(--u));
+  line-height: calc(18 * var(--u));
+  padding: calc(4 * var(--u)) calc(9 * var(--u));
+
+  /* Preto translúcido, sem borda e sem canto arredondado: no Minecraft a
+     plaquinha é exatamente isso, e é o que a faz ler como plaquinha e não
+     como mais um balão. */
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.55);
+  text-shadow: var(--u) var(--u) 0 rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+}
+
 /* ---------- balão de fala (verbo `say`) ---------- */
 /* Filho do ator, então acompanha entrada, tremida e saída de graça.
    Um por ator: o `say` novo remove o anterior antes de inserir este. */
@@ -206,10 +280,11 @@
 .balloon {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 12 * var(--u));
+  /* acima da CABEÇA e, quando existe, acima da PLAQUINHA também */
+  bottom: calc(100% + var(--tag-h, 0px) + 12 * var(--u));
   transform: translateX(-50%);
   transform-origin: bottom center;
-  z-index: 3;
+  z-index: 5;
 
   margin: 0;
   width: max-content;
@@ -334,6 +409,75 @@
                translateY(calc(-12 * var(--u)))
                rotate(calc(10deg * var(--juice, 1)));
   }
+}
+
+/* ---------- poses de CARD ---------- */
+/* Estas sete nasceram com o card do D11 (`cast.pose` em data/scenes.js). Valem
+   em cena também — são poses, não são "poses de card" — mas foi a tela de
+   reinício que pediu por elas. Continuam sendo CSS puro: gesto novo não custa
+   uma linha de JavaScript. */
+
+/* carbonizado: o Pedro depois de. O filtro escurece rosto e acessório junto,
+   que é o único jeito de queimar um personagem sem saber o nome dele. */
+.pose-burnt .frame {
+  filter: brightness(0.34) saturate(0.25);
+  transform: rotate(-3deg);
+}
+
+/* no chão. Gira em torno do CENTRO do rig, e não dos pés: tombando pelos pés
+   o corpo inteiro sai andando para a esquerda e a plaquinha de nick fica
+   flutuando sozinha onde a cabeça estava. Pelo centro, ele deita debaixo do
+   próprio nick. */
+.pose-dead .frame {
+  transform: rotate(-84deg);
+  transform-origin: 60px 90px;
+}
+
+/* estoico: braços abertos, palmas para fora. Nada de dramático — o Vinicius
+   não reage, e a pose precisa dizer isso sozinha. */
+.pose-zen .arm-l { transform: rotate(22deg); }
+.pose-zen .arm-r { transform: rotate(-22deg); }
+
+/* aceno de despedida (o `vin-memento` sai de cena com a bomba no colo) */
+.pose-wave .arm-l { transform: rotate(14deg); }
+.pose-wave .arm-r {
+  transform: rotate(-158deg);
+  animation: pose-wave 620ms ease-in-out infinite alternate;
+}
+
+@keyframes pose-wave {
+  from { transform: rotate(calc(-158deg + 12deg * var(--juice, 1))); }
+  to   { transform: rotate(calc(-158deg - 12deg * var(--juice, 1))); }
+}
+
+/* "não fui eu": braços para os lados, meio erguidos */
+.pose-shrug .arm-l { transform: rotate(128deg); }
+.pose-shrug .arm-r { transform: rotate(-128deg); }
+
+/* comemoração: braços para cima e um pulinho curto */
+.pose-celebrate .arm-l { transform: rotate(168deg); }
+.pose-celebrate .arm-r { transform: rotate(-168deg); }
+.pose-celebrate .frame {
+  animation: pose-celebrate 560ms ease-in-out infinite alternate;
+  transform-origin: 60px 168px;
+}
+
+@keyframes pose-celebrate {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc(-10px * var(--juice, 1))); }
+}
+
+/* registro corrompido: o Pedro Maligno não fica parado no quadro.
+   `steps(2)` de propósito — tremida contínua parece bug de render; tremida
+   em degraus parece vídeo quebrado, que é a piada do `mal-censurado`. */
+.pose-glitch .frame {
+  animation: pose-glitch 280ms steps(2, end) infinite;
+}
+
+@keyframes pose-glitch {
+  0%   { transform: translateX(calc(-3px * var(--juice, 1))); opacity: 1; }
+  50%  { transform: translateX(calc(4px * var(--juice, 1))); opacity: 0.72; }
+  100% { transform: translateX(0); opacity: 1; }
 }
 
 /* pavio cortado: some o pavio e a faísca. A bomba continua ali, muda o pavio. */

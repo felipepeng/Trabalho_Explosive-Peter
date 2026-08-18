@@ -22,8 +22,9 @@ npm run preview  # serve o dist/
 
 **Não há suíte de testes automatizados** — é uma ausência deliberada (`docs/ARCHITECTURE.md` §11). O que faz o papel de teste:
 
-- **Validador de conteúdo** (`src/data/validate.js`): roda no boot **só em dev** e imprime no console. Reprova verbo/som/tema inexistente, `id` de final duplicado, posição fora do espaço de design, emoji em fala de personagem, `climaxAt` antes do último beat da cena e — o principal — qualquer combinação cena × final que passe de **15 s**. Depois de mexer em `src/data/`, rode `npm run dev` e confira o `[validate] ok — …` no console.
+- **Validador de conteúdo** (`src/data/validate.js`): roda no boot **só em dev** e imprime no console. Reprova verbo/som/tema inexistente, `id` de final duplicado, posição fora do espaço de design, emoji em fala de personagem (`say` e `line`), final sem `line` ou sem `cast.who`, `cast.who` que não existe em `characters.js`, `climaxAt` antes do último beat da cena e — o principal — qualquer combinação cena × final que passe de **15 s**. Depois de mexer em `src/data/`, rode `npm run dev` e confira o `[validate] ok — …` no console.
 - **Bancada de verbos**: em dev, `main.js` expõe `clock`, `stage`, `fx`, `audio`, `actions`, `scenes`, `progress`, `session`, `phase`, `round` e um helper `beat()` no `window`. Para testar um verbo isolado no console: `beat({ do: 'shake', intensity: 10 })`.
+  ⚠️ `window.phase` e `window.round` são **cópias do boot, não getters vivos** — o `Object.assign` executa o getter na hora e guarda o valor. Para saber a fase de verdade, leia `document.body.className` (`state-countdown`, `state-ending`, …).
 - Para resetar o save: `localStorage.removeItem('explosive-peter:v1')`.
 
 Branch de trabalho: `dev`. `push` na `main` dispara o deploy no GitHub Pages (`.github/workflows/deploy.yml`).
@@ -87,15 +88,32 @@ Puro: recebe estado, devolve escolha; não lê `localStorage` nem conhece o cat�
 
 O palco ocupa a janela inteira (sem letterbox); as 1000 × 600 unidades são uma **área segura centralizada** escalada pela custom property `--u`. Consequências que viram regra:
 
-- Toda posição em `data/` está em unidades de design — nunca pixel, `vw` ou `%`. O chão está em `y: 450`; quem está de pé tem `y: 470`.
+- Toda posição em `data/` está em unidades de design — nunca pixel, `vw` ou `%`. Quem está "de pé" tem `y: 470`.
+- **Não existe chão.** O `#ground` foi removido: o Pedro flutua no vazio, de propósito. O token `--ground-y: 450` sobreviveu como **linha d'água** (até onde o `flood` sobe), não como piso — não o use para apoiar ninguém.
 - Medida em CSS é `calc(N * var(--u))`, **nunca `em`** (dentro de um elemento que mudou o próprio `font-size`, como o `#timer`, `em` sai multiplicado).
 - Fora-de-tela se ancora na borda **real** da janela (`.is-off-left/right/...`), não na área segura.
 - **JS não escreve `style.transform`** — liga uma classe `.is-*` ou escreve uma custom property, e o `@keyframes` em `juice.css` consome. Só `transform` e `opacity` são animados.
 - ⚠️ `animationend` borbulha: quem usa o evento para desligar a própria classe precisa filtrar por `ev.target`.
 
-Personagens: **um único rig SVG** (`#tpl-actor` no `index.html`, montado por `ui/rig.js`) vestido por `data/characters.js` — cor, proporção (`--h`/`--build`) e fragmentos SVG de rosto/acessório. Personagem novo é um objeto; nenhum HTML ou CSS por personagem. `ui/stage.js` cria e destrói atores; `engine/actions.js` só modifica o que já existe.
+Acima da cabeça de cada ator há uma **pilha de três andares**, e a ordem é regra: balão de fala → plaquinha de nick → cabeça. Quem sustenta isso é o token `--tag-h` em `chars.css`: `.actor` declara `0px`, `.actor.has-tag` declara a altura real da plaquinha, e o `.balloon` soma esse valor no próprio `bottom`. **Mexeu no padding ou no line-height da `.nametag`? Ajuste o `--tag-h` junto**, senão o balão volta a cobrir o nick. A classe `has-tag` é escrita por `ui/rig.js`, que só pendura a plaquinha em quem tem `nick` (a bomba não tem).
+
+Personagens: **um único rig SVG** (`#tpl-actor` no `index.html`, montado por `ui/rig.js`) vestido por `data/characters.js` — cor, proporção (`--h`/`--build`), `nick` e fragmentos SVG de rosto/acessório. Personagem novo é um objeto; nenhum HTML ou CSS por personagem. `ui/stage.js` cria e destrói atores; `engine/actions.js` só modifica o que já existe.
 
 Duas camadas de efeito: `#fx-back` (antes de `#cast`) e `#fx-layer` (depois) — um filho de `#fx-layer` não consegue passar para trás do elenco.
+
+### Texto de tela: duas frases fixas, e o título só depois da morte
+
+Durante a rodada existem exatamente duas frases, as duas **estáticas e escritas no `index.html`**: `#hud-tagline` ("O Pedro não tem muito tempo", acima do timer) e `#message` ("Não tem como salvar Ele.", no rodapé). Nenhuma das duas é reescrita por JS, e **nada na tela revela qual cena está rodando** — o nome do final só aparece depois que o Pedro morre, no card.
+
+Consequência: `src/data/messages.js` está **fora do ar** (ninguém importa o arquivo) e `createHud` só cuida do contador de mortes. O cabeçalho de `messages.js` explica como religar a barra dinâmica.
+
+### O card de final é uma pessoa falando
+
+`ui/ending-card.js` monta o `cast.who` do final com o **mesmo `buildActor`** do palco (por isso o rig mora em `ui/rig.js`, e não dentro do `stage.js`), liga a classe `pose-<cast.pose>` e põe a `line` do final num `.balloon` — o mesmo balão do verbo `say`, filho do ator, que por isso já sobe acima da plaquinha sem o card saber que plaquinha existe.
+
+O `title` continua na tela, mas como **legenda pequena** embaixo do personagem: ele é o nome que a coleção usa, não a manchete. Quem fala com o jogador é o personagem.
+
+Poses disponíveis em `chars.css` (`cast.pose` e o verbo `pose` usam a mesma lista): `jump · reach · throw · item · cut · burnt · dead · zen · wave · shrug · celebrate · glitch`.
 
 ### `--juice` e acessibilidade
 
@@ -112,7 +130,7 @@ Não existe arquivo de áudio: os 11 SFX (`tick`, `tick-urgente`, `boom`, `whoos
 ## Regras que quebram o jogo se ignoradas
 
 - **`id` de final é permanente** — é chave do save do jogador. `title` é livre.
-- **Emoji**: pode em `kicker`, `button`, `icon`, HUD e mensagens. **Proibido no `text` de um beat `say`** — o validador reprova.
+- **Emoji**: pode em `kicker`, `button`, `icon`, HUD e mensagens. **Proibido em fala de personagem** — tanto no `text` de um beat `say` quanto na `line` do final. O validador reprova os dois.
 - **Verbo nunca consulta `scene.id` nem `ending.id`.** Deu vontade de escrever esse `if`? Parametrize pelo beat ou crie um verbo novo. Verbo também retorna sem fazer nada se `ctx.signal.aborted`.
 - **Nenhum seletor de CSS conhece um id de final.** O card declara tokens e `[data-theme]` os reescreve; as paletas válidas estão em `config.js` (`CARD_THEMES`) e em `base.css` — as duas listas precisam bater.
 - **`setTimer` mexe no mostrador, não no relógio.** Quem decide quando a rodada estoura é o `climaxAt`. Em `maligno-portal` os dois números foram casados à mão (mostrador zera em 7700 ms, clímax em 7800 ms) e o validador **não** consegue conferir isso.
@@ -122,7 +140,7 @@ Não existe arquivo de áudio: os 11 SFX (`tick`, `tick-urgente`, `boom`, `whoos
 
 ## Adicionar conteúdo
 
-Cena nova = um objeto em `src/data/scenes.js` (o cabeçalho do arquivo documenta o contrato completo de beat, `climaxAt`, tema e `cast` do card). Verbos disponíveis: `enter · exit · say · grab · shake · flash · explode · pose · setTimer · hide · show · blackout · flood · portal · sfx`. Gesto novo é um `@keyframes` + `{ do: 'pose', as: '...' }`, não um verbo novo.
+Cena nova = um objeto em `src/data/scenes.js` (o cabeçalho do arquivo documenta o contrato completo de beat, `climaxAt`, tema, `cast` e `line` do card). Final novo precisa de `cast.who` **e** `line` — sem os dois o card fica mudo, e o validador reclama. Verbos disponíveis: `enter · exit · say · grab · shake · flash · explode · pose · setTimer · hide · show · blackout · flood · portal · sfx`. Gesto novo é um `@keyframes` + `{ do: 'pose', as: '...' }`, não um verbo novo.
 
 Constantes de tuning ficam todas em `src/config.js`.
 

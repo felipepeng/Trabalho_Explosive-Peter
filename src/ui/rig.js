@@ -22,8 +22,9 @@ import { characters } from '../data/characters.js';
  * @param {object} [opts]
  * @param {boolean} [opts.idle]  liga a pose de parado (o palco quer; o card não)
  * @param {boolean} [opts.anchor] escreve os padrões de entrada no dataset
+ * @param {boolean} [opts.tag]   pendura a plaquinha de nick acima da cabeça
  */
-export function buildActor(id, { idle = true, anchor = true } = {}) {
+export function buildActor(id, { idle = true, anchor = true, tag = true } = {}) {
   const character = characters[id];
   if (!character) return null;
 
@@ -45,6 +46,10 @@ export function buildActor(id, { idle = true, anchor = true } = {}) {
   el.style.setProperty('--skin', character.colors?.skin ?? '#f5f1e6');
   el.style.setProperty('--outline', character.colors?.outline ?? '#12141c');
   el.style.setProperty('--accent', character.colors?.accent ?? '#cfc6ad');
+  // Roupa e calça são opcionais: sem elas o CSS cai na cor da pele, e o
+  // personagem continua sendo aquele boneco de uma cor só.
+  if (character.colors?.cloth) el.style.setProperty('--cloth', character.colors.cloth);
+  if (character.colors?.pants) el.style.setProperty('--pants', character.colors.pants);
   if (character.colors?.eye) el.style.setProperty('--eye', character.colors.eye);
   if (character.shape) el.classList.add(`shape-${character.shape}`);
 
@@ -52,7 +57,32 @@ export function buildActor(id, { idle = true, anchor = true } = {}) {
   if (character.accessory) {
     el.querySelector('.accessory').insertAdjacentHTML('afterbegin', character.accessory);
   }
+  // `hand` entra DENTRO do braco esquerdo, e nao na camada de acessorio: assim
+  // a taca do Vinicius gira junto com o gesto em vez de flutuar parada ao lado
+  // de um braco levantado.
+  if (character.hand) {
+    el.querySelector('.arm-l')?.insertAdjacentHTML('beforeend', character.hand);
+  }
   if (idle && character.idle) el.classList.add(`idle-${character.idle}`);
+
+  // A PLAQUINHA DE NICK (estilo Minecraft). Filha do ator, então acompanha
+  // entrada, tremida, saída e vaporização de graça — mesma razão do balão.
+  //
+  // `has-tag` publica no CSS que existe uma plaquinha aqui: é o que faz o
+  // balão de fala subir para CIMA do nick em vez de cobri-lo. Ator sem nick
+  // (a bomba) não ganha a classe, e o balão dele fica na altura de sempre.
+  //
+  // `textContent`, nunca insertAdjacentHTML: nick é texto, não fragmento SVG.
+  if (tag && character.nick) {
+    const plaquinha = document.createElement('span');
+    plaquinha.className = 'nametag';
+    plaquinha.textContent = character.nick;
+    // O leitor de tela já recebe o nome pelo aria-label do rig; a plaquinha
+    // seria o mesmo nome duas vezes.
+    plaquinha.setAttribute('aria-hidden', 'true');
+    el.appendChild(plaquinha);
+    el.classList.add('has-tag');
+  }
 
   // O verbo `enter` é do engine/ e não pode importar data/. Então o padrão de
   // entrada do personagem viaja no próprio nó, e o beat continua podendo

@@ -22,8 +22,18 @@
  * Cada final também traz a PRÓPRIA TELA: `theme` (uma das paletas declaradas
  * em base.css), `kicker` (a linha acima do título), `button` (o texto do botão
  * de reinício), `icon` (o emoji da célula dele na galeria), `colors` (a
- * paleta só dele, que sobrescreve a do tema) e `cast` (quem aparece posando
- * no card e em que pose).
+ * paleta só dele, que sobrescreve a do tema), `cast` (quem aparece posando
+ * no card, em que pose e em que CANTO da tela) e `line` (o que ele FALA lá).
+
+ * `cast.at` posiciona o personagem no card sem mexer no texto, que fica sempre
+ * centralizado: `left · right · top · top-left · top-right · bottom-left ·
+ * bottom-right`. A escolha segue a CENA — quem voou aparece no alto, quem
+ * entrou pela esquerda aparece na esquerda.
+ *
+ * `line` é a manchete do final dita em primeira pessoa: quem matou (ou salvou)
+ * o Pedro aparece na tela de reinício e fala. O `title` continua existindo,
+ * mas como legenda pequena embaixo — a atração da tela é o personagem.
+ * Vale a MESMA regra de emoji do `say`: `line` é fala, não é interface.
  *
  * `theme` continua mandando na ESTRUTURA (fonte, linhas de varredura);
  * `colors` manda na COR. É o que permite quinze cards diferentes sem quinze
@@ -34,8 +44,10 @@
  * estoico deixa de soar estoico.
  *
  * Orçamento: clímax + último beat do final + 600ms de pausa dramática tem que
- * caber em 15s (GDD, pilar 2). As sete combinações abaixo ficam entre 10,6s e
- * 13,0s.
+ * caber em `MAX_ROUND_MS_DESIGN` — 20s, e não mais os 15s originais do GDD.
+ * O motivo do aumento é legibilidade: as falas passavam rápido demais para
+ * serem lidas, e o clímax agora cai DEPOIS do mostrador zerar, de propósito.
+ * O teto continua sendo vigiado pelo validador em toda combinação cena × final.
  */
 
 export const scenes = [
@@ -54,7 +66,9 @@ export const scenes = [
     character: null,
     weight: 0, // nunca sorteável: só entra pelo forçamento da primeira rodada
     invadeAt: 0,
-    climaxAt: 10000, // = COUNTDOWN_MS: o clímax é o timer zerar
+    // 2s de silêncio DEPOIS do mostrador zerar. O timer chegar a zero e nada
+    // acontecer é a piada inteira desta cena — agora ela tem tempo de doer.
+    climaxAt: 12000,
     timeline: [],
     endings: [
       {
@@ -65,11 +79,16 @@ export const scenes = [
         icon: '💥',
         theme: 'fogo',
         colors: { top: '#5a1d05', bot: '#100407', ink: '#ffe4cf', accent: '#ff7a3c' },
-        cast: { who: 'peter', pose: 'burnt' },
+        cast: { who: 'peter', pose: 'burnt', at: 'left' },
+        line: 'Eu esperei alguém vir. Ninguém veio.',
         kicker: 'AVISARAM QUE NÃO TINHA JEITO 💥',
         button: 'TENTAR OUTRA VEZ (INÚTIL) 🔁',
         timeline: [
           { at: 0, do: 'explode', target: 'bomb', intensity: 8, vaporize: ['peter', 'bomb'] },
+          {
+            at: 40, do: 'burst', who: 'bomb',
+            emojis: ['💥', '🔥', '💀'], count: 14, power: 260, size: 34,
+          },
         ],
       },
     ],
@@ -85,13 +104,18 @@ export const scenes = [
     character: 'vinicius',
     weight: 3,
     invadeAt: 4000,
-    climaxAt: 10000, // ele segura até o fim; o clímax é o timer zerar
+    // Ele segura até DEPOIS do fim: o mostrador zera aos 10s e ele continua
+    // falando. Quem decide quando a rodada estoura é este número, não o timer.
+    climaxAt: 12800,
     timeline: [
+      // A estátua chega antes de todo mundo (500ms absolutos) e não faz mais
+      // nada. 🗿 e 🍷 são CENÁRIO e FIGURINO: os emojis do Vinicius não voam.
+      { at: -3500, do: 'prop', emoji: '🗿', x: 120, y: 470, size: 104 },
       // 2,2s para atravessar: devagar é o traço dele, não sobra de tempo
       { at: 0, do: 'enter', who: 'vinicius', x: 700, ms: 2200 },
-      { at: 2600, do: 'say', who: 'vinicius', text: 'A dor é apenas opinião.', ms: 2200 },
-      { at: 4200, do: 'grab', who: 'vinicius', target: 'bomb' },
-      { at: 5000, do: 'say', who: 'vinicius', text: 'Está tudo sob controle.', ms: 1400 },
+      { at: 2600, do: 'say', who: 'vinicius', text: 'A dor é apenas opinião.', ms: 3000 },
+      { at: 5200, do: 'grab', who: 'vinicius', target: 'bomb' },
+      { at: 6200, do: 'say', who: 'vinicius', text: 'Está tudo sob controle.', ms: 2600 },
     ],
     endings: [
       {
@@ -103,12 +127,18 @@ export const scenes = [
         icon: '🧘',
         theme: 'pedra',
         colors: { top: '#3b3d46', bot: '#121317', ink: '#f2efe4', accent: '#d8d0b6' },
-        cast: { who: 'vinicius', pose: 'zen' },
+        cast: { who: 'vinicius', pose: 'zen', at: 'right' },
+        line: 'A explosão também é indiferente.',
         kicker: 'A BOMBA PERDEU O DEBATE 🧘',
         button: 'FILOSOFAR MAIS UMA VEZ 🧘',
         timeline: [
-          { at: 0, do: 'say', who: 'vinicius', text: 'A bomba explode. Eu não.', ms: 2600 },
+          { at: 0, do: 'say', who: 'vinicius', text: 'A bomba explode. Eu não.', ms: 3000 },
           { at: 900, do: 'explode', target: 'bomb', intensity: 4, vaporize: ['bomb'] },
+          // a explosão que ele contém escapa entre os dedos
+          {
+            at: 950, do: 'burst', who: 'vinicius',
+            emojis: ['💥'], count: 8, power: 140, size: 26,
+          },
           { at: 1300, do: 'shake', intensity: 2 },
         ],
       },
@@ -122,14 +152,20 @@ export const scenes = [
         icon: '🕯️',
         theme: 'pedra',
         colors: { top: '#4a3a26', bot: '#14100b', ink: '#fdf1de', accent: '#f0c987' },
-        cast: { who: 'vinicius', pose: 'wave' },
+        cast: { who: 'vinicius', pose: 'wave', at: 'right' },
+        line: 'Alguém tinha que ir. Não precisava ser você.',
         kicker: 'ELE PEDIU LICENÇA ANTES 🕯️',
         button: 'ACENDER OUTRA VELA 🕯️',
         timeline: [
-          { at: 0, do: 'say', who: 'vinicius', text: 'Amor fati.', ms: 1600 },
-          { at: 800, do: 'exit', who: 'vinicius', to: 'right', ms: 1500, gait: 'walk' },
-          { at: 2300, do: 'flash' },
-          { at: 2350, do: 'shake', intensity: 7 },
+          { at: 0, do: 'say', who: 'vinicius', text: 'Amor fati.', ms: 2200 },
+          { at: 1000, do: 'exit', who: 'vinicius', to: 'right', ms: 1800, gait: 'walk' },
+          { at: 2900, do: 'flash' },
+          { at: 2950, do: 'shake', intensity: 7 },
+          // a explosão é fora de cena: o que se vê é o que volta voando de lá
+          {
+            at: 2950, do: 'burst', x: 950, y: 430,
+            emojis: ['💥', '🔥'], count: 11, power: 260, dir: -65, spread: 80, size: 30,
+          },
         ],
       },
       {
@@ -141,17 +177,22 @@ export const scenes = [
         icon: '⏳',
         theme: 'fogo',
         colors: { top: '#57330a', bot: '#140a06', ink: '#ffeed8', accent: '#ffa63c' },
-        cast: { who: 'peter', pose: 'burnt' },
+        cast: { who: 'peter', pose: 'burnt', at: 'left' },
+        line: 'Ele analisou muito bem. Enquanto eu explodia.',
         kicker: 'ANALISOU ATÉ EXPLODIR ⏳',
         button: 'PENSAR UM POUCO MENOS ⏳',
         timeline: [
-          { at: 0, do: 'say', who: 'vinicius', text: 'Não estava sob meu controle.', ms: 2400 },
+          { at: 0, do: 'say', who: 'vinicius', text: 'Não estava sob meu controle.', ms: 2800 },
           {
-            at: 1100,
+            at: 1600,
             do: 'explode',
             target: 'bomb',
             intensity: 9,
             vaporize: ['peter', 'bomb', 'vinicius'],
+          },
+          {
+            at: 1640, do: 'burst', who: 'bomb',
+            emojis: ['💥', '🔥', '💀'], count: 14, power: 270, size: 32,
           },
         ],
       },
@@ -169,13 +210,24 @@ export const scenes = [
     character: 'jp',
     weight: 3,
     invadeAt: 3000,
-    climaxAt: 10000,
+    // O mostrador zera aos 10s e ele continua pulando. O timer é mentiroso
+    // (GDD §3.2) — e agora dá tempo de ler os três berros.
+    climaxAt: 12000,
     timeline: [
       { at: 0, do: 'enter', who: 'jp', x: 730 },
-      { at: 350, do: 'say', who: 'jp', text: 'EU RESOLVO ISSO!', ms: 1600 },
+      { at: 350, do: 'say', who: 'jp', text: 'EU RESOLVO ISSO!', ms: 2200 },
       { at: 1200, do: 'pose', who: 'jp', as: 'jump' },
-      { at: 2600, do: 'say', who: 'jp', text: 'CADÊ QUE EU ALCANÇO?!', ms: 1800 },
-      { at: 5200, do: 'say', who: 'jp', text: 'TÔ QUASE!', ms: 1600 },
+      { at: 2800, do: 'say', who: 'jp', text: 'CADÊ QUE EU ALCANÇO?!', ms: 2600 },
+      // cada tentativa frustrada solta raiva. Momento-chave, não enfeite de fundo
+      {
+        at: 4200, do: 'burst', who: 'jp',
+        emojis: ['💢'], count: 5, power: 110, spread: 70, size: 22, ms: 700,
+      },
+      { at: 6400, do: 'say', who: 'jp', text: 'TÔ QUASE!', ms: 2600 },
+      {
+        at: 8200, do: 'burst', who: 'jp',
+        emojis: ['💢', '😤'], count: 6, power: 120, spread: 80, size: 22, ms: 700,
+      },
     ],
     endings: [
       {
@@ -187,17 +239,22 @@ export const scenes = [
         icon: '📏',
         theme: 'fogo',
         colors: { top: '#5c2a0a', bot: '#150705', ink: '#ffe8d4', accent: '#ff8a3c' },
-        cast: { who: 'jp', pose: 'reach' },
+        cast: { who: 'jp', pose: 'reach', at: 'bottom-right' },
+        line: 'Faltou tão pouco. Você viu?',
         kicker: 'FALTARAM UNS 30 CENTÍMETROS 📏',
         button: 'CRESCER E VOLTAR 📏',
         timeline: [
-          { at: 0, do: 'say', who: 'jp', text: 'PERA—', ms: 900 },
+          { at: 0, do: 'say', who: 'jp', text: 'PERA—', ms: 1200 },
           {
-            at: 600,
+            at: 800,
             do: 'explode',
             target: 'bomb',
             intensity: 9,
             vaporize: ['peter', 'bomb', 'jp'],
+          },
+          {
+            at: 840, do: 'burst', who: 'bomb',
+            emojis: ['💥', '🔥', '📏'], count: 14, power: 270, size: 32,
           },
         ],
       },
@@ -210,20 +267,30 @@ export const scenes = [
         icon: '✂️',
         theme: 'fogo',
         colors: { top: '#5e1a12', bot: '#140404', ink: '#ffe1da', accent: '#ff5f4d' },
-        cast: { who: 'jp', pose: 'shrug' },
+        cast: { who: 'jp', pose: 'shrug', at: 'bottom-left' },
+        line: 'Era o azul. Eu tinha certeza.',
         kicker: 'ERA O OUTRO FIO ✂️',
         button: 'CORTAR UM FIO DIFERENTE ✂️',
         timeline: [
           { at: 0, do: 'pose', who: 'jp', as: 'jump', off: true },
           { at: 0, do: 'pose', who: 'jp', as: 'reach' },
           { at: 450, do: 'pose', who: 'bomb', as: 'cut' },
-          { at: 700, do: 'say', who: 'jp', text: 'PRONTO. RESOLVIDO.', ms: 1800 },
+          // o corte é um momento-chave: três lascas de pavio e nada mais
           {
-            at: 1500,
+            at: 470, do: 'burst', who: 'bomb',
+            emojis: ['✂️'], count: 3, power: 90, spread: 120, size: 22, ms: 700, sfx: 'corte',
+          },
+          { at: 700, do: 'say', who: 'jp', text: 'PRONTO. RESOLVIDO.', ms: 2400 },
+          {
+            at: 2400,
             do: 'explode',
             target: 'bomb',
             intensity: 9,
             vaporize: ['peter', 'bomb', 'jp'],
+          },
+          {
+            at: 2440, do: 'burst', who: 'bomb',
+            emojis: ['💥', '🔥'], count: 13, power: 260, size: 32,
           },
         ],
       },
@@ -236,15 +303,26 @@ export const scenes = [
         icon: '🥏',
         theme: 'festa',
         colors: { top: '#4f3f08', bot: '#15110a', ink: '#fff5d4', accent: '#ffcf47' },
-        cast: { who: 'jp', pose: 'throw' },
+        cast: { who: 'jp', pose: 'throw', at: 'right' },
+        line: 'Te joguei longe. De nada.',
         kicker: 'VOOU, MAS VOOU VIVO 🥏',
         button: 'ARREMESSAR MAIS LONGE 🥏',
         timeline: [
           { at: 0, do: 'pose', who: 'jp', as: 'jump', off: true },
-          { at: 0, do: 'say', who: 'jp', text: 'VEM CÁ!', ms: 1200 },
+          { at: 0, do: 'say', who: 'jp', text: 'VEM CÁ!', ms: 1600 },
           { at: 300, do: 'pose', who: 'jp', as: 'throw' },
           { at: 450, do: 'exit', who: 'peter', to: 'left', ms: 650 },
-          { at: 1200, do: 'explode', target: 'bomb', intensity: 9, vaporize: ['bomb', 'jp'] },
+          // o rastro do arremesso: leque estreito apontado para a esquerda
+          {
+            at: 470, do: 'burst', who: 'peter',
+            emojis: ['💨'], count: 6, power: 200, dir: -80, spread: 40, gravity: 0,
+            size: 26, ms: 800, sfx: 'whoosh',
+          },
+          { at: 1600, do: 'explode', target: 'bomb', intensity: 9, vaporize: ['bomb', 'jp'] },
+          {
+            at: 1640, do: 'burst', who: 'bomb',
+            emojis: ['💥', '🔥'], count: 13, power: 260, size: 32,
+          },
         ],
       },
     ],
@@ -260,12 +338,22 @@ export const scenes = [
     character: 'michas',
     weight: 3,
     invadeAt: 3000,
-    climaxAt: 10000,
+    climaxAt: 13000,
     timeline: [
       { at: 0, do: 'flood', height: 140, ms: 1100 },
       { at: 500, do: 'enter', who: 'michas', x: 760 },
-      { at: 1200, do: 'say', who: 'michas', text: 'O MAR OBEDECE.', ms: 1800 },
-      { at: 4400, do: 'grab', who: 'michas', target: 'bomb' },
+      { at: 1200, do: 'say', who: 'michas', text: 'O MAR OBEDECE.', ms: 2600 },
+      // bolhas: `gravity: -1` é o que faz partícula subir em vez de cair
+      {
+        at: 2400, do: 'burst', x: 560, y: 330,
+        emojis: ['🫧'], count: 9, power: 100, spread: 60, gravity: -1, size: 24, ms: 1800,
+      },
+      { at: 5200, do: 'grab', who: 'michas', target: 'bomb' },
+      { at: 7200, do: 'say', who: 'michas', text: 'AGORA SEGURA.', ms: 2800 },
+      {
+        at: 9000, do: 'burst', x: 720, y: 330,
+        emojis: ['🫧', '💧'], count: 8, power: 90, spread: 70, gravity: -1, size: 22, ms: 1800,
+      },
     ],
     endings: [
       {
@@ -279,15 +367,28 @@ export const scenes = [
         icon: '🎆',
         theme: 'festa',
         colors: { top: '#5a4106', bot: '#171109', ink: '#fff6d8', accent: '#ffd23d' },
-        cast: { who: 'michas', pose: 'celebrate' },
+        cast: { who: 'michas', pose: 'celebrate', at: 'right' },
+        line: 'A água levou a bomba. A água sempre leva.',
         kicker: 'ISSO VIROU RÉVEILLON 🎆',
         button: 'SOLTAR OUTRO FOGUETE 🎆',
         timeline: [
           { at: 0, do: 'pose', who: 'michas', as: 'throw' },
           { at: 250, do: 'exit', who: 'bomb', to: 'above', ms: 600 },
           { at: 1000, do: 'explode', x: 640, y: 120, intensity: 3, vaporize: ['bomb'] },
-          { at: 1300, do: 'explode', x: 480, y: 175, intensity: 2 },
-          { at: 1650, do: 'explode', x: 790, y: 140, intensity: 2 },
+          {
+            at: 1040, do: 'burst', x: 640, y: 120,
+            emojis: ['🎆', '✨'], count: 12, power: 230, size: 30, ms: 1200,
+          },
+          { at: 1600, do: 'explode', x: 480, y: 175, intensity: 2 },
+          {
+            at: 1640, do: 'burst', x: 480, y: 175,
+            emojis: ['🎇', '✨'], count: 10, power: 200, size: 28, ms: 1200,
+          },
+          { at: 2200, do: 'explode', x: 790, y: 140, intensity: 2 },
+          {
+            at: 2240, do: 'burst', x: 790, y: 140,
+            emojis: ['🎆', '⭐'], count: 10, power: 210, size: 28, ms: 1200,
+          },
         ],
       },
       {
@@ -299,14 +400,21 @@ export const scenes = [
         icon: '🌊',
         theme: 'mar',
         colors: { top: '#084a6d', bot: '#02131e', ink: '#dbf3ff', accent: '#54c6f0' },
-        cast: { who: 'michas', pose: 'shrug' },
+        cast: { who: 'michas', pose: 'shrug', at: 'left' },
+        line: 'A bomba eu desarmei.',
         kicker: 'TECNICAMENTE, DESARMOU 🌊',
         button: 'SALVAR UM POUCO MENOS 🌊',
         timeline: [
           { at: 0, do: 'flood', height: 210, ms: 900 },
           { at: 700, do: 'pose', who: 'bomb', as: 'cut' },
-          { at: 900, do: 'say', who: 'michas', text: 'PAVIO APAGADO.', ms: 2000 },
-          { at: 1500, do: 'exit', who: 'peter', to: 'below', ms: 900 },
+          { at: 900, do: 'say', who: 'michas', text: 'PAVIO APAGADO.', ms: 2600 },
+          { at: 1800, do: 'exit', who: 'peter', to: 'below', ms: 900 },
+          // o Pedro afundando: as bolhas são a última coisa que sobe dele
+          {
+            at: 2100, do: 'burst', who: 'peter',
+            emojis: ['🫧', '💧'], count: 10, power: 120, spread: 60, gravity: -1,
+            size: 24, ms: 1800,
+          },
         ],
       },
       {
@@ -318,19 +426,26 @@ export const scenes = [
         icon: '🫧',
         theme: 'mar',
         colors: { top: '#0a2f4a', bot: '#010a12', ink: '#d2ecf5', accent: '#6fd3e8' },
-        cast: { who: 'peter', pose: 'dead' },
+        cast: { who: 'peter', pose: 'dead', at: 'bottom-left' },
+        line: 'A bomba nadava melhor que eu.',
         kicker: 'A BOMBA APRENDEU A NADAR 🫧',
         button: 'MOLHAR OUTRO PEDRO 🫧',
         timeline: [
           { at: 0, do: 'flood', height: 210, ms: 900 },
-          { at: 900, do: 'say', who: 'michas', text: 'ISSO NÃO DEVERIA—', ms: 1600 },
+          { at: 900, do: 'say', who: 'michas', text: 'ISSO NÃO DEVERIA—', ms: 2200 },
           {
-            at: 1400,
+            at: 1800,
             do: 'explode',
             target: 'bomb',
             intensity: 6,
             ms: 2200, // câmera lenta: a bola de fogo abre em 2,2s em vez de 0,7s
             vaporize: ['peter', 'bomb', 'michas'],
+          },
+          // debaixo d'água até o estilhaço sobe devagar: bolha, não fogo
+          {
+            at: 1850, do: 'burst', who: 'bomb',
+            emojis: ['🫧', '💥', '💧'], count: 14, power: 170, spread: 300,
+            gravity: -1, size: 28, ms: 2400,
           },
         ],
       },
@@ -343,13 +458,20 @@ export const scenes = [
         icon: '⭐',
         theme: 'drop',
         colors: { top: '#0e5231', bot: '#03170e', ink: '#dcffec', accent: '#4dee95' },
-        cast: { who: 'michas', pose: 'celebrate' },
+        cast: { who: 'michas', pose: 'celebrate', at: 'right' },
+        line: 'Dropou. Isso não acontece nunca.',
         kicker: 'DROP DE 1%. NINGUÉM VIU ⭐',
         button: 'FARMAR MAIS UM POUCO ⛏️',
         timeline: [
           { at: 0, do: 'pose', who: 'bomb', as: 'item' },
-          { at: 500, do: 'say', who: 'michas', text: 'DROPOU.', ms: 1800 },
-          { at: 1400, do: 'exit', who: 'michas', to: 'right', ms: 1200 },
+          // o brilho de item lendário: sobe devagar e fica pouco
+          {
+            at: 60, do: 'burst', who: 'bomb',
+            emojis: ['⭐', '✨'], count: 10, power: 120, spread: 90, gravity: -1,
+            size: 26, ms: 1600, sfx: 'drop',
+          },
+          { at: 500, do: 'say', who: 'michas', text: 'DROPOU.', ms: 2600 },
+          { at: 2200, do: 'exit', who: 'michas', to: 'right', ms: 1200 },
         ],
       },
     ],
@@ -367,16 +489,22 @@ export const scenes = [
     character: 'maligno',
     weight: 3,
     invadeAt: 5000,
-    // O mostrador zera em 7700ms por causa do setTimer abaixo. Os dois números
-    // precisam bater na mão: o validador não tem como conferir isso.
-    climaxAt: 7800,
+    // O mostrador zera em 10067ms por causa do setTimer abaixo (8400 + 5/3 s).
+    // Os dois números precisam bater NA MÃO: o validador não confere isso.
+    climaxAt: 10200,
     timeline: [
       { at: 0, do: 'portal', x: 380, y: 320, w: 150, h: 240 },
+      // a fenda abrindo cospe o que tem dentro
+      {
+        at: 120, do: 'burst', x: 380, y: 320,
+        emojis: ['🌀'], count: 9, power: 150, gravity: 0, size: 28, ms: 1300,
+      },
       { at: 300, do: 'enter', who: 'maligno', x: 380 },
-      { at: 900, do: 'say', who: 'maligno', text: 'Oi, eu.', ms: 1600 },
-      // de ~3,8 para 6, correndo 4× mais rápido: zera aos 7700ms
-      { at: 1200, do: 'setTimer', to: 6, rate: 4 },
-      { at: 1300, do: 'shake', intensity: 3 },
+      { at: 900, do: 'say', who: 'maligno', text: 'Oi, eu.', ms: 2200 },
+      { at: 2600, do: 'say', who: 'maligno', text: 'Vim ver de perto.', ms: 2400 },
+      // de ~1,6 para 5, correndo 3× mais rápido: zera aos 10067ms
+      { at: 3400, do: 'setTimer', to: 5, rate: 3 },
+      { at: 3500, do: 'shake', intensity: 3 },
     ],
     endings: [
       {
@@ -388,12 +516,21 @@ export const scenes = [
         icon: '🌀',
         theme: 'fenda',
         colors: { top: '#3f1266', bot: '#0c0219', ink: '#f3e2ff', accent: '#b96cf5' },
-        cast: { who: 'peter', pose: 'burnt' },
+        cast: { who: 'peter', pose: 'burnt', at: 'left' },
+        line: 'Explodimos os dois. Nem isso ele fez sozinho.',
         kicker: 'ELE SE EXPLODIU JUNTO 🌀',
         button: 'RODAR O PARADOXO 🌀',
         timeline: [
           { at: 0, do: 'explode', target: 'bomb', intensity: 9, vaporize: ['peter', 'bomb'] },
-          { at: 700, do: 'explode', x: 380, y: 400, intensity: 7, vaporize: ['maligno'] },
+          {
+            at: 40, do: 'burst', who: 'bomb',
+            emojis: ['💥', '🔥'], count: 13, power: 260, size: 32,
+          },
+          { at: 900, do: 'explode', x: 380, y: 400, intensity: 7, vaporize: ['maligno'] },
+          {
+            at: 940, do: 'burst', x: 380, y: 400,
+            emojis: ['💥', '🌀'], count: 12, power: 240, size: 30,
+          },
         ],
       },
       {
@@ -405,7 +542,8 @@ export const scenes = [
         icon: '🔮',
         theme: 'fenda',
         colors: { top: '#2b1560', bot: '#08021a', ink: '#e9e4ff', accent: '#8f7bff' },
-        cast: { who: 'peter', pose: 'shrug' },
+        cast: { who: 'peter', pose: 'shrug', at: 'left' },
+        line: 'Explodiu o outro. Eu não vou perguntar.',
         kicker: 'EXPLODIU O PEDRO ERRADO 🔮',
         button: 'TROCAR DE UNIVERSO 🔮',
         timeline: [
@@ -414,13 +552,23 @@ export const scenes = [
           { at: 60, do: 'hide', who: 'maligno' },
           { at: 200, do: 'show', who: 'peter', x: 180 },
           { at: 200, do: 'show', who: 'maligno', x: 470 },
-          { at: 500, do: 'say', who: 'maligno', text: 'HAHAHA— ah.', ms: 1600 },
+          // a troca de lugar é o momento-chave: os dois universos se cruzando
           {
-            at: 1400,
+            at: 220, do: 'burst', x: 325, y: 380,
+            emojis: ['🌀', '🔮'], count: 10, power: 190, gravity: 0, size: 28,
+            ms: 1100, sfx: 'portal',
+          },
+          { at: 500, do: 'say', who: 'maligno', text: 'HAHAHA— ah.', ms: 2400 },
+          {
+            at: 1800,
             do: 'explode',
             target: 'bomb',
             intensity: 9,
             vaporize: ['bomb', 'maligno'],
+          },
+          {
+            at: 1840, do: 'burst', who: 'bomb',
+            emojis: ['💥', '🔥'], count: 13, power: 260, size: 32,
           },
         ],
       },
@@ -435,13 +583,23 @@ export const scenes = [
         icon: '🚫',
         theme: 'corrompido',
         colors: { top: '#04160b', bot: '#000000', ink: '#7dff9a', accent: '#7dff9a' },
-        cast: { who: 'maligno', pose: 'glitch' },
+        cast: { who: 'maligno', pose: 'glitch', at: 'top-right' },
+        line: 'Você não viu nada. Nem eu.',
         kicker: 'MELHOR VOCÊ NÃO SABER 🚫',
         button: '[ REINICIAR SESSÃO ] ⏵',
         timeline: [
           { at: 0, do: 'pose', who: 'bomb', as: 'cut' },
-          { at: 300, do: 'say', who: 'maligno', text: 'Isso seria rápido demais.', ms: 1800 },
-          { at: 1500, do: 'blackout', ms: 260 },
+          {
+            at: 40, do: 'burst', who: 'bomb',
+            emojis: ['✂️'], count: 3, power: 80, spread: 120, size: 20, ms: 700, sfx: 'corte',
+          },
+          { at: 300, do: 'say', who: 'maligno', text: 'Isso seria rápido demais.', ms: 2600 },
+          {
+            at: 2200, do: 'burst', who: 'maligno',
+            emojis: ['🚫', '📼'], count: 8, power: 160, gravity: 0, size: 26,
+            ms: 900, sfx: 'glitch',
+          },
+          { at: 2400, do: 'blackout', ms: 260 },
         ],
       },
     ],
@@ -474,11 +632,17 @@ export const scenes = [
         icon: '⏱️',
         theme: 'fogo',
         colors: { top: '#631a10', bot: '#160504', ink: '#ffe0d8', accent: '#ff6b4a' },
-        cast: { who: 'peter', pose: 'burnt' },
+        cast: { who: 'peter', pose: 'burnt', at: 'top' },
+        line: 'Ainda faltavam seis segundos.',
         kicker: 'NEM DEU TEMPO DA PIADA ⏱️',
         button: 'ESPERAR SENTADO ⏱️',
         timeline: [
           { at: 0, do: 'explode', target: 'bomb', intensity: 10, vaporize: ['peter', 'bomb'] },
+          // a maior de todas: ela não esperou e não economizou
+          {
+            at: 40, do: 'burst', who: 'bomb',
+            emojis: ['💥', '🔥', '💀', '⏱️'], count: 18, power: 300, size: 36,
+          },
         ],
       },
     ],

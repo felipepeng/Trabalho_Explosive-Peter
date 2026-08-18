@@ -28,7 +28,7 @@
   --ox: calc((100vw - var(--design-w) * var(--u)) / 2);
   --oy: calc((100vh - var(--design-h) * var(--u)) / 2);
 
-  /* linha do chão, em unidades de design */
+  /* linha d'água: até onde a água sobe. Já foi a linha do chão (D11) */
   --ground-y: 450;
 
   --c-sky-top: #2b3350;
@@ -44,6 +44,8 @@
 
   --font-display: "Impact", "Haettenschweiler", "Arial Black", system-ui, sans-serif;
   --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* a plaquinha de nick: monoespaçada porque é tag de jogador, não legenda */
+  --font-nick: ui-monospace, "Cascadia Mono", "Consolas", "Courier New", monospace;
 
   /* Contorno cartunesco. `-webkit-text-stroke` come o miolo da letra, então
      o contorno é feito com quatro sombras nas diagonais — funciona em todo
@@ -69,9 +71,15 @@
   .idle-sway .frame,
   .idle-seethe .frame,
   .pose-jump .frame,
+  .pose-wave .arm-r,
+  .pose-celebrate .frame,
+  .pose-glitch .frame,
   .actor.pose-item > .rig,
   #bomb .spark,
-  #fx-layer .flood::before {
+  #fx-layer .flood::before,
+  #fx-layer .flood::after,
+  #fx-back .prop-cena.is-sway,
+  #fx-layer .prop-cena.is-sway {
     animation: none;
   }
 }
@@ -99,16 +107,24 @@ html, body {
   background: linear-gradient(180deg, var(--c-sky-top) 0%, var(--c-sky-bot) 100%);
 }
 
-/* O chão nasce na linha do chão da área segura e desce até a borda da janela,
-   por mais alta que ela seja. É isso que mata a barra preta de baixo. */
-#ground {
+/* NÃO EXISTE MAIS UM #ground (D11). O risco do chão ancorava a cena num lugar
+   — um pátio, uma rua — e a piada não acontece em lugar nenhum: acontece com o
+   Pedro. Sem a linha, ele flutua num vazio, e o vazio é o cenário.
+
+   O `--ground-y` sobreviveu porque deixou de ser chão e virou LINHA D'ÁGUA: é a
+   referência de onde a água do Michas para de subir (juice.css). Renomear
+   custaria tocar em conteúdo; o commentário custa uma linha. */
+
+/* Uma luz fraca atrás de quem está em cena. Sem chão, o gradiente do céu
+   sozinho fica chapado demais e o boneco parece recortado e colado. */
+#stage::before {
+  content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(var(--oy) + var(--ground-y) * var(--u));
-  bottom: 0;
-  background: linear-gradient(180deg, var(--c-ground) 0%, var(--c-ground-deep) 100%);
-  border-top: calc(4 * var(--u)) solid var(--c-ground-edge);
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(58% 46% at 50% 62%,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0) 70%);
 }
 
 /* ---------- atores: posicionados em unidades de design ---------- */
@@ -151,10 +167,30 @@ html, body {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(var(--oy) + 24 * var(--u));
+  top: calc(var(--oy) + 16 * var(--u));
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(4 * var(--u));
   pointer-events: none;
+}
+
+/* A linha de tensão. Fixa em toda rodada: ela não comenta o que aconteceu nem
+   diz que cena é esta — só lembra que o relógio está correndo. Junto com o
+   slogan de baixo, são as duas únicas frases da tela até o Pedro morrer. */
+#hud-tagline {
+  margin: 0;
+  font-size: calc(26 * var(--u));
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--c-paper);
+  opacity: 0.92;
+  text-shadow:
+    calc(-1 * var(--u)) calc(-1 * var(--u)) 0 var(--c-ink),
+    var(--u) calc(-1 * var(--u)) 0 var(--c-ink),
+    calc(-1 * var(--u)) var(--u) 0 var(--c-ink),
+    var(--u) var(--u) 0 var(--c-ink),
+    0 calc(3 * var(--u)) 0 rgba(0, 0, 0, 0.6);
 }
 
 #timer {
@@ -238,13 +274,22 @@ html, body {
   position: absolute;
   inset: 0;
   z-index: 10;
-  display: flex;
-  flex-direction: column;
+
+  /* GRADE 3×3. A célula do meio é o texto e nunca sai do centro; as outras
+     oito são onde o `cast.at` do final pendura o personagem. Grade em vez de
+     posição absoluta porque assim texto e personagem NÃO PODEM se sobrepor:
+     são células diferentes, e o navegador garante o resto.
+
+     Coluna do meio em 560u deixa 220u de cada lado — cabe o boneco e o balão
+     dele. A linha de cima é mais alta que a de baixo porque quem aparece no
+     alto (`at: 'top'`) precisa de espaço para a plaquinha e o balão. */
+  display: grid;
+  grid-template-columns: 1fr minmax(0, calc(560 * var(--u))) 1fr;
+  grid-template-rows: 1.2fr auto 0.8fr;
   align-items: center;
-  justify-content: center;
-  gap: calc(10 * var(--u));
+  justify-items: center;
+
   text-align: center;
-  padding: 0 calc(40 * var(--u));
   border: 0;
 
   color: var(--card-ink);
@@ -335,6 +380,76 @@ html, body {
 
 /* ---------- as peças ---------- */
 
+/* ---------- a coluna de texto: sempre a célula do meio ---------- */
+
+#ending-text {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(10 * var(--u));
+  width: 100%;
+}
+
+/* ---------- o elenco do card ---------- */
+/* Quem matou (ou salvou) o Pedro posa aqui e fala. É a atração da tela — o
+   título do final desceu para legenda.
+
+   A célula inteira é o palco dele: o ator é ancorado no PÉ da célula (`top:
+   100%` + o translate de -100% que todo `.actor` já traz), e a plaquinha e o
+   balão crescem para cima, para fora da célula. Numa célula lateral esse
+   transbordo cai em cima de nada; é por isso que a grade resolve o problema
+   que uma posição absoluta criaria. */
+#ending-cast {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* célula default; `[data-cast-at]` reposiciona abaixo */
+  grid-column: 3;
+  grid-row: 2;
+  pointer-events: none;
+}
+
+/* Sobrescreve o posicionamento em unidades de design do palco: dentro do card
+   não existe área segura nem marca de cena, existe o pé da célula. */
+#ending-cast .actor {
+  left: 50%;
+  top: 100%;
+}
+
+/* Todos do mesmo tamanho aqui, independente do `--h` do personagem: no card
+   eles não dividem cena com ninguém, então a proporção entre eles não diz
+   nada — e um Pedro de 190 ao lado de um balão desequilibra a tela. */
+#ending-cast .actor > .rig {
+  height: calc(118 * var(--u));
+}
+
+/* O balão do card cabe na coluna lateral (220u) e não mais na tela toda: ele
+   deixou de ser manchete no meio e virou fala de quem está no canto. */
+#ending-cast .balloon {
+  max-width: calc(206 * var(--u));
+  font-size: calc(17 * var(--u));
+  padding: calc(8 * var(--u)) calc(12 * var(--u));
+}
+
+/* ---------- as oito posições (`cast.at` em data/scenes.js) ---------- */
+/* A escolha segue a CENA: quem voou aparece no alto, quem entrou pela esquerda
+   aparece na esquerda. É dado do final, não regra de CSS. */
+
+#ending-card[data-cast-at="left"] #ending-cast { grid-column: 1; grid-row: 2; }
+#ending-card[data-cast-at="right"] #ending-cast { grid-column: 3; grid-row: 2; }
+#ending-card[data-cast-at="bottom-left"] #ending-cast { grid-column: 1; grid-row: 3; }
+#ending-card[data-cast-at="bottom-right"] #ending-cast { grid-column: 3; grid-row: 3; }
+#ending-card[data-cast-at="top-left"] #ending-cast { grid-column: 1; grid-row: 1; }
+#ending-card[data-cast-at="top-right"] #ending-cast { grid-column: 3; grid-row: 1; }
+
+/* `top` é a única que cai na coluna DO MEIO, em cima do texto — então o boneco
+   encolhe e o balão aperta, senão a pilha fura o topo da tela. */
+#ending-card[data-cast-at="top"] #ending-cast { grid-column: 2; grid-row: 1; }
+#ending-card[data-cast-at="top"] #ending-cast .actor > .rig { height: calc(86 * var(--u)); }
+#ending-card[data-cast-at="top"] #ending-cast .balloon { max-width: calc(300 * var(--u)); }
+
 #ending-kicker {
   margin: 0;
   font-size: calc(22 * var(--u));
@@ -344,26 +459,25 @@ html, body {
   color: var(--card-accent);
 }
 
+/* Legenda, não manchete: quem fala com o jogador agora é o personagem. O
+   título continua na tela porque é o nome que a coleção usa — e só aparece
+   aqui, depois que o Pedro morre. Durante a rodada, nada revela a cena. */
 #ending-title {
   margin: 0;
   font-family: var(--card-font);
-  font-size: calc(84 * var(--u));
+  font-size: calc(36 * var(--u));
   line-height: 1;
   letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--card-ink);
-  max-width: calc(880 * var(--u));
-  text-shadow:
-    calc(-1 * var(--outline-w)) calc(-1 * var(--outline-w)) 0 var(--card-bot),
-    var(--outline-w) calc(-1 * var(--outline-w)) 0 var(--card-bot),
-    calc(-1 * var(--outline-w)) var(--outline-w) 0 var(--card-bot),
-    var(--outline-w) var(--outline-w) 0 var(--card-bot),
-    0 calc(8 * var(--u)) 0 rgba(0, 0, 0, 0.55);
+  max-width: 100%;
+  opacity: 0.85;
+  text-shadow: 0 calc(3 * var(--u)) 0 rgba(0, 0, 0, 0.5);
 }
 
 /* o título corrompido é menor: monoespaçado com colchetes ocupa mais linha */
 #ending-card[data-theme="corrompido"] #ending-title {
-  font-size: calc(62 * var(--u));
+  font-size: calc(30 * var(--u));
   text-transform: none;
 }
 
@@ -442,7 +556,7 @@ html, body {
   flex-wrap: wrap;
   justify-content: center;
   gap: calc(6 * var(--u));
-  max-width: calc(880 * var(--u));
+  max-width: 100%;
   pointer-events: none;
 }
 
