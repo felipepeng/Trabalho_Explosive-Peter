@@ -21,7 +21,13 @@
  *
  * Cada final também traz a PRÓPRIA TELA: `theme` (uma das paletas declaradas
  * em base.css), `kicker` (a linha acima do título), `button` (o texto do botão
- * de reinício) e `icon` (o emoji da célula dele na galeria).
+ * de reinício), `icon` (o emoji da célula dele na galeria), `colors` (a
+ * paleta só dele, que sobrescreve a do tema) e `cast` (quem aparece posando
+ * no card e em que pose).
+ *
+ * `theme` continua mandando na ESTRUTURA (fonte, linhas de varredura);
+ * `colors` manda na COR. É o que permite quinze cards diferentes sem quinze
+ * blocos de CSS e sem o CSS conhecer um id de final.
  *
  * ⚠️ EMOJI: pode em kicker, botão e em qualquer texto de interface. NUNCA no
  * `text` de um beat `say` — fala de personagem é sem emoji, senão o Vinicius
@@ -58,8 +64,10 @@ export const scenes = [
         survives: false,
         icon: '💥',
         theme: 'fogo',
-        kicker: 'SEM SALVAÇÃO 💥',
-        button: 'DE NOVO 🔁',
+        colors: { top: '#5a1d05', bot: '#100407', ink: '#ffe4cf', accent: '#ff7a3c' },
+        cast: { who: 'peter', pose: 'burnt' },
+        kicker: 'AVISARAM QUE NÃO TINHA JEITO 💥',
+        button: 'TENTAR OUTRA VEZ (INÚTIL) 🔁',
         timeline: [
           { at: 0, do: 'explode', target: 'bomb', intensity: 8, vaporize: ['peter', 'bomb'] },
         ],
@@ -94,8 +102,10 @@ export const scenes = [
         survives: true,
         icon: '🧘',
         theme: 'pedra',
-        kicker: 'PEDRO SOBREVIVEU 🧘',
-        button: 'MAIS UMA 🔁',
+        colors: { top: '#3b3d46', bot: '#121317', ink: '#f2efe4', accent: '#d8d0b6' },
+        cast: { who: 'vinicius', pose: 'zen' },
+        kicker: 'A BOMBA PERDEU O DEBATE 🧘',
+        button: 'FILOSOFAR MAIS UMA VEZ 🧘',
         timeline: [
           { at: 0, do: 'say', who: 'vinicius', text: 'A bomba explode. Eu não.', ms: 2600 },
           { at: 900, do: 'explode', target: 'bomb', intensity: 4, vaporize: ['bomb'] },
@@ -111,8 +121,10 @@ export const scenes = [
         survives: true,
         icon: '🕯️',
         theme: 'pedra',
-        kicker: 'SACRIFÍCIO ESTOICO 🕯️',
-        button: 'MAIS UMA 🔁',
+        colors: { top: '#4a3a26', bot: '#14100b', ink: '#fdf1de', accent: '#f0c987' },
+        cast: { who: 'vinicius', pose: 'wave' },
+        kicker: 'ELE PEDIU LICENÇA ANTES 🕯️',
+        button: 'ACENDER OUTRA VELA 🕯️',
         timeline: [
           { at: 0, do: 'say', who: 'vinicius', text: 'Amor fati.', ms: 1600 },
           { at: 800, do: 'exit', who: 'vinicius', to: 'right', ms: 1500, gait: 'walk' },
@@ -128,8 +140,10 @@ export const scenes = [
         survives: false,
         icon: '⏳',
         theme: 'fogo',
-        kicker: 'PEDRO PERDIDO 💥',
-        button: 'DE NOVO 🔁',
+        colors: { top: '#57330a', bot: '#140a06', ink: '#ffeed8', accent: '#ffa63c' },
+        cast: { who: 'peter', pose: 'burnt' },
+        kicker: 'ANALISOU ATÉ EXPLODIR ⏳',
+        button: 'PENSAR UM POUCO MENOS ⏳',
         timeline: [
           { at: 0, do: 'say', who: 'vinicius', text: 'Não estava sob meu controle.', ms: 2400 },
           {
@@ -172,8 +186,10 @@ export const scenes = [
         survives: false,
         icon: '📏',
         theme: 'fogo',
-        kicker: 'PEDRO PERDIDO 💥',
-        button: 'DE NOVO 🔁',
+        colors: { top: '#5c2a0a', bot: '#150705', ink: '#ffe8d4', accent: '#ff8a3c' },
+        cast: { who: 'jp', pose: 'reach' },
+        kicker: 'FALTARAM UNS 30 CENTÍMETROS 📏',
+        button: 'CRESCER E VOLTAR 📏',
         timeline: [
           { at: 0, do: 'say', who: 'jp', text: 'PERA—', ms: 900 },
           {
@@ -193,8 +209,10 @@ export const scenes = [
         survives: false,
         icon: '✂️',
         theme: 'fogo',
-        kicker: 'PEDRO PERDIDO ✂️',
-        button: 'DE NOVO 🔁',
+        colors: { top: '#5e1a12', bot: '#140404', ink: '#ffe1da', accent: '#ff5f4d' },
+        cast: { who: 'jp', pose: 'shrug' },
+        kicker: 'ERA O OUTRO FIO ✂️',
+        button: 'CORTAR UM FIO DIFERENTE ✂️',
         timeline: [
           { at: 0, do: 'pose', who: 'jp', as: 'jump', off: true },
           { at: 0, do: 'pose', who: 'jp', as: 'reach' },
@@ -217,8 +235,10 @@ export const scenes = [
         survives: true,
         icon: '🥏',
         theme: 'festa',
-        kicker: 'PEDRO SOBREVIVEU 🥏',
-        button: 'MAIS UMA 🔁',
+        colors: { top: '#4f3f08', bot: '#15110a', ink: '#fff5d4', accent: '#ffcf47' },
+        cast: { who: 'jp', pose: 'throw' },
+        kicker: 'VOOU, MAS VOOU VIVO 🥏',
+        button: 'ARREMESSAR MAIS LONGE 🥏',
         timeline: [
           { at: 0, do: 'pose', who: 'jp', as: 'jump', off: true },
           { at: 0, do: 'say', who: 'jp', text: 'VEM CÁ!', ms: 1200 },
@@ -258,8 +278,10 @@ export const scenes = [
         survives: true,
         icon: '🎆',
         theme: 'festa',
-        kicker: 'PEDRO SOBREVIVEU 🎆',
-        button: 'MAIS UMA 🌊',
+        colors: { top: '#5a4106', bot: '#171109', ink: '#fff6d8', accent: '#ffd23d' },
+        cast: { who: 'michas', pose: 'celebrate' },
+        kicker: 'ISSO VIROU RÉVEILLON 🎆',
+        button: 'SOLTAR OUTRO FOGUETE 🎆',
         timeline: [
           { at: 0, do: 'pose', who: 'michas', as: 'throw' },
           { at: 250, do: 'exit', who: 'bomb', to: 'above', ms: 600 },
@@ -276,8 +298,10 @@ export const scenes = [
         survives: false,
         icon: '🌊',
         theme: 'mar',
-        kicker: 'PEDRO AFOGADO 🌊',
-        button: 'DE NOVO 🔁',
+        colors: { top: '#084a6d', bot: '#02131e', ink: '#dbf3ff', accent: '#54c6f0' },
+        cast: { who: 'michas', pose: 'shrug' },
+        kicker: 'TECNICAMENTE, DESARMOU 🌊',
+        button: 'SALVAR UM POUCO MENOS 🌊',
         timeline: [
           { at: 0, do: 'flood', height: 210, ms: 900 },
           { at: 700, do: 'pose', who: 'bomb', as: 'cut' },
@@ -293,8 +317,10 @@ export const scenes = [
         survives: false,
         icon: '🫧',
         theme: 'mar',
-        kicker: 'PEDRO PERDIDO 🫧',
-        button: 'DE NOVO 🔁',
+        colors: { top: '#0a2f4a', bot: '#010a12', ink: '#d2ecf5', accent: '#6fd3e8' },
+        cast: { who: 'peter', pose: 'dead' },
+        kicker: 'A BOMBA APRENDEU A NADAR 🫧',
+        button: 'MOLHAR OUTRO PEDRO 🫧',
         timeline: [
           { at: 0, do: 'flood', height: 210, ms: 900 },
           { at: 900, do: 'say', who: 'michas', text: 'ISSO NÃO DEVERIA—', ms: 1600 },
@@ -316,8 +342,10 @@ export const scenes = [
         survives: true,
         icon: '⭐',
         theme: 'drop',
-        kicker: 'DROP RARO ⭐',
-        button: 'FARMAR MAIS ⛏️',
+        colors: { top: '#0e5231', bot: '#03170e', ink: '#dcffec', accent: '#4dee95' },
+        cast: { who: 'michas', pose: 'celebrate' },
+        kicker: 'DROP DE 1%. NINGUÉM VIU ⭐',
+        button: 'FARMAR MAIS UM POUCO ⛏️',
         timeline: [
           { at: 0, do: 'pose', who: 'bomb', as: 'item' },
           { at: 500, do: 'say', who: 'michas', text: 'DROPOU.', ms: 1800 },
@@ -359,8 +387,10 @@ export const scenes = [
         survives: false,
         icon: '🌀',
         theme: 'fenda',
-        kicker: 'OS DOIS PERDIDOS 💥',
-        button: 'DE NOVO 🔁',
+        colors: { top: '#3f1266', bot: '#0c0219', ink: '#f3e2ff', accent: '#b96cf5' },
+        cast: { who: 'peter', pose: 'burnt' },
+        kicker: 'ELE SE EXPLODIU JUNTO 🌀',
+        button: 'RODAR O PARADOXO 🌀',
         timeline: [
           { at: 0, do: 'explode', target: 'bomb', intensity: 9, vaporize: ['peter', 'bomb'] },
           { at: 700, do: 'explode', x: 380, y: 400, intensity: 7, vaporize: ['maligno'] },
@@ -374,8 +404,10 @@ export const scenes = [
         survives: true,
         icon: '🔮',
         theme: 'fenda',
-        kicker: 'PEDRO SOBREVIVEU 🔮',
-        button: 'MAIS UMA 🔁',
+        colors: { top: '#2b1560', bot: '#08021a', ink: '#e9e4ff', accent: '#8f7bff' },
+        cast: { who: 'peter', pose: 'shrug' },
+        kicker: 'EXPLODIU O PEDRO ERRADO 🔮',
+        button: 'TROCAR DE UNIVERSO 🔮',
         timeline: [
           { at: 0, do: 'flash', ms: 200 },
           { at: 60, do: 'hide', who: 'peter' },
@@ -402,8 +434,10 @@ export const scenes = [
         survives: null,
         icon: '🚫',
         theme: 'corrompido',
-        kicker: 'REGISTRO PERDIDO 🚫',
-        button: '[ REINICIAR ] ⏵',
+        colors: { top: '#04160b', bot: '#000000', ink: '#7dff9a', accent: '#7dff9a' },
+        cast: { who: 'maligno', pose: 'glitch' },
+        kicker: 'MELHOR VOCÊ NÃO SABER 🚫',
+        button: '[ REINICIAR SESSÃO ] ⏵',
         timeline: [
           { at: 0, do: 'pose', who: 'bomb', as: 'cut' },
           { at: 300, do: 'say', who: 'maligno', text: 'Isso seria rápido demais.', ms: 1800 },
@@ -439,8 +473,10 @@ export const scenes = [
         survives: false,
         icon: '⏱️',
         theme: 'fogo',
-        kicker: 'SEM AVISO ⏱️',
-        button: 'DE NOVO 🔁',
+        colors: { top: '#631a10', bot: '#160504', ink: '#ffe0d8', accent: '#ff6b4a' },
+        cast: { who: 'peter', pose: 'burnt' },
+        kicker: 'NEM DEU TEMPO DA PIADA ⏱️',
+        button: 'ESPERAR SENTADO ⏱️',
         timeline: [
           { at: 0, do: 'explode', target: 'bomb', intensity: 10, vaporize: ['peter', 'bomb'] },
         ],
