@@ -26,11 +26,11 @@ Sem dependências de runtime: HTML/CSS/JS vanilla + Vite só como build.
 
 ## Status
 
-**D8 concluído — marco M2.** Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, ending card e restart. A rodada é montada pelo `director` a partir de `src/data/scenes.js` (verbos `enter`, `say`, `shake`, `explode`), sorteada pelo `picker` com anti-repetição, e o progresso persiste em `localStorage` com o contador `X/N` no card.
+**D9 concluído — marco M3.** Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, ending card e restart. A rodada é montada pelo `director` a partir de `src/data/scenes.js` (verbos `enter`, `say`, `shake`, `explode`), sorteada pelo `picker` com anti-repetição, e o progresso persiste em `localStorage` com o contador `X/N` no card.
 
-O rig SVG é compartilhado: os cinco personagens saem do mesmo `<template>`, vestidos por `src/data/characters.js`. Quatorze verbos existem — todos os do GDD §7.1 menos `sfx`, mais `pose` e `blackout`.
+O rig SVG é compartilhado: os cinco personagens saem do mesmo `<template>`, vestidos por `src/data/characters.js`. Os treze verbos do GDD §7.1 existem, mais `pose` e `blackout`. Os SFX são sintetizados com a Web Audio API — o jogo não tem um único arquivo de áudio.
 
-Conteúdo escrito: **5 cenas, 14 finais** — todo o catálogo do GDD §6 menos a cena curta rara `bomba-impaciente`, que está na ordem de corte.
+Conteúdo escrito: **6 cenas, 15 finais** — o catálogo do GDD §6 inteiro. As rodadas vão de 4,6s (a bomba impaciente, que não espera o countdown) a 13,0s.
 
 Cada final tem a **própria tela**: sete paletas, kicker e texto de botão próprios, e um `✨ NOVO` quando é descoberta.
 

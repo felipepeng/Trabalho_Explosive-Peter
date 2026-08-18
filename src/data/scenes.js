@@ -398,4 +398,38 @@ export const scenes = [
       },
     ],
   },
+
+  /* ================================================================ *
+   * §6.6 — a bomba impaciente. RARA e curta.
+   *
+   * Não tem personagem, não tem timeline e não tem aviso: a bomba
+   * explode aos 4s, no meio do countdown. A rodada inteira dura 4,6s
+   * contra os 10 a 13s de todas as outras — é a quebra de ritmo que o
+   * GDD §3.2 pede ("previsibilidade mata a piada na décima rodada").
+   *
+   * Peso 1 contra 3 das cenas de personagem: aparece em ~8% das
+   * rodadas, que é o suficiente para nunca ser esperada.
+   * ================================================================ */
+  {
+    id: 'bomba-impaciente',
+    character: null,
+    weight: 1,
+    invadeAt: 0,
+    climaxAt: 4000, // sem aviso nenhum, no meio do countdown
+    timeline: [],
+    endings: [
+      {
+        id: 'bomb-cedo',
+        title: 'ELA NÃO ESPEROU',
+        weight: 1,
+        survives: false,
+        theme: 'fogo',
+        kicker: 'SEM AVISO ⏱️',
+        button: 'DE NOVO 🔁',
+        timeline: [
+          { at: 0, do: 'explode', target: 'bomb', intensity: 10, vaporize: ['peter', 'bomb'] },
+        ],
+      },
+    ],
+  },
 ];

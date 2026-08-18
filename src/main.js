@@ -19,6 +19,7 @@
 
 import {
   COUNTDOWN_MS,
+  URGENT_AT,
   MAX_ROUND_MS,
   MAX_ROUND_MS_DESIGN,
   FREEZE_MS,
@@ -30,8 +31,10 @@ import {
 import { createClock, bindVisibility } from './engine/clock.js';
 import { createDirector, buildRound } from './engine/director.js';
 import { actions } from './engine/actions.js';
-import { pickScene, pickEnding } from './engine/picker.js';
+import { pickScene, pickEnding, weightedPick } from './engine/picker.js';
+import { createAudio, bindUnlock } from './engine/audio.js';
 import { scenes } from './data/scenes.js';
+import { messages } from './data/messages.js';
 import { validate } from './data/validate.js';
 import * as progress from './state/progress.js';
 import { createCountdown } from './ui/countdown.js';
@@ -55,6 +58,9 @@ const PHASE = {
 /** Ordem das fases. A transição só anda para frente dentro de uma rodada. */
 const ORDER = [PHASE.BOOT, PHASE.COUNTDOWN, PHASE.SCENE, PHASE.CLIMAX, PHASE.ENDING];
 
+/** Som do card, quando o final não pede um específico. */
+const VEREDITO = { true: 'fanfarra', false: 'fracasso', null: 'glitch' };
+
 /* ------------------------------------------------------------------ *
  * Montagem
  * ------------------------------------------------------------------ */
@@ -76,7 +82,8 @@ const director = createDirector({ clock });
 const countdown = createCountdown(el.timer, clock);
 const stage = createStage({ cast: el.cast, layers: [el.fx, el.fxBack] });
 const fx = createFx({ stage: el.stage, layer: el.fx, back: el.fxBack });
-const hud = createHud({ deaths: el.deaths });
+const audio = createAudio();
+const hud = createHud({ deaths: el.deaths, message: el.message });
 const endingCard = createEndingCard(el.card, { onRestart: startRound });
 
 let phase = PHASE.BOOT;
@@ -98,6 +105,10 @@ const session = {
   history: [],
   /** último final visto em cada cena, para não repetir o desfecho */
   lastEndingByScene: Object.create(null),
+  /** o final da rodada ANTERIOR, que decide o tom da barra inferior */
+  lastEnding: null,
+  /** e a última frase, para não repetir duas vezes seguidas */
+  lastMessage: null,
 };
 
 /** Denominador do contador `X/N`: sai do catálogo, não de uma constante — o
@@ -105,9 +116,19 @@ const session = {
 const TOTAL_ENDINGS = scenes.reduce((n, s) => n + (s.endings?.length ?? 0), 0);
 
 bindVisibility(clock, {
-  onHide: () => el.body.classList.add('is-tab-hidden'),
-  onShow: () => el.body.classList.remove('is-tab-hidden'),
+  onHide: () => {
+    el.body.classList.add('is-tab-hidden');
+    audio.suspend();
+  },
+  onShow: () => {
+    el.body.classList.remove('is-tab-hidden');
+    audio.resume();
+  },
 });
+
+// §8: destrava no primeiro gesto qualquer. O clique de restart que o jogador
+// já ia dar serve — não é interação nova.
+bindUnlock(audio);
 
 /* ------------------------------------------------------------------ *
  * Escolha da rodada
@@ -146,6 +167,45 @@ function pickRound() {
   return { scene, ending };
 }
 
+/**
+ * A frase da barra inferior comenta a rodada ANTERIOR. As tags elegíveis se
+ * somam: na décima rodada depois de uma morte valem `after-death` e
+ * `milestone` juntas.
+ */
+function pickMessage() {
+  const saved = progress.get();
+  const last = session.lastEnding;
+  const tags = [];
+
+  if (!last) tags.push('boot');
+  else if (last.survives === true) tags.push('after-save');
+  else if (last.survives === false) tags.push('after-death');
+  else tags.push('after-null');
+
+  if (last && saved.rounds > 0 && saved.rounds % 10 === 0) tags.push('milestone');
+  if (last && saved.seenEndings.length >= TOTAL_ENDINGS) tags.push('complete');
+
+  const elegiveis = messages.filter((m) => tags.includes(m.tag));
+  const semRepetir = elegiveis.filter((m) => m.text !== session.lastMessage);
+  const escolhida = weightedPick(
+    semRepetir.length ? semRepetir : elegiveis,
+    (m) => m.weight ?? 1,
+  );
+
+  session.lastMessage = escolhida?.text ?? null;
+
+  return {
+    text: escolhida?.text ?? 'Não tem como salvar ele.',
+    vars: {
+      rounds: saved.rounds + 1,
+      deaths: saved.deaths,
+      saves: saved.saves,
+      seen: saved.seenEndings.length,
+      total: TOTAL_ENDINGS,
+    },
+  };
+}
+
 /* ------------------------------------------------------------------ *
  * Transições
  * ------------------------------------------------------------------ */
@@ -170,7 +230,8 @@ function startRound() {
   stage.setUpRound();
   countdown.reset(COUNTDOWN_MS / 1000);
   countdown.mount();
-  el.message.textContent = 'Não tem como salvar ele.';
+  const frase = pickMessage();
+  hud.setMessage(frase.text, frase.vars);
 
   const { scene, ending } = pickRound();
   const { beats, invadeAt, climaxAt, endsAt } = buildRound(scene, ending, { joinGap: JOIN_GAP });
@@ -179,11 +240,14 @@ function startRound() {
   setPhase(PHASE.COUNTDOWN);
 
   // Os verbos chegam ao director por parâmetro — ele não conhece `actions`.
-  director.run(beats, { clock, stage, fx, countdown, signal: round.signal }, actions);
+  director.run(beats, { clock, stage, fx, countdown, audio, signal: round.signal }, actions);
 
   // Cena com personagem entra em SCENE quando ele invade. Cena sem personagem
   // vai de COUNTDOWN direto ao CLIMAX (o desvio do diagrama da §5).
   if (scene.character) clock.at(invadeAt, () => setPhase(PHASE.SCENE));
+
+  // O tique é do componente, não da timeline.
+  countdown.onTick((secs) => audio.play(secs <= URGENT_AT ? 'tick-urgente' : 'tick'));
 
   clock.at(climaxAt, () => toClimax(id));
   clock.at(endsAt + DRAMATIC_PAUSE_MS, () => toEnding(id));
@@ -195,7 +259,10 @@ function startRound() {
     console.warn('[main] watchdog: rodada passou de', MAX_ROUND_MS, 'ms');
     // P5: no pior caso, explode o Pedro. O jogador nunca olha tela morta.
     toClimax(id);
-    actions.explode({ clock, stage, fx, countdown, signal: round.signal }, { vaporize: ['peter', 'bomb'] });
+    actions.explode(
+      { clock, stage, fx, countdown, audio, signal: round.signal },
+      { vaporize: ['peter', 'bomb'] },
+    );
     clock.after(DRAMATIC_PAUSE_MS, () => toEnding(id));
   });
 
@@ -232,6 +299,10 @@ function toEnding(id) {
 
   const saved = progress.get();
   hud.setDeaths(saved.deaths);
+  session.lastEnding = round.ending;
+
+  // O veredito tem som: o final pode escolher o seu, senão sai do `survives`.
+  audio.play(round.ending.sfx ?? VEREDITO[String(round.ending.survives)]);
 
   // O card se veste com o final: tema, kicker e texto do botão são dados.
   endingCard.show({
@@ -255,6 +326,7 @@ if (import.meta.env?.DEV) {
   validate(scenes, {
     verbs: Object.keys(actions),
     themes: CARD_THEMES,
+    sfx: audio.nomes,
     maxRoundMs: MAX_ROUND_MS_DESIGN,
     dramaticPauseMs: DRAMATIC_PAUSE_MS,
     joinGap: JOIN_GAP,
@@ -270,7 +342,8 @@ if (import.meta.env?.DEV) {
   //   beat({ do: 'say', who: 'peter', text: 'oi', ms: 1500 })
   const beat = (b) => actions[b.do]?.({ clock, stage, fx, countdown, signal: round?.signal }, b);
   Object.assign(window, {
-    clock, countdown, stage, fx, director, actions, scenes, beat, progress, session,
+    clock, countdown, stage, fx, audio, director, actions, scenes, messages,
+    beat, progress, session,
     get phase() { return phase; },
     get round() { return round; },
   });

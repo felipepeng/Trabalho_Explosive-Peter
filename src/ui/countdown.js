@@ -16,6 +16,7 @@ export function createCountdown(el, clock) {
   let lastShown = null;
   let rafId = 0;
   let onZero = null;
+  let onTick = null;
   let zeroFired = false;
 
   function value() {
@@ -34,6 +35,9 @@ export function createCountdown(el, clock) {
       el.classList.remove('is-tick');
       void el.offsetWidth;
       el.classList.add('is-tick');
+      // O tique é do componente, não da timeline: um beat por segundo
+      // multiplicaria por 10 o tamanho de toda cena (ARCHITECTURE.md §6).
+      if (secs > 0) onTick?.(secs);
     }
     if (!zeroFired && value() <= 0) {
       zeroFired = true;
@@ -70,6 +74,11 @@ export function createCountdown(el, clock) {
     /** Callback disparado uma vez, quando o mostrador cruza o zero. */
     onZero(fn) {
       onZero = fn;
+    },
+
+    /** Callback a cada virada de segundo visível. Recebe o segundo mostrado. */
+    onTick(fn) {
+      onTick = fn;
     },
 
     get seconds() {

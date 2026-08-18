@@ -234,11 +234,15 @@ O `insertAdjacentHTML` usado aí é seguro porque o jogo não tem campo de texto
 
 **O countdown visível é um componente, não beats.** `countdown.js` guarda `{from, rate, since}` e desenha a partir do clock; o verbo `setTimer` só reescreve esses números. A alternativa (um beat por segundo) multiplicaria por 10 o tamanho de toda timeline.
 
-**`--juice`:** todo keyframe multiplica sua amplitude por `var(--juice, 1)`.
+**`--juice`:** todo keyframe de JUICE multiplica sua amplitude por `var(--juice, 1)`.
+
+A exceção importa: **encenação não é juice.** Entrada, saída, subida da água e a aparição do card NÃO multiplicam — um ator a 25% da distância pararia visível dentro da tela em vez de "fora de cena", e um card que não aparece é jogo quebrado. `--juice` corta amplitude (tremida, clarão, bola de fogo), não a leitura da cena.
 
 ```css
 @media (prefers-reduced-motion: reduce) { :root { --juice: .25; } }
 ```
+
+E mais: o que realmente incomoda quem pede menos movimento são os laços **infinitos**. Respiração, faísca do pavio, pulo do JP, brilho da água e o balanço do Vinicius ganham `animation: none` na mesma media query. Entradas e saídas ficam.
 
 Um knob serve a três coisas: acessibilidade, tuning de playtest e fallback numa máquina fraca. Mais um teto duro de **2 flashes por segundo** dentro do verbo `flash`, independente de configuração — luz piscando acima de ~3 Hz é gatilho fotossensível.
 
@@ -308,7 +312,9 @@ explodiu — mede se o Pedro sobreviveu. `false`.
 
 O jogo começa sem clique, e navegador bloqueia áudio antes de um gesto. Então:
 
-- `AudioContext` nasce `suspended`; os buffers são decodificados durante o countdown.
+**Não existe arquivo de áudio.** Os ~10 SFX são SINTETIZADOS na hora com osciladores e ruído branco (`engine/audio.js`). Zero bytes de asset num jogo cuja premissa é "abriu o site, já começou", e some o único problema de caminho de asset do §10 — não há caminho. Som tosco combina com arte tosca.
+
+- `AudioContext` só nasce no primeiro gesto; antes disso não existe.
 - `audio.play()` é **no-op silencioso** enquanto suspenso — nunca lança, nunca dispara atrasado na rodada seguinte.
 - `unlock()` no **primeiro gesto qualquer** do documento (`pointerdown`/`keydown`, listener em captura, `{once:true}`). Basta o primeiro clique de restart: da segunda rodada em diante o jogo tem som. Não é interação nova — não há botão nem consequência de jogo.
 - `visibilitychange` suspende o contexto junto com o clock.
@@ -379,6 +385,9 @@ export default { base: './' }
 | Input engolido fora de `ENDING` | Handler global "esperto" | Pilar 1 virando código |
 | `base: './'` | `base` com nome do repo | Some o 404 de asset só-em-produção |
 | `--juice` como escalar | Media query reescrevendo keyframes | Acessibilidade + tuning + performance num knob |
+| SFX sintetizados na hora | ~8 arquivos de áudio | Zero asset, zero caminho para quebrar no Pages, e o som fica tão tosco quanto a arte |
+| Som padrão por VERBO (`sfx: null` cala) | Um beat de `sfx` ao lado de cada ação | Economiza ~30 beats no catálogo sem tirar o controle do dado |
+| Tique do countdown por callback do componente | Beats de `sfx` por segundo | O countdown já era componente; um beat por segundo multiplicaria a timeline por 10 |
 
 **O que deliberadamente NÃO existe:** TypeScript, testes automatizados obrigatórios, camada de eventos/pubsub, sistema de cena genérico, ECS, injeção de dependência formal, i18n, roteamento. Se a resposta para um problema for "instalar uma lib" ou "criar um sistema", reconsidere.
 

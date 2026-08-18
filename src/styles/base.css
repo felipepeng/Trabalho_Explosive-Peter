@@ -44,10 +44,36 @@
 
   --font-display: "Impact", "Haettenschweiler", "Arial Black", system-ui, sans-serif;
   --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Contorno cartunesco. `-webkit-text-stroke` come o miolo da letra, então
+     o contorno é feito com quatro sombras nas diagonais — funciona em todo
+     navegador e escala junto com --u. */
+  --outline-w: calc(3 * var(--u));
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root { --juice: 0.25; }
+
+  /* --juice corta a AMPLITUDE (tremida, clarão, bola de fogo), mas não
+     resolve sozinho o que mais incomoda quem pede menos movimento: os laços
+     INFINITOS. Respiração, faísca do pavio, pulo do JP, brilho da água e o
+     balanço do Vinicius somem.
+
+     Entradas, saídas e a subida da água FICAM. São breves, não se repetem, e
+     sem elas o jogador não entende que alguém chegou — encenação não é juice.
+     Pelo mesmo motivo os keyframes de entrada/saída não multiplicam por
+     --juice: um ator a 25% da distância pararia dentro da tela, visível, no
+     lugar de "fora de cena". */
+  .idle-breathe .body,
+  .idle-breathe .head,
+  .idle-sway .frame,
+  .idle-seethe .frame,
+  .pose-jump .frame,
+  .actor.pose-item > .rig,
+  #bomb .spark,
+  #fx-layer .flood::before {
+    animation: none;
+  }
 }
 
 * { box-sizing: border-box; }
@@ -137,8 +163,13 @@ html, body {
   line-height: 0.9;
   letter-spacing: 0.02em;
   color: var(--c-paper);
-  text-shadow: 0 calc(6 * var(--u)) 0 rgba(0, 0, 0, 0.45);
   font-variant-numeric: tabular-nums;
+  text-shadow:
+    calc(-1 * var(--outline-w)) calc(-1 * var(--outline-w)) 0 var(--c-ink),
+    var(--outline-w) calc(-1 * var(--outline-w)) 0 var(--c-ink),
+    calc(-1 * var(--outline-w)) var(--outline-w) 0 var(--c-ink),
+    var(--outline-w) var(--outline-w) 0 var(--c-ink),
+    0 calc(8 * var(--u)) 0 rgba(0, 0, 0, 0.5);
 }
 
 #timer.is-urgent { color: var(--c-hot); }
@@ -164,8 +195,14 @@ html, body {
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--c-paper);
-  text-shadow: 0 calc(3 * var(--u)) 0 rgba(0, 0, 0, 0.5);
   padding: 0 calc(40 * var(--u));
+  /* contorno fino: a frase precisa ser legível sobre céu, chão ou água */
+  text-shadow:
+    calc(-1 * var(--u)) calc(-1 * var(--u)) 0 var(--c-ink),
+    var(--u) calc(-1 * var(--u)) 0 var(--c-ink),
+    calc(-1 * var(--u)) var(--u) 0 var(--c-ink),
+    var(--u) var(--u) 0 var(--c-ink),
+    0 calc(3 * var(--u)) 0 rgba(0, 0, 0, 0.6);
 }
 
 /* ---------- camadas ---------- */
@@ -315,8 +352,13 @@ html, body {
   letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--card-ink);
-  text-shadow: 0 calc(6 * var(--u)) 0 rgba(0, 0, 0, 0.5);
   max-width: calc(880 * var(--u));
+  text-shadow:
+    calc(-1 * var(--outline-w)) calc(-1 * var(--outline-w)) 0 var(--card-bot),
+    var(--outline-w) calc(-1 * var(--outline-w)) 0 var(--card-bot),
+    calc(-1 * var(--outline-w)) var(--outline-w) 0 var(--card-bot),
+    var(--outline-w) var(--outline-w) 0 var(--card-bot),
+    0 calc(8 * var(--u)) 0 rgba(0, 0, 0, 0.55);
 }
 
 /* o título corrompido é menor: monoespaçado com colchetes ocupa mais linha */

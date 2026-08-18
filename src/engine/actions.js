@@ -19,6 +19,12 @@
  * D6: flood · portal — os dois que o Michas e o Pedro Maligno precisam.
  * D7: exit · grab · flash · pose — o que as primeiras timelines pediram.
  * D8: setTimer · hide · show · blackout — o Michas e o Pedro Maligno.
+ * D9: sfx — e um som padrão em cada verbo que faz barulho por natureza.
+ *
+ * SOM: todo verbo aceita `sfx`. Onde faz sentido existe um padrão (entrar
+ * faz whoosh, explodir faz boom), e o dado pode trocar (`sfx: 'drop'`) ou
+ * calar (`sfx: null`). Assim a timeline não precisa de um beat de som ao
+ * lado de cada beat de ação — seriam 30 beats a mais no catálogo.
  */
 
 /** Duração da entrada, quando nem o beat nem o personagem dizem. */
@@ -32,12 +38,18 @@ const ENTER_MS = 700;
  */
 const MODES = new Set(['left', 'right', 'above', 'below', 'portal']);
 
+/** `sfx` ausente toca o padrão do verbo; `sfx: null` cala. */
+const soar = (ctx, beat, padrao) => {
+  ctx.audio?.play(beat.sfx === undefined ? padrao : beat.sfx);
+};
+
 export const actions = {
   /**
    * Põe um ator em cena vindo de fora da janela.
    * `{ do:'enter', who:'vinicius', from:'left', x:320, y:470, ms:700 }`
    */
-  enter(ctx, { who, from, x, y, ms }) {
+  enter(ctx, beat) {
+    const { who, from, x, y, ms } = beat;
     if (ctx.signal?.aborted || !who) return;
 
     const el = ctx.stage.spawn(who, { x, y });
@@ -52,6 +64,7 @@ export const actions = {
     el.style.setProperty('--enter-ms', `${dur}ms`);
     el.classList.add(`is-enter-${side}`);
     if (gait) el.classList.add(`gait-${gait}`);
+    soar(ctx, beat, 'whoosh');
     // A própria animação avisa quando acabou — nada de setTimeout (P3).
     // `animationend` borbulha, então filtra o evento dos filhos (a respiração
     // do Pedro, a faísca do pavio) — senão a entrada é cortada no meio.
@@ -103,7 +116,8 @@ export const actions = {
    * `vaporize` é declarativo de propósito: é o dado que decide quem some, não
    * um `if (ending.survives)` escondido aqui dentro (regra 1).
    */
-  explode(ctx, { target = 'bomb', intensity = 8, vaporize = [], x, y, ms }) {
+  explode(ctx, beat) {
+    const { target = 'bomb', intensity = 8, vaporize = [], x, y, ms } = beat;
     if (ctx.signal?.aborted) return;
 
     for (const name of vaporize) {
@@ -111,6 +125,7 @@ export const actions = {
     }
 
     ctx.fx.explode(ctx.stage.get(target), { intensity, x, y, ms });
+    soar(ctx, beat, 'boom');
   },
 
   /**
@@ -151,9 +166,16 @@ export const actions = {
   },
 
   /** `{ do:'blackout', ms:400 }` — corte para tela preta, e fica preto. */
-  blackout(ctx, { ms } = {}) {
+  blackout(ctx, beat = {}) {
     if (ctx.signal?.aborted) return;
-    ctx.fx.blackout({ ms });
+    ctx.fx.blackout({ ms: beat.ms });
+    soar(ctx, beat, 'glitch');
+  },
+
+  /** `{ do:'sfx', name:'fanfarra' }` — som avulso, sem nada acontecendo na tela. */
+  sfx(ctx, { name }) {
+    if (ctx.signal?.aborted) return;
+    ctx.audio?.play(name);
   },
 
   /**
@@ -221,7 +243,8 @@ export const actions = {
    * pose nova é um @keyframes, não uma linha de JavaScript.
    * `off: true` desliga.
    */
-  pose(ctx, { who, as, off = false }) {
+  pose(ctx, beat) {
+    const { who, as, off = false } = beat;
     if (ctx.signal?.aborted || !who || !as) return;
 
     const el = ctx.stage.get(who);
@@ -230,23 +253,26 @@ export const actions = {
       return;
     }
     el.classList.toggle(`pose-${as}`, !off);
+    if (!off) soar(ctx, beat);
   },
 
   /**
    * `{ do:'flood', height:140, ms:900 }` — a base da tela inunda.
    * `height` em unidades de design, contado da linha do chão para cima.
    */
-  flood(ctx, { height, ms } = {}) {
+  flood(ctx, beat = {}) {
     if (ctx.signal?.aborted) return;
-    ctx.fx.flood({ height, ms });
+    ctx.fx.flood({ height: beat.height, ms: beat.ms });
+    soar(ctx, beat, 'splash');
   },
 
   /**
    * `{ do:'portal', x:620, y:320, w:150, h:230 }` — abre uma fenda.
    * Posição e tamanho em unidades de design, como tudo em `data/`.
    */
-  portal(ctx, { x, y, w, h, ms } = {}) {
+  portal(ctx, beat = {}) {
     if (ctx.signal?.aborted) return;
-    ctx.fx.portal({ x, y, w, h, ms });
+    ctx.fx.portal({ x: beat.x, y: beat.y, w: beat.w, h: beat.h, ms: beat.ms });
+    soar(ctx, beat, 'portal');
   },
 };

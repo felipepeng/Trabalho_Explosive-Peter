@@ -21,6 +21,7 @@ const EMOJI = /\p{Extended_Pictographic}/u;
 export function validate(scenes, {
   verbs = [],
   themes = [],
+  sfx = [],
   maxRoundMs = 15000,
   dramaticPauseMs = 600,
   joinGap = 400,
@@ -30,6 +31,7 @@ export function validate(scenes, {
   const problems = [];
   const known = new Set(verbs);
   const knownThemes = new Set(themes);
+  const knownSfx = new Set(sfx);
   const seenEndingIds = new Map();
 
   for (const scene of scenes) {
@@ -69,6 +71,7 @@ export function validate(scenes, {
       if (knownThemes.size && ending.theme && !knownThemes.has(ending.theme)) {
         problems.push(`${label}: tema "${ending.theme}" não existe em base.css`);
       }
+      checkSfx(label, ending.sfx);
 
       // Emoji em fala de personagem é proibido (regra de tom do projeto).
       for (const beat of ending.timeline ?? []) checkFala(label, beat);
@@ -91,8 +94,16 @@ export function validate(scenes, {
     }
   }
 
+  /** Som escrito errado sairia mudo em silêncio — ninguém notaria. */
+  function checkSfx(label, name) {
+    if (!knownSfx.size || name === undefined || name === null) return;
+    if (!knownSfx.has(name)) problems.push(`${label}: som "${name}" não existe em audio.js`);
+  }
+
   function checkBeats(label, beats, anchor) {
     for (const beat of beats) {
+      checkSfx(label, beat.sfx);
+      if (beat.do === 'sfx') checkSfx(label, beat.name);
       if (typeof beat.at !== 'number') problems.push(`${label}: beat sem \`at\` numérico (${beat.do})`);
       if (!known.has(beat.do)) problems.push(`${label}: verbo inexistente "${beat.do}"`);
       if (anchor + (beat.at ?? 0) < 0) problems.push(`${label}: beat "${beat.do}" cai em tempo negativo`);
