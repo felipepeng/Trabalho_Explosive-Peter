@@ -19,7 +19,7 @@
  * Os outros nove chegam quando a primeira cena precisar deles.
  */
 
-/** Distância que um ator percorre ao entrar, em ms. */
+/** Duração da entrada, quando nem o beat nem o personagem dizem. */
 const ENTER_MS = 700;
 
 /** Lados válidos de entrada. Qualquer outro cai na esquerda. */
@@ -30,15 +30,21 @@ export const actions = {
    * Põe um ator em cena vindo de fora da janela.
    * `{ do:'enter', who:'vinicius', from:'left', x:320, y:470, ms:700 }`
    */
-  enter(ctx, { who, from = 'left', x, y, ms = ENTER_MS }) {
+  enter(ctx, { who, from, x, y, ms }) {
     if (ctx.signal?.aborted || !who) return;
 
     const el = ctx.stage.spawn(who, { x, y });
     if (!el) return; // stage já avisou que falta o template (P5)
 
-    const side = SIDES.has(from) ? from : 'left';
-    el.style.setProperty('--enter-ms', `${ms}ms`);
+    // Precedência: o que o beat pediu > o jeito do personagem > o genérico.
+    const wanted = from ?? el.dataset.enterFrom;
+    const side = SIDES.has(wanted) ? wanted : 'left';
+    const gait = el.dataset.enterGait;
+    const dur = ms ?? (Number(el.dataset.enterMs) || ENTER_MS);
+
+    el.style.setProperty('--enter-ms', `${dur}ms`);
     el.classList.add(`is-enter-${side}`);
+    if (gait) el.classList.add(`gait-${gait}`);
     // A própria animação avisa quando acabou — nada de setTimeout (P3).
     // `animationend` borbulha, então filtra o evento dos filhos (a respiração
     // do Pedro, a faísca do pavio) — senão a entrada é cortada no meio.
@@ -46,6 +52,7 @@ export const actions = {
       if (ev.target !== el) return;
       el.removeEventListener('animationend', done);
       el.classList.remove(`is-enter-${side}`);
+      if (gait) el.classList.remove(`gait-${gait}`);
     });
   },
 

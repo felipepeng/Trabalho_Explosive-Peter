@@ -42,19 +42,26 @@
 
     <!-- ================= templates de ator ================= -->
 
-    <template id="tpl-peter">
-      <div id="peter" class="actor" data-actor="peter">
-        <svg class="rig" viewBox="0 0 120 180" aria-label="Pedro">
-          <g class="leg leg-l"><rect x="42" y="120" width="14" height="48" rx="7" /></g>
-          <g class="leg leg-r"><rect x="64" y="120" width="14" height="48" rx="7" /></g>
-          <g class="arm arm-l"><rect x="14" y="66" width="14" height="52" rx="7" /></g>
-          <g class="arm arm-r"><rect x="92" y="66" width="14" height="52" rx="7" /></g>
-          <g class="body"><rect x="30" y="62" width="60" height="66" rx="16" /></g>
-          <g class="head">
-            <circle cx="60" cy="34" r="32" />
-            <circle class="eye" cx="48" cy="28" r="4.5" />
-            <circle class="eye" cx="72" cy="28" r="4.5" />
-            <path class="mouth" d="M38 40 Q60 62 82 40" />
+    <!-- O RIG COMPARTILHADO. Um só, para os cinco personagens (GDD §5).
+         O que varia vem de src/data/characters.js: cor, proporção, o rosto
+         dentro de <g class="face"> e o acessório dentro de <g class="accessory">.
+         Quem preenche os dois é ui/stage.js. -->
+    <template id="tpl-actor">
+      <div class="actor">
+        <svg class="rig" viewBox="0 0 120 180">
+          <!-- .frame existe só para o --build esticar o boneco de lado sem
+               bagunçar o transform-origin dos membros -->
+          <g class="frame">
+            <g class="leg leg-l"><rect x="42" y="120" width="14" height="48" rx="7" /></g>
+            <g class="leg leg-r"><rect x="64" y="120" width="14" height="48" rx="7" /></g>
+            <g class="arm arm-l"><rect x="14" y="66" width="14" height="52" rx="7" /></g>
+            <g class="arm arm-r"><rect x="92" y="66" width="14" height="52" rx="7" /></g>
+            <g class="body"><rect x="30" y="62" width="60" height="66" rx="16" /></g>
+            <g class="head">
+              <circle class="skull" cx="60" cy="34" r="32" />
+              <g class="face"></g>
+            </g>
+            <g class="accessory"></g>
           </g>
         </svg>
       </div>

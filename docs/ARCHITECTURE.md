@@ -204,9 +204,17 @@ Entrada em cena é a mesma ideia: cada ator publica `--from-left/right/above/bel
 
 ⚠️ **`animationend` borbulha.** O palco tem descendentes animados (flash, tique do timer, respiração do Pedro); quem usa o evento para desligar a própria classe precisa filtrar por `ev.target`. Sem isso, o flash de 260 ms corta a tremida de 320 ms.
 
-**Quem mexe no DOM:** `stage.js` cria e destrói atores (clonando `<template>` do `index.html`); `actions.js` só modifica o que já existe.
+**Um rig para todos os personagens.** O `index.html` tem UM `<template id="tpl-actor">` com o esqueleto (`head/body/arm-l/arm-r/leg-l/leg-r`). `stage.js` o clona e o veste com o que vem de `data/characters.js`: cor em custom property (`--skin`, `--outline`, `--accent`), proporção em `--h` e `--build`, e dois fragmentos SVG injetados nos slots `<g class="face">` e `<g class="accessory">`.
 
-**Âncoras do `index.html`:** `#stage #peter #bomb #timer #message #fx-layer #hud #ending-card`.
+O vocabulário desses fragmentos são duas classes de `chars.css` — `.ink` (forma com contorno grosso, cor por `--part`) e `.line` (traço puro). Túnica, barba, boné, sobrancelha e boca saem das duas. Um personagem novo é um objeto em `characters.js`; nenhum arquivo de CSS ou HTML precisa ser tocado — é o teste do "15 minutos" do GDD §5.
+
+O `insertAdjacentHTML` usado aí é seguro porque o jogo não tem campo de texto, servidor nem parâmetro de URL: o único HTML injetado é o que está escrito no repositório.
+
+**Entrada é característica do personagem, não da cena.** `characters.js` traz `enter: { from, ms, gait }`, que `stage.js` publica em `dataset` no próprio nó; o verbo `enter` lê dali quando o beat não manda nada. É assim que "o JP SEMPRE sobe de baixo da tela" vale sem o motor importar `data/` e sem as timelines repetirem `from: 'below'` treze vezes.
+
+**Quem mexe no DOM:** `stage.js` cria e destrói atores; `actions.js` só modifica o que já existe.
+
+**Âncoras do `index.html`:** `#stage #cast #fx-layer #hud #timer #hud-deaths #message #ending-card #ending-restart`, mais os moldes `#tpl-actor` e `#tpl-bomb`. Ator não é âncora: `#peter` só existe depois que a rodada monta o palco.
 
 **Convenções:** `id` para singletons · `data-actor="michas"` para atores · classe `.is-*` para estado · custom property para parâmetro de animação (`--shake-amp`).
 
@@ -332,6 +340,8 @@ export default { base: './' }
 | Countdown é componente | Beats de `setTimer` | Comportamento normal custa zero beats |
 | `K = min(3, n-2)` | `K` fixo em 3 | Anti-repetição sobrevive à ordem de corte |
 | Novidade contínua | Bônus booleano visto/não visto | Cena meio explorada continua sendo oferecida |
+| Um rig + `data/characters.js` | Um `<template>` por personagem | Personagem novo é um objeto; nada de HTML/CSS por personagem |
+| `enter` padrão no personagem | Repetir `from` em toda timeline | "JP sempre sobe de baixo" é traço dele, e o motor segue sem importar `data/` |
 | Coleção dentro do ending card | Galeria como tela | Sem interação nova, sem sexto estado, mais barato |
 | Restart num `<button>` dentro do card | Card inteiro clicável | Alvo explícito; teclado e foco de graça; o card fica só como leitura |
 | `explode` recebe `vaporize: [...]` | O verbo consultar `ending.survives` | Quem some é dado da timeline; o verbo continua sem saber que final está rodando |
