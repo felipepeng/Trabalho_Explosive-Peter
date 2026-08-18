@@ -15,8 +15,12 @@
 
 const AT_KEYS = ['x', 'y'];
 
+/** Pictográficos em geral. Não pega tudo, mas pega o que um humano digita. */
+const EMOJI = /\p{Extended_Pictographic}/u;
+
 export function validate(scenes, {
   verbs = [],
+  themes = [],
   maxRoundMs = 15000,
   dramaticPauseMs = 600,
   joinGap = 400,
@@ -25,6 +29,7 @@ export function validate(scenes, {
 } = {}) {
   const problems = [];
   const known = new Set(verbs);
+  const knownThemes = new Set(themes);
   const seenEndingIds = new Map();
 
   for (const scene of scenes) {
@@ -40,6 +45,7 @@ export function validate(scenes, {
     }
 
     checkBeats(scene.id, sceneBeats, invadeAt);
+    for (const beat of sceneBeats) checkFala(scene.id, beat);
 
     if (!scene.endings?.length) {
       problems.push(`${scene.id}: cena sem nenhum final`);
@@ -58,6 +64,15 @@ export function validate(scenes, {
       if (!('survives' in ending)) problems.push(`${label}: falta survives (true | false | null)`);
       if (!ending.title) problems.push(`${label}: falta title`);
 
+      // Tema escrito errado degradaria em silêncio para a paleta padrão —
+      // o final ficaria sem tema e ninguém notaria até o playtest.
+      if (knownThemes.size && ending.theme && !knownThemes.has(ending.theme)) {
+        problems.push(`${label}: tema "${ending.theme}" não existe em base.css`);
+      }
+
+      // Emoji em fala de personagem é proibido (regra de tom do projeto).
+      for (const beat of ending.timeline ?? []) checkFala(label, beat);
+
       checkBeats(label, ending.timeline ?? [], climaxAt);
 
       const endsAt = (ending.timeline ?? []).reduce((max, b) => Math.max(max, climaxAt + b.at), climaxAt);
@@ -65,6 +80,14 @@ export function validate(scenes, {
       if (total > maxRoundMs) {
         problems.push(`${label}: ${(total / 1000).toFixed(1)}s (teto ${maxRoundMs / 1000}s)`);
       }
+    }
+  }
+
+  /** Emoji pode em interface, nunca em `say`. Ver o cabeçalho de scenes.js. */
+  function checkFala(label, beat) {
+    if (beat.do !== 'say' || !beat.text) return;
+    if (EMOJI.test(beat.text)) {
+      problems.push(`${label}: fala com emoji ("${beat.text}") — proibido em say`);
     }
   }
 

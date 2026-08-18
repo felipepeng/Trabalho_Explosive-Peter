@@ -32,6 +32,8 @@ O rig SVG é compartilhado: os cinco personagens saem do mesmo `<template>`, ves
 
 Conteúdo escrito: **5 cenas, 14 finais** — todo o catálogo do GDD §6 menos a cena curta rara `bomba-impaciente`, que está na ordem de corte.
 
+Cada final tem a **própria tela**: sete paletas, kicker e texto de botão próprios, e um `✨ NOVO` quando é descoberta.
+
 Um validador roda no boot em dev e reprova verbo inexistente, `id` de final repetido, posição fora do espaço de design e — o que mais importa — qualquer combinação cena × final que passe de 15 segundos.
 
 

@@ -30,3 +30,8 @@ export const FIRST_RUN_SCENE = 'ninguem-veio';
 /** Espaço de design (ARCHITECTURE.md §6). */
 export const DESIGN_W = 1000;
 export const DESIGN_H = 600;
+
+/** Paletas de tela de final declaradas em base.css (`#ending-card[data-theme]`).
+ *  Vive aqui porque o validador precisa reprovar um `theme` escrito errado —
+ *  senão o final degradaria em silêncio para a paleta padrão. */
+export const CARD_THEMES = ['fogo', 'pedra', 'festa', 'mar', 'drop', 'fenda', 'corrompido'];

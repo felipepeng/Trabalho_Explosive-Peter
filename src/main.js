@@ -25,6 +25,7 @@ import {
   DRAMATIC_PAUSE_MS,
   JOIN_GAP,
   FIRST_RUN_SCENE,
+  CARD_THEMES,
 } from './config.js';
 import { createClock, bindVisibility } from './engine/clock.js';
 import { createDirector, buildRound } from './engine/director.js';
@@ -225,13 +226,19 @@ function toEnding(id) {
 
   // I4: o progresso é gravado UMA vez, exatamente aqui. Rodada abortada
   // (recarregou a página, clicou no restart antes do fim) não conta.
-  if (!round.ending.synthetic) progress.record({ ending: round.ending });
+  const { isNew } = round.ending.synthetic
+    ? { isNew: false }
+    : progress.record({ ending: round.ending });
+
   const saved = progress.get();
   hud.setDeaths(saved.deaths);
 
+  // O card se veste com o final: tema, kicker e texto do botão são dados.
   endingCard.show({
-    title: round.ending.title,
-    counter: `${saved.seenEndings.length} / ${TOTAL_ENDINGS}`,
+    ending: round.ending,
+    seen: saved.seenEndings.length,
+    total: TOTAL_ENDINGS,
+    isNew,
   });
 }
 
@@ -247,6 +254,7 @@ hud.setDeaths(progress.get().deaths);
 if (import.meta.env?.DEV) {
   validate(scenes, {
     verbs: Object.keys(actions),
+    themes: CARD_THEMES,
     maxRoundMs: MAX_ROUND_MS_DESIGN,
     dramaticPauseMs: DRAMATIC_PAUSE_MS,
     joinGap: JOIN_GAP,

@@ -183,9 +183,21 @@ html, body {
 #ending-card[hidden] { display: none; }
 
 /* ---------- ending card ---------- */
-/* Cobre a janela inteira, mas NÃO é clicável: o alvo do restart é o botão. */
+/* Cobre a janela inteira, mas NÃO é clicável: o alvo do restart é o botão.
+ *
+ * Cada final se veste com o próprio tema. O card só declara TOKENS; quem
+ * escolhe a paleta é o `theme` do final em data/scenes.js, via [data-theme].
+ * Nenhum seletor aqui conhece um id de final — sete paletas cobrem os catorze.
+ */
 
 #ending-card {
+  --card-top: #2a2b33;
+  --card-bot: #0d0e13;
+  --card-ink: var(--c-paper);
+  --card-accent: var(--c-hot);
+  --card-btn-ink: #12141c;
+  --card-font: var(--font-display);
+
   position: absolute;
   inset: 0;
   z-index: 10;
@@ -194,30 +206,123 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: calc(10 * var(--u));
-  background: rgba(9, 10, 15, 0.82);
   text-align: center;
   padding: 0 calc(40 * var(--u));
   border: 0;
-  color: inherit;
+
+  color: var(--card-ink);
+
+  /* Translúcido de propósito: o palco congelado no resultado continua
+     aparecendo por trás do tema, que é a "tela parada" do GDD §3.1.
+     A primeira declaração é o fallback de quem não tem color-mix. */
+  background: rgba(9, 10, 15, 0.88);
+  background: radial-gradient(120% 90% at 50% 34%,
+    color-mix(in srgb, var(--card-top) 84%, transparent) 0%,
+    color-mix(in srgb, var(--card-bot) 93%, transparent) 100%);
 }
+
+#ending-card[hidden] { display: none; }
+
+/* ---------- as sete paletas ---------- */
+
+/* morte por explosão: ninguem-veio, vin-dicotomia, jp-alcance, jp-fio-errado */
+#ending-card[data-theme="fogo"] {
+  --card-top: #4a1a08;
+  --card-bot: #120609;
+  --card-ink: #ffe9d6;
+  --card-accent: #ff6a3c;
+}
+
+/* o estoicismo do Vinicius: sóbrio, sem festa nem tragédia */
+#ending-card[data-theme="pedra"] {
+  --card-top: #33343c;
+  --card-bot: #131419;
+  --card-ink: #ece9df;
+  --card-accent: #c9c2ac;
+}
+
+/* salvamento espetacular: mic-correnteza, jp-arremesso */
+#ending-card[data-theme="festa"] {
+  --card-top: #4a3708;
+  --card-bot: #17120a;
+  --card-ink: #fff4d6;
+  --card-accent: #ffc93d;
+}
+
+/* água: mic-afogado, mic-subaquatica */
+#ending-card[data-theme="mar"] {
+  --card-top: #07405f;
+  --card-bot: #03131f;
+  --card-ink: #d9f2ff;
+  --card-accent: #4fb9e8;
+}
+
+/* o drop raro: verde de item lendário */
+#ending-card[data-theme="drop"] {
+  --card-top: #0c452b;
+  --card-bot: #04150e;
+  --card-ink: #d8ffe9;
+  --card-accent: #45e08a;
+}
+
+/* o universo paralelo: mal-paradoxo, mal-troca */
+#ending-card[data-theme="fenda"] {
+  --card-top: #36105a;
+  --card-bot: #0e0320;
+  --card-ink: #f0dcff;
+  --card-accent: #b06bea;
+}
+
+/* [DADOS CORROMPIDOS]: terminal quebrado. Troca até a fonte do título. */
+#ending-card[data-theme="corrompido"] {
+  --card-top: #04120a;
+  --card-bot: #000000;
+  --card-ink: #7dff9a;
+  --card-accent: #7dff9a;
+  --card-btn-ink: #02180b;
+  --card-font: ui-monospace, "Cascadia Mono", "Courier New", monospace;
+}
+
+/* linhas de varredura, só no tema corrompido */
+#ending-card[data-theme="corrompido"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(125, 255, 154, 0.07) 0 calc(2 * var(--u)),
+    rgba(0, 0, 0, 0) calc(2 * var(--u)) calc(5 * var(--u))
+  );
+}
+
+/* ---------- as peças ---------- */
 
 #ending-kicker {
   margin: 0;
   font-size: calc(22 * var(--u));
-  letter-spacing: 0.4em;
-  text-indent: 0.4em;
-  opacity: 0.6;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: var(--card-accent);
 }
 
 #ending-title {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--card-font);
   font-size: calc(84 * var(--u));
   line-height: 1;
   letter-spacing: 0.01em;
   text-transform: uppercase;
+  color: var(--card-ink);
   text-shadow: 0 calc(6 * var(--u)) 0 rgba(0, 0, 0, 0.5);
   max-width: calc(880 * var(--u));
+}
+
+/* o título corrompido é menor: monoespaçado com colchetes ocupa mais linha */
+#ending-card[data-theme="corrompido"] #ending-title {
+  font-size: calc(62 * var(--u));
+  text-transform: none;
 }
 
 #ending-count {
@@ -229,24 +334,36 @@ html, body {
 
 #ending-count[hidden] { display: none; }
 
-/* O único alvo de clique do jogo inteiro. */
+/* descoberta: o gancho de "falta um" aparece na linha que já existe */
+#ending-card.is-new #ending-count {
+  opacity: 1;
+  font-weight: 700;
+  color: var(--card-accent);
+}
+
+#ending-card.is-complete #ending-count {
+  opacity: 1;
+  font-weight: 700;
+}
+
+/* ---------- o único alvo de clique do jogo inteiro ---------- */
+
 #ending-restart {
   margin: calc(18 * var(--u)) 0 0;
-  font-family: var(--font-display);
+  font-family: var(--card-font);
   font-size: calc(34 * var(--u));
   letter-spacing: 0.06em;
-  color: var(--c-ink);
-  background: var(--c-paper);
+  color: var(--card-btn-ink);
+  background: var(--card-accent);
   padding: calc(14 * var(--u)) calc(40 * var(--u));
-  border: calc(4 * var(--u)) solid var(--c-ink);
+  border: calc(4 * var(--u)) solid var(--card-btn-ink);
   border-radius: calc(999 * var(--u));
   box-shadow: 0 calc(6 * var(--u)) 0 rgba(0, 0, 0, 0.55);
   cursor: pointer;
 }
 
 #ending-restart:hover {
-  background: var(--c-hot);
-  color: var(--c-paper);
+  background: var(--card-ink);
 }
 
 #ending-restart:active {
@@ -255,7 +372,7 @@ html, body {
 }
 
 #ending-restart:focus-visible {
-  outline: calc(4 * var(--u)) solid var(--c-hot);
+  outline: calc(4 * var(--u)) solid var(--card-ink);
   outline-offset: calc(4 * var(--u));
 }
 

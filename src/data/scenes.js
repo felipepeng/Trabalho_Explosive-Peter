@@ -19,6 +19,14 @@
  * `id` de final é PERMANENTE — é chave do save do jogador. `title` é livre.
  * A classificação de `survives` dos 14 finais está em ARCHITECTURE.md §7.1.
  *
+ * Cada final também traz a PRÓPRIA TELA: `theme` (uma das paletas declaradas
+ * em base.css), `kicker` (a linha acima do título) e `button` (o texto do
+ * botão de reinício).
+ *
+ * ⚠️ EMOJI: pode em kicker, botão e em qualquer texto de interface. NUNCA no
+ * `text` de um beat `say` — fala de personagem é sem emoji, senão o Vinicius
+ * estoico deixa de soar estoico.
+ *
  * Orçamento: clímax + último beat do final + 600ms de pausa dramática tem que
  * caber em 15s (GDD, pilar 2). As sete combinações abaixo ficam entre 10,6s e
  * 13,0s.
@@ -48,6 +56,9 @@ export const scenes = [
         title: 'NINGUÉM VEIO',
         weight: 1,
         survives: false,
+        theme: 'fogo',
+        kicker: 'SEM SALVAÇÃO 💥',
+        button: 'DE NOVO 🔁',
         timeline: [
           { at: 0, do: 'explode', target: 'bomb', intensity: 8, vaporize: ['peter', 'bomb'] },
         ],
@@ -80,6 +91,9 @@ export const scenes = [
         title: 'CONTIDO PELO ESTOICISMO',
         weight: 3,
         survives: true,
+        theme: 'pedra',
+        kicker: 'PEDRO SOBREVIVEU 🧘',
+        button: 'MAIS UMA 🔁',
         timeline: [
           { at: 0, do: 'say', who: 'vinicius', text: 'A bomba explode. Eu não.', ms: 2600 },
           { at: 900, do: 'explode', target: 'bomb', intensity: 4, vaporize: ['bomb'] },
@@ -93,6 +107,9 @@ export const scenes = [
         title: 'MEMENTO MORI',
         weight: 3,
         survives: true,
+        theme: 'pedra',
+        kicker: 'SACRIFÍCIO ESTOICO 🕯️',
+        button: 'MAIS UMA 🔁',
         timeline: [
           { at: 0, do: 'say', who: 'vinicius', text: 'Amor fati.', ms: 1600 },
           { at: 800, do: 'exit', who: 'vinicius', to: 'right', ms: 1500, gait: 'walk' },
@@ -106,6 +123,9 @@ export const scenes = [
         title: 'A DICOTOMIA DO CONTROLE',
         weight: 2,
         survives: false,
+        theme: 'fogo',
+        kicker: 'PEDRO PERDIDO 💥',
+        button: 'DE NOVO 🔁',
         timeline: [
           { at: 0, do: 'say', who: 'vinicius', text: 'Não estava sob meu controle.', ms: 2400 },
           {
@@ -146,6 +166,9 @@ export const scenes = [
         title: 'BAIXO IMPACTO',
         weight: 3,
         survives: false,
+        theme: 'fogo',
+        kicker: 'PEDRO PERDIDO 💥',
+        button: 'DE NOVO 🔁',
         timeline: [
           { at: 0, do: 'say', who: 'jp', text: 'PERA—', ms: 900 },
           {
@@ -163,6 +186,9 @@ export const scenes = [
         title: 'CORTOU O FIO ERRADO',
         weight: 3,
         survives: false,
+        theme: 'fogo',
+        kicker: 'PEDRO PERDIDO ✂️',
+        button: 'DE NOVO 🔁',
         timeline: [
           { at: 0, do: 'pose', who: 'jp', as: 'jump', off: true },
           { at: 0, do: 'pose', who: 'jp', as: 'reach' },
@@ -183,6 +209,9 @@ export const scenes = [
         title: 'ARREMESSO DE PEDRO',
         weight: 2,
         survives: true,
+        theme: 'festa',
+        kicker: 'PEDRO SOBREVIVEU 🥏',
+        button: 'MAIS UMA 🔁',
         timeline: [
           { at: 0, do: 'pose', who: 'jp', as: 'jump', off: true },
           { at: 0, do: 'say', who: 'jp', text: 'VEM CÁ!', ms: 1200 },
@@ -220,6 +249,9 @@ export const scenes = [
         title: 'ENCANTAMENTO NÍVEL III',
         weight: 3,
         survives: true,
+        theme: 'festa',
+        kicker: 'PEDRO SOBREVIVEU 🎆',
+        button: 'MAIS UMA 🌊',
         timeline: [
           { at: 0, do: 'pose', who: 'michas', as: 'throw' },
           { at: 250, do: 'exit', who: 'bomb', to: 'above', ms: 600 },
@@ -234,6 +266,9 @@ export const scenes = [
         title: 'NÃO ERA ESSE TIPO DE SALVAMENTO',
         weight: 3,
         survives: false,
+        theme: 'mar',
+        kicker: 'PEDRO AFOGADO 🌊',
+        button: 'DE NOVO 🔁',
         timeline: [
           { at: 0, do: 'flood', height: 210, ms: 900 },
           { at: 700, do: 'pose', who: 'bomb', as: 'cut' },
@@ -247,6 +282,9 @@ export const scenes = [
         title: "À PROVA D'ÁGUA",
         weight: 2,
         survives: false,
+        theme: 'mar',
+        kicker: 'PEDRO PERDIDO 🫧',
+        button: 'DE NOVO 🔁',
         timeline: [
           { at: 0, do: 'flood', height: 210, ms: 900 },
           { at: 900, do: 'say', who: 'michas', text: 'ISSO NÃO DEVERIA—', ms: 1600 },
@@ -266,6 +304,9 @@ export const scenes = [
         title: 'DROP RARO',
         weight: 1,
         survives: true,
+        theme: 'drop',
+        kicker: 'DROP RARO ⭐',
+        button: 'FARMAR MAIS ⛏️',
         timeline: [
           { at: 0, do: 'pose', who: 'bomb', as: 'item' },
           { at: 500, do: 'say', who: 'michas', text: 'DROPOU.', ms: 1800 },
@@ -305,6 +346,9 @@ export const scenes = [
         title: 'PARADOXO',
         weight: 3,
         survives: false,
+        theme: 'fenda',
+        kicker: 'OS DOIS PERDIDOS 💥',
+        button: 'DE NOVO 🔁',
         timeline: [
           { at: 0, do: 'explode', target: 'bomb', intensity: 9, vaporize: ['peter', 'bomb'] },
           { at: 700, do: 'explode', x: 380, y: 400, intensity: 7, vaporize: ['maligno'] },
@@ -316,6 +360,9 @@ export const scenes = [
         title: 'TROCA DE UNIVERSOS',
         weight: 3,
         survives: true,
+        theme: 'fenda',
+        kicker: 'PEDRO SOBREVIVEU 🔮',
+        button: 'MAIS UMA 🔁',
         timeline: [
           { at: 0, do: 'flash', ms: 200 },
           { at: 60, do: 'hide', who: 'peter' },
@@ -340,6 +387,9 @@ export const scenes = [
         title: '[DADOS CORROMPIDOS]',
         weight: 2,
         survives: null,
+        theme: 'corrompido',
+        kicker: 'REGISTRO PERDIDO 🚫',
+        button: '[ REINICIAR ] ⏵',
         timeline: [
           { at: 0, do: 'pose', who: 'bomb', as: 'cut' },
           { at: 300, do: 'say', who: 'maligno', text: 'Isso seria rápido demais.', ms: 1800 },

@@ -10,7 +10,7 @@ export function createHud({ deaths }) {
     setDeaths(n) {
       if (!deaths) return;
       deaths.hidden = !n;
-      deaths.textContent = `Pedros perdidos: ${n}`;
+      deaths.textContent = `💀 Pedros perdidos: ${n}`;
     },
   };
 }

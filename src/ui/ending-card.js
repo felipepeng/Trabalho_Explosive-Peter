@@ -1,17 +1,26 @@
-/* Explosive Peter — o ending card.
+/* Explosive Peter — o card de final.
  *
- * O card mostra o resultado; quem reinicia é o BOTÃO, e só ele. Clicar em
- * qualquer outro ponto do card não faz nada.
+ * I2: daqui só se sai por clique. O card em si NÃO é clicável — o único alvo
+ * de clique do jogo inteiro é o botão, e sendo um `<button>` de verdade, foco,
+ * Enter e Espaço vêm do navegador (ARCHITECTURE.md §7).
  *
- * I2: só se sai do ENDING por clique — nada de temporizador aqui dentro.
- * I5: o listener de restart só existe enquanto o card está visível. Fora do
- *     ENDING não há handler de input nenhum no documento.
- *
- * O botão é um <button> de verdade: foco, Enter e Espaço vêm de graça do
- * navegador, sem role/tabindex/keydown escritos à mão.
+ * Cada final traz a própria tela: `theme` escolhe a paleta declarada em
+ * base.css, `kicker` e `button` trocam o texto. Nada de cor ou de frase mora
+ * aqui — este arquivo só sabe ONDE escrever, nunca O QUE.
  */
 
+/** Quando o final não declara `kicker`, o veredito sai do `survives`. */
+const KICKER_PADRAO = {
+  true: 'PEDRO SOBREVIVEU 🎉',
+  false: 'PEDRO PERDIDO 💥',
+  null: 'INDEFINIDO ❓',
+};
+
+const BOTAO_PADRAO = 'DE NOVO 🔁';
+const TEMA_PADRAO = 'fogo';
+
 export function createEndingCard(el, { onRestart }) {
+  const kicker = el.querySelector('#ending-kicker');
   const title = el.querySelector('#ending-title');
   const count = el.querySelector('#ending-count');
   const button = el.querySelector('#ending-restart');
@@ -19,20 +28,37 @@ export function createEndingCard(el, { onRestart }) {
   let armed = false;
 
   function fire() {
-    // I1: uma rodada por vez. O segundo clique de um clique duplo cai aqui
-    // com `armed` já falso e é engolido.
-    if (!armed) return;
+    if (!armed) return; // I1: engole o 2º clique de um duplo
     armed = false;
     button.disabled = true;
     onRestart();
   }
 
   return {
-    /** Entra em ENDING: mostra o card e arma o botão. */
-    show({ title: text, counter = '' }) {
-      title.textContent = text;
-      count.textContent = counter;
-      count.hidden = !counter;
+    /**
+     * @param {object} o
+     * @param {object} o.ending    o final da rodada, vindo de data/scenes.js
+     * @param {number} o.seen      quantos finais o jogador já descobriu
+     * @param {number} o.total     quantos existem no catálogo
+     * @param {boolean} o.isNew    este final foi descoberto AGORA
+     */
+    show({ ending, seen = 0, total = 0, isNew = false }) {
+      el.dataset.theme = ending.theme ?? TEMA_PADRAO;
+
+      kicker.textContent = ending.kicker ?? KICKER_PADRAO[String(ending.survives)];
+      title.textContent = ending.title ?? '';
+      button.textContent = ending.button ?? BOTAO_PADRAO;
+
+      const completo = total > 0 && seen >= total;
+      count.textContent = `${completo ? '🏆 ' : ''}${seen} / ${total}`;
+      count.hidden = !total;
+
+      // A descoberta é o gancho do jogo: ela merece aparecer, mas numa linha
+      // que já existe — sem elemento novo e sem empurrar o título.
+      el.classList.toggle('is-new', isNew);
+      el.classList.toggle('is-complete', completo);
+      if (isNew) count.textContent = `✨ NOVO · ${count.textContent}`;
+
       el.hidden = false;
       armed = true;
       button.disabled = false;
@@ -40,12 +66,12 @@ export function createEndingCard(el, { onRestart }) {
       button.focus({ preventScroll: true });
     },
 
-    /** Sai do ENDING: some e deixa de escutar qualquer coisa. */
     hide() {
       armed = false;
       button.removeEventListener('click', fire);
       button.blur();
       el.hidden = true;
+      el.classList.remove('is-new', 'is-complete');
     },
   };
 }

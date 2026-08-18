@@ -267,6 +267,14 @@ progress.seenSet()          // Set pronto para o picker
 
 **A coleção de finais mora dentro do ending card**, não numa tela separada: uma fileira de quadradinhos abaixo do `FINAL 3/14`, com `???` no que falta. Decorativa e não clicável. Assim não há interação nova (GDD §4.2 proíbe), não há sexto estado, e o gancho de "falta um" aparece toda rodada em vez de ficar atrás de um botão.
 
+**Cada final se veste com o próprio tema.** O final traz `theme`, `kicker` e `button` em `data/scenes.js`; o card só declara TOKENS (`--card-top/bot/ink/accent/btn-ink/font`) e `[data-theme]` os reescreve. Nenhum seletor de CSS conhece um id de final: **sete paletas** — `fogo · pedra · festa · mar · drop · fenda · corrompido` — cobrem os catorze.
+
+A tela é **translúcida** de propósito: o resultado congelado continua aparecendo por trás do tema, que é a "tela parada" do GDD §3.1.
+
+Quando o final não declara `kicker`, o veredito sai do `survives` (`PEDRO SOBREVIVEU 🎉` / `PEDRO PERDIDO 💥` / `INDEFINIDO ❓`) — um final novo funciona sem configurar nada.
+
+**Emoji:** permitido em kicker, botão, contador, HUD e mensagens. **Proibido no `text` de um beat `say`** — fala de personagem é sem emoji, senão o Vinicius estoico deixa de soar estoico. O validador reprova.
+
 **O restart é um `<button>` dedicado dentro do card**, não o card inteiro. O card é superfície de leitura; o único alvo de clique do jogo é o botão. Sendo um `<button>` de verdade, foco, Enter e Espaço vêm do navegador — nada de `role`, `tabindex` ou `keydown` escritos à mão. E a coleção de finais poder encostar no card sem virar alvo de clique deixa de ser um cuidado: ela nunca foi alvo.
 
 ### 7.1 Classificação de `survives` *(decidida no D4)*
@@ -311,7 +319,7 @@ Se ninguém encostar na tela, a primeira rodada sai muda — e em `ninguem-veio`
 
 ## 9. Validador
 
-`data/validate.js` roda no boot só em `dev`. Recebe a lista de verbos e as constantes por parâmetro — `data/` não pode importar `engine/`. Reprova: `id` de final duplicado, verbo inexistente, `weight`/`survives` faltando, `climaxAt` antes do último beat da cena, posição fora do espaço de design.
+`data/validate.js` roda no boot só em `dev`. Recebe a lista de verbos, os temas e as constantes por parâmetro — `data/` não pode importar `engine/`. Reprova: `id` de final duplicado, verbo inexistente, `weight`/`survives` faltando, `climaxAt` antes do último beat da cena, posição fora do espaço de design, `theme` que não existe em `base.css` (degradaria em silêncio para a paleta padrão) e emoji em fala de personagem.
 
 E o principal — **o orçamento de 15 segundos**. Para cada combinação cena × final, soma a duração total e falha acima de `MAX_ROUND_MS_DESIGN = 15000`:
 
@@ -361,6 +369,8 @@ export default { base: './' }
 | `enter` padrão no personagem | Repetir `from` em toda timeline | "JP sempre sobe de baixo" é traço dele, e o motor segue sem importar `data/` |
 | Coleção dentro do ending card | Galeria como tela | Sem interação nova, sem sexto estado, mais barato |
 | Restart num `<button>` dentro do card | Card inteiro clicável | Alvo explícito; teclado e foco de graça; o card fica só como leitura |
+| 7 paletas por MOOD, escolhidas pelo dado | Uma cor por final, ou um seletor por id | Final novo escolhe um tema existente; o CSS não cresce com o catálogo |
+| Kicker cai para o `survives` quando ausente | Todo final declarar tudo | Final novo funciona sem configurar nada |
 | `explode` recebe `vaporize: [...]` | O verbo consultar `ending.survives` | Quem some é dado da timeline; o verbo continua sem saber que final está rodando |
 | `survives: true/false/null` | `outcome` de 3 valores | `null` deixa `mal-censurado` não mexer no contador — que é a piada |
 | Forçar `ninguem-veio` no `main.js` | `if` de `id` no picker | Motor não conhece o catálogo |
