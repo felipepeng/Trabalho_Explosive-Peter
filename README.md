@@ -26,7 +26,9 @@ Sem dependências de runtime: HTML/CSS/JS vanilla + Vite só como build.
 
 ## Status
 
-**D3 concluído — motor de cenas data-driven.** Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, ending card e restart — e a rodada agora é montada pelo `director` a partir de `src/data/scenes.js`, com os verbos `enter`, `say`, `shake` e `explode`.
+**D4 concluído — marco M1.** Palco em tela cheia com área segura 1000×600, clock em rAF, countdown de 10s, máquina de estados de 5 fases, ending card e restart. A rodada é montada pelo `director` a partir de `src/data/scenes.js` (verbos `enter`, `say`, `shake`, `explode`), sorteada pelo `picker` com anti-repetição, e o progresso persiste em `localStorage` com o contador `X/N` no card.
+
+Falta o conteúdo: 1 cena das 6, 1 final dos 14 (D5 a D8).
 
 
 

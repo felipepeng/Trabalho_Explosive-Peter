@@ -119,6 +119,8 @@ Formato: cada **cena** pertence a um personagem e sorteia um entre seus **finais
 
 > **Regra de ouro dos IDs:** o `id` de um final é permanente — o progresso salvo do jogador depende dele. O `title` pode ser reescrito à vontade.
 
+> O valor de `survives` de cada um dos 14 finais já está decidido em [`ARCHITECTURE.md` §7.1](./ARCHITECTURE.md) — ao escrever as timelines, é só transcrever.
+
 ### 6.1 `ninguem-veio` — sem personagem *(cena de fundação)*
 
 O timer chega a zero. Nada acontece. Pedro explode.

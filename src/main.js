@@ -10,6 +10,11 @@
  * D3: o conteúdo saiu daqui. A rodada agora é `data/scenes.js` costurado pelo
  * `buildRound` e executado pelo director. Este arquivo não deve crescer por
  * causa de cena nova — só por causa de fase nova, e não há fase nova prevista.
+ *
+ * D4: o picker escolhe a rodada e o progresso é gravado na entrada de ENDING.
+ * O forçamento de `ninguem-veio` na primeira rodada mora AQUI de propósito
+ * (ARCHITECTURE.md §4): é a única regra do jogo que conhece um id de cena, e
+ * deixá-la no picker faria o motor conhecer o catálogo.
  */
 
 import {
@@ -23,10 +28,13 @@ import {
 import { createClock, bindVisibility } from './engine/clock.js';
 import { createDirector, buildRound } from './engine/director.js';
 import { actions } from './engine/actions.js';
+import { pickScene, pickEnding } from './engine/picker.js';
 import { scenes } from './data/scenes.js';
+import * as progress from './state/progress.js';
 import { createCountdown } from './ui/countdown.js';
 import { createStage } from './ui/stage.js';
 import { createFx } from './ui/fx.js';
+import { createHud } from './ui/hud.js';
 import { createEndingCard } from './ui/ending-card.js';
 
 /* ------------------------------------------------------------------ *
@@ -55,6 +63,7 @@ const el = {
   fx: document.getElementById('fx-layer'),
   timer: document.getElementById('timer'),
   message: document.getElementById('message'),
+  deaths: document.getElementById('hud-deaths'),
   card: document.getElementById('ending-card'),
 };
 
@@ -63,6 +72,7 @@ const director = createDirector({ clock });
 const countdown = createCountdown(el.timer, clock);
 const stage = createStage({ cast: el.cast, fx: el.fx });
 const fx = createFx({ stage: el.stage, layer: el.fx });
+const hud = createHud({ deaths: el.deaths });
 const endingCard = createEndingCard(el.card, { onRestart: startRound });
 
 let phase = PHASE.BOOT;
@@ -77,6 +87,19 @@ let round = null;
 /** Aborta os beats da rodada anterior. Trocado a cada `startRound`. */
 let roundAbort = null;
 
+/** Sessão: o histórico do anti-repetição. Some ao recarregar a página, de
+ *  propósito — é memória de ritmo, não progresso (ARCHITECTURE.md §7). */
+const session = {
+  /** ids das cenas jogadas, em ordem */
+  history: [],
+  /** último final visto em cada cena, para não repetir o desfecho */
+  lastEndingByScene: Object.create(null),
+};
+
+/** Denominador do contador `X/N`: sai do catálogo, não de uma constante — o
+ *  número cresce sozinho conforme o D7 e o D8 escrevem os finais. */
+const TOTAL_ENDINGS = scenes.reduce((n, s) => n + (s.endings?.length ?? 0), 0);
+
 bindVisibility(clock, {
   onHide: () => el.body.classList.add('is-tab-hidden'),
   onShow: () => el.body.classList.remove('is-tab-hidden'),
@@ -88,11 +111,34 @@ bindVisibility(clock, {
 
 const byId = (id) => scenes.find((s) => s.id === id);
 
-/** D4: aqui entram o picker e o `progress.firstRun`. Por ora, sempre a cena
- *  de fundação — que é justamente o que o GDD §3.2 manda na primeira rodada. */
+function fallbackEnding(scene) {
+  console.warn(`[main] cena "${scene?.id}" não tem final sorteável`);
+  // `synthetic` mantém esse final de emergência fora do save: ele não é
+  // conteúdo, e contaminaria o X/N com um id que não existe no catálogo.
+  return { id: `${scene?.id}:sem-final`, title: 'FIM', survives: null, timeline: [], synthetic: true };
+}
+
+/** A cena e o final são sorteados JUNTOS, no início da rodada — o final
+ *  precisa estar decidido antes do primeiro beat da cena rodar. */
 function pickRound() {
-  const scene = byId(FIRST_RUN_SCENE) ?? scenes[0];
-  const ending = scene.endings[0];
+  const seen = progress.seenSet();
+
+  // GDD §3.2: a primeira rodada da vida do jogador é sempre `ninguem-veio`.
+  // Ela estabelece a regra para que todas as outras funcionem como quebra.
+  const scene = progress.get().firstRun
+    ? byId(FIRST_RUN_SCENE) ?? scenes[0]
+    : pickScene(scenes, { history: session.history, seen });
+
+  // P5: cena sem final é bug de dado (o validador do D9 reprova), mas aqui
+  // ela vira uma rodada feia em vez de uma tela morta.
+  const ending = pickEnding(scene, {
+    seen,
+    lastEndingId: session.lastEndingByScene[scene.id] ?? null,
+  }) ?? fallbackEnding(scene);
+
+  session.history.push(scene.id);
+  session.lastEndingByScene[scene.id] = ending?.id ?? null;
+
   return { scene, ending };
 }
 
@@ -174,14 +220,24 @@ function toEnding(id) {
   clock.pause();
   countdown.unmount();
 
-  // I4: o progresso é gravado uma vez, exatamente aqui. Entra no D4.
+  // I4: o progresso é gravado UMA vez, exatamente aqui. Rodada abortada
+  // (recarregou a página, clicou no restart antes do fim) não conta.
+  if (!round.ending.synthetic) progress.record({ ending: round.ending });
+  const saved = progress.get();
+  hud.setDeaths(saved.deaths);
 
-  endingCard.show({ title: round.ending.title });
+  endingCard.show({
+    title: round.ending.title,
+    counter: `${saved.seenEndings.length} / ${TOTAL_ENDINGS}`,
+  });
 }
 
 /* ------------------------------------------------------------------ *
  * Boot
  * ------------------------------------------------------------------ */
+
+progress.load();
+hud.setDeaths(progress.get().deaths);
 
 // O jogo começa sozinho: sem menu, sem botão de start, sem tela de título.
 startRound();
@@ -192,7 +248,7 @@ if (import.meta.env?.DEV) {
   //   beat({ do: 'say', who: 'peter', text: 'oi', ms: 1500 })
   const beat = (b) => actions[b.do]?.({ clock, stage, fx, countdown, signal: round?.signal }, b);
   Object.assign(window, {
-    clock, countdown, stage, fx, director, actions, scenes, beat,
+    clock, countdown, stage, fx, director, actions, scenes, beat, progress, session,
     get phase() { return phase; },
     get round() { return round; },
   });

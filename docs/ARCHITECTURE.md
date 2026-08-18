@@ -233,9 +233,11 @@ Duas coisas diferentes: **sessão** (histórico do anti-repetição — objeto s
 { version: 1, seenEndings: [], deaths: 0, saves: 0, rounds: 0,
   lastDiscoveryRound: 0, firstRun: true }
 
-progress.load()  // devolve estado válido SEMPRE (default se ausente/corrompido)
-progress.record({ ending })
+progress.load()             // devolve estado válido SEMPRE (default se ausente/corrompido)
+progress.get()              // cópia rasa; ninguém escreve no estado por fora
+progress.record({ ending }) // I4: uma vez por rodada, na entrada de ENDING
 progress.hasSeen(id)
+progress.seenSet()          // Set pronto para o picker
 ```
 
 - `version` diferente → **reset silencioso**. Sem código de migração.
@@ -246,6 +248,31 @@ progress.hasSeen(id)
 **A coleção de finais mora dentro do ending card**, não numa tela separada: uma fileira de quadradinhos abaixo do `FINAL 3/14`, com `???` no que falta. Decorativa e não clicável. Assim não há interação nova (GDD §4.2 proíbe), não há sexto estado, e o gancho de "falta um" aparece toda rodada em vez de ficar atrás de um botão.
 
 **O restart é um `<button>` dedicado dentro do card**, não o card inteiro. O card é superfície de leitura; o único alvo de clique do jogo é o botão. Sendo um `<button>` de verdade, foco, Enter e Espaço vêm do navegador — nada de `role`, `tabindex` ou `keydown` escritos à mão. E a coleção de finais poder encostar no card sem virar alvo de clique deixa de ser um cuidado: ela nunca foi alvo.
+
+### 7.1 Classificação de `survives` *(decidida no D4)*
+
+Os 14 finais do catálogo (GDD §6), já classificados — o D7 e o D8 só transcrevem.
+
+| Final | `survives` | Por quê |
+| --- | --- | --- |
+| `ninguem-veio` | `false` | Explode. É a referência de todo o resto |
+| `vin-contido` | `true` | Vinicius segura a explosão; Pedro sobrevive |
+| `vin-memento` | `true` | Vinicius leva a bomba embora e explode sozinho |
+| `vin-dicotomia` | `false` | O tempo acaba, os dois explodem |
+| `mic-correnteza` | `true` | A bomba explode no céu; Pedro sobrevive |
+| `mic-afogado` | `false` | Bomba desarmada, Pedro afogado. Morto é morto |
+| `mic-subaquatica` | `false` | Explosão subaquática em câmera lenta |
+| `mic-drop` | `true` | A bomba vira item; Pedro sobrevive confuso |
+| `mal-paradoxo` | `false` | Explosão dupla, os dois morrem |
+| `mal-troca` | `true` | O Pedro bom é salvo; quem explode é o maligno |
+| `mal-censurado` | `null` | "Tecnicamente não explodiu". O contador não se mexer É a piada |
+| `jp-alcance` | `false` | JP não alcança, o timer zera |
+| `jp-fio-errado` | `false` | Cortou o fio errado |
+| `jp-arremesso` | `true` | Pedro vira projétil, mas sobrevive machucado |
+
+**Nota sobre `mic-afogado`:** o final é uma quebra de expectativa (a bomba foi
+desarmada e mesmo assim o Pedro morreu), mas `survives` não mede se a bomba
+explodiu — mede se o Pedro sobreviveu. `false`.
 
 ---
 
@@ -323,8 +350,6 @@ export default { base: './' }
 
 | O quê | Quando | Nota |
 | --- | --- | --- |
-| Classificar os 14 finais em `survives` | **D4** | 14 linhas. O único controverso é `mal-censurado` — provavelmente `null` |
-| Confirmar `lastDiscoveryRound` no schema | **D4** | Sem ele, ativar um sistema de "pity" depois reseta o save de todo mundo |
 | Grade de finais no ending card | D10 | 14 células precisam caber sem empurrar o título. Se pesar, corta a grade e fica só o `X/14` |
 | `prefers-reduced-motion` | D9 | Escopo que o GDD não previu. ~20 min, melhor retorno por minuto da lista |
 
