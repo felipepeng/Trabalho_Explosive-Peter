@@ -1,13 +1,11 @@
-# Trabalho Prático 1: Engenharia de Prompt e Contexto na Prática
+# Trabalho Prático: Tecnologias Emergentes.
 
 ## 1. Sobre o Projeto
 **Opção escolhida:** Projeto de livre escolha.
 
-
 ## Explosive Peter
 Um jogo de navegador que começa sozinho: você abre o link e já tem um timer correndo, o Pedro sorrindo e uma bomba com o pavio aceso. Alguém pode invadir a cena para salvá-lo. Normalmente piora tudo.
 O jogo não é sobre vencer, é sobre colecionar absurdos. O jogador é explicitamente impotente, e a piada é exatamente essa: a tela diz "não tem como salvar ele", e mesmo assim você clica trinta vezes, porque cada rodada é uma piada nova e existe um contador de finais para completar.
-
 
 ---
 
@@ -24,7 +22,7 @@ Este agente foi o responsável por receber as diretrizes de design e gerar tanto
 
 
 **Evidência dos Agentes:**
-> **[Print dos agentes abertos no ]**
+> **[Print dos agentes abertos no claudo ]**
 
 ---
 
