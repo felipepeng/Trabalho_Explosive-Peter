@@ -318,6 +318,9 @@ export const characters = {
                A9 9 0 0 1 98 47 A6 6 0 0 1 91 44 C90 30 90 20 86 12
                A5 5 0 0 1 78 10 A5 5 0 0 1 69 10 A5 5 0 0 1 60 11 Z" />
     `,
+    // A ARMA. Mesmo mecanismo da 🍷 do Vinicius: emoji COMO DESENHO, dentro
+    // do braço esquerdo, então gira junto no `pose-throw` — é o "mirar".
+    hand: `<text class="prop" x="16" y="126">🔫</text>`,
   },
 
   /* -------------------------------------------------------------- *

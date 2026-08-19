@@ -480,37 +480,51 @@ export const scenes = [
   },
 
   /* ================================================================ *
-   * §6.4 — Pedro Maligno.
-   * Uma fenda roxa se abre atrás do Pedro aos 5s e ele sai dela. É a
-   * cena RÁPIDA do jogo: ele mexe no relógio assim que chega, então o
-   * clímax vem aos 7,8s em vez dos 10s de todas as outras. O timer é
-   * mentiroso (GDD §3.2) e esta é a cena que prova.
+   * §6.4 — Pedro Maligno, o rival.
+   *
+   * A bomba falha, tudo parece tranquilo — e é exatamente aí que a fenda
+   * roxa se abre atrás do Pedro. O Maligno não vem desarmar nada: ele é o
+   * perigo de verdade desta cena, e chega dizendo isso. É a cena RÁPIDA do
+   * jogo: ele mexe no relógio assim que chega, então o clímax vem bem antes
+   * dos 10s de todas as outras. O timer é mentiroso (GDD §3.2) e esta é a
+   * cena que prova.
    * ================================================================ */
   {
     id: 'maligno-portal',
     character: 'maligno',
     weight: 3,
     invadeAt: 5000,
-    // O mostrador zera em 10067ms por causa do setTimer abaixo (8400 + 5/3 s).
+    // O mostrador zera em 11167ms por causa do setTimer abaixo (9500 + 5/3 s).
     // Os dois números precisam bater NA MÃO: o validador não confere isso.
-    climaxAt: 10200,
+    climaxAt: 11300,
     timeline: [
-      { at: 0, do: 'portal', x: 380, y: 320, w: 150, h: 240 },
+      // A bomba falha primeiro — mesmo padrão visual de "isso deu certo" que
+      // `fiesta-do-ceu` usa (pose de pavio cortado + som de fracasso). É o
+      // que faz o portal seguinte doer: o jogador já tinha relaxado.
+      { at: 0, do: 'pose', who: 'bomb', as: 'cut', sfx: 'fracasso' },
+      { at: 900, do: 'portal', x: 380, y: 320, w: 150, h: 240 },
       // a fenda abrindo cospe o que tem dentro
       {
-        at: 120, do: 'burst', x: 380, y: 320,
+        at: 1020, do: 'burst', x: 380, y: 320,
         emojis: ['🌀'], count: 9, power: 150, gravity: 0, size: 28, ms: 1300,
       },
-      { at: 300, do: 'enter', who: 'maligno', x: 380 },
-      { at: 900, do: 'say', who: 'maligno', text: 'Oi, eu.', ms: 2200 },
-      { at: 2600, do: 'say', who: 'maligno', text: 'Vim ver de perto.', ms: 2400 },
-      // de ~1,6 para 5, correndo 3× mais rápido: zera aos 10067ms
-      { at: 3400, do: 'setTimer', to: 5, rate: 3 },
-      { at: 3500, do: 'shake', intensity: 3 },
+      { at: 1200, do: 'enter', who: 'maligno', x: 380 },
+      // Uma fala só: ele não veio "ver de perto", veio disputar.
+      {
+        at: 1800, do: 'say', who: 'maligno',
+        text: 'Finalmente encontrei um oponente digno.', ms: 2600,
+      },
+      // de ~0,5 para 5, correndo 3× mais rápido: zera aos 11167ms
+      { at: 4500, do: 'setTimer', to: 5, rate: 3 },
+      { at: 4600, do: 'shake', intensity: 3 },
     ],
     endings: [
       {
-        // Acelera o timer de 6 para 0. Explosão dupla, os dois morrem.
+        // LOOP TEMPORAL. O Maligno atira primeiro — mas quem "morreu" no
+        // outro universo sempre volta pra revidar. `hide`/`show` no MESMO
+        // ator peter (nunca dois Pedros em cena — o palco só guarda um ator
+        // por nome): o corte de universo é o `flash`, o mesmo mecanismo que
+        // `mal-troca` usa pra teletransportar.
         id: 'mal-paradoxo',
         title: 'PARADOXO',
         weight: 3,
@@ -518,20 +532,47 @@ export const scenes = [
         icon: '🌀',
         theme: 'fenda',
         colors: { top: '#3f1266', bot: '#0c0219', ink: '#f3e2ff', accent: '#b96cf5' },
-        cast: { who: 'peter', pose: 'burnt', at: 'left' },
-        line: 'Explodimos os dois. Nem isso ele fez sozinho.',
-        kicker: 'ELE SE EXPLODIU JUNTO 🌀',
+        // Quem disparou por último foi o Pedro — é ele quem fala no card,
+        // na MESMA pose do rival: a piada é que os dois viraram espelho.
+        cast: { who: 'peter', pose: 'throw', at: 'left' },
+        line: 'Eu sempre volto.',
+        kicker: 'NINGUÉM FICA DO OUTRO LADO 🌀',
         button: 'RODAR O PARADOXO 🌀',
         timeline: [
-          { at: 0, do: 'explode', target: 'bomb', intensity: 9, vaporize: ['peter', 'bomb'] },
+          { at: 0, do: 'pose', who: 'maligno', as: 'throw' },
           {
-            at: 40, do: 'burst', who: 'bomb',
-            emojis: ['💥', '🔥'], count: 13, power: 260, size: 32,
+            at: 60, do: 'burst', who: 'maligno',
+            emojis: ['🔫', '💥'], count: 6, power: 200, dir: -75, spread: 40,
+            gravity: 0, size: 24, ms: 500,
           },
-          { at: 900, do: 'explode', x: 380, y: 400, intensity: 7, vaporize: ['maligno'] },
+          // o Pedro "morre" com um hide, não um vaporize: ele volta depois,
+          // e vaporize não tem como ser desfeito (ARCHITECTURE.md §6)
+          { at: 180, do: 'hide', who: 'peter' },
+          { at: 220, do: 'pose', who: 'maligno', as: 'throw', off: true },
           {
-            at: 940, do: 'burst', x: 380, y: 400,
+            at: 700, do: 'say', who: 'maligno',
+            text: 'Vou voltar pro meu universo.', ms: 2000,
+          },
+          // o corte de universo: o mesmo flash que a troca de universos usa
+          { at: 2900, do: 'flash', ms: 200 },
+          { at: 2960, do: 'show', who: 'peter' },
+          { at: 2960, do: 'pose', who: 'peter', as: 'throw' },
+          {
+            at: 3060, do: 'burst', who: 'peter',
+            emojis: ['🔫', '💥'], count: 6, power: 200, dir: -105, spread: 40,
+            gravity: 0, size: 24, ms: 500,
+          },
+          {
+            at: 3200, do: 'explode', x: 380, y: 400, intensity: 7,
+            vaporize: ['maligno'],
+          },
+          {
+            at: 3240, do: 'burst', x: 380, y: 400,
             emojis: ['💥', '🌀'], count: 12, power: 240, size: 30,
+          },
+          {
+            at: 3300, do: 'say', who: 'peter',
+            text: 'Vou voltar pro meu universo.', ms: 2200,
           },
         ],
       },
@@ -575,33 +616,90 @@ export const scenes = [
         ],
       },
       {
-        // Desarma a bomba só para fazer algo pior. Corte para tela preta.
-        // Pedro tecnicamente não explodiu — por isso `survives: null`, e o
-        // contador de mortes e de salvamentos não se mexe. É a piada.
-        id: 'mal-censurado',
-        title: '[DADOS CORROMPIDOS]',
+        // O Maligno agarra a bomba desarmada e a joga de volta pro Pedro —
+        // não é mais desarme, é ataque direto. Ela reativa no ar. Metade
+        // das vezes ele acerta o Pedro; a outra metade o Pedro devolve o
+        // saque e acerta ELE. Dois finais, mesmo peso, moeda no ar.
+        id: 'mal-arremesso-peter',
+        title: 'DEVOLUTIVA NEGADA',
         weight: 2,
-        survives: null,
-        icon: '🚫',
-        theme: 'corrompido',
-        colors: { top: '#04160b', bot: '#000000', ink: '#7dff9a', accent: '#7dff9a' },
-        cast: { who: 'maligno', pose: 'glitch', at: 'top-right' },
-        line: 'Você não viu nada. Nem eu.',
-        kicker: 'MELHOR VOCÊ NÃO SABER 🚫',
-        button: '[ REINICIAR SESSÃO ] ⏵',
+        survives: false,
+        icon: '🎯',
+        theme: 'fogo',
+        colors: { top: '#5c0f1a', bot: '#120306', ink: '#ffe0e6', accent: '#ff3d5c' },
+        cast: { who: 'maligno', pose: 'celebrate', at: 'right' },
+        line: 'Bomba dele. Pontaria minha.',
+        kicker: 'REATIVOU NO AR 🎯',
+        button: 'JOGAR DE NOVO 🎯',
         timeline: [
-          { at: 0, do: 'pose', who: 'bomb', as: 'cut' },
+          { at: 0, do: 'grab', who: 'maligno', target: 'bomb' },
+          { at: 300, do: 'pose', who: 'maligno', as: 'throw' },
+          // a bomba viaja até o Pedro: some da mão dele e reaparece lá,
+          // o mesmo corte instantâneo que `mal-troca` usa pra teletransportar
+          { at: 500, do: 'hide', who: 'bomb' },
           {
-            at: 40, do: 'burst', who: 'bomb',
-            emojis: ['✂️'], count: 3, power: 80, spread: 120, size: 20, ms: 700, sfx: 'corte',
+            at: 520, do: 'burst', x: 480, y: 350,
+            emojis: ['💨'], count: 8, power: 240, dir: 80, spread: 30,
+            gravity: 0, size: 26, ms: 400, sfx: 'whoosh',
           },
-          { at: 300, do: 'say', who: 'maligno', text: 'Isso seria rápido demais.', ms: 2600 },
+          { at: 900, do: 'show', who: 'bomb', x: 500 },
+          { at: 940, do: 'pose', who: 'maligno', as: 'throw', off: true },
           {
-            at: 2200, do: 'burst', who: 'maligno',
-            emojis: ['🚫', '📼'], count: 8, power: 160, gravity: 0, size: 26,
-            ms: 900, sfx: 'glitch',
+            at: 1000, do: 'explode', target: 'peter', intensity: 10,
+            vaporize: ['peter', 'bomb'],
           },
-          { at: 2400, do: 'blackout', ms: 260 },
+          // exagerado de propósito: é o final "ela acertou", tem que doer
+          {
+            at: 1040, do: 'burst', who: 'peter',
+            emojis: ['💥', '🔥', '💀', '🎯'], count: 20, power: 300, size: 36,
+          },
+          { at: 1060, do: 'shake', intensity: 10 },
+          { at: 1400, do: 'say', who: 'maligno', text: 'De nada.', ms: 2200 },
+        ],
+      },
+      {
+        id: 'mal-arremesso-maligno',
+        title: 'O SAQUE VOLTOU',
+        weight: 2,
+        survives: true,
+        icon: '🏐',
+        theme: 'fenda',
+        colors: { top: '#2b1560', bot: '#08021a', ink: '#e9e4ff', accent: '#8f7bff' },
+        cast: { who: 'peter', pose: 'celebrate', at: 'left' },
+        line: 'Devolvi o presente.',
+        kicker: 'ELE NÃO ESPERAVA REVIDE 🏐',
+        button: 'DEVOLVER DE NOVO 🏐',
+        timeline: [
+          { at: 0, do: 'grab', who: 'maligno', target: 'bomb' },
+          { at: 300, do: 'pose', who: 'maligno', as: 'throw' },
+          // a bomba viaja até o Pedro — mesmo corte instantâneo do outro final
+          { at: 500, do: 'hide', who: 'bomb' },
+          {
+            at: 520, do: 'burst', x: 480, y: 350,
+            emojis: ['💨'], count: 8, power: 240, dir: 80, spread: 30,
+            gravity: 0, size: 26, ms: 400, sfx: 'whoosh',
+          },
+          { at: 900, do: 'show', who: 'bomb', x: 500 },
+          { at: 940, do: 'pose', who: 'maligno', as: 'throw', off: true },
+          // o Pedro pega no ar e devolve — mesma trajetória, sentido oposto
+          { at: 950, do: 'pose', who: 'peter', as: 'throw' },
+          { at: 1100, do: 'hide', who: 'bomb' },
+          {
+            at: 1120, do: 'burst', x: 480, y: 350,
+            emojis: ['💨'], count: 8, power: 260, dir: -80, spread: 30,
+            gravity: 0, size: 26, ms: 400, sfx: 'whoosh',
+          },
+          { at: 1450, do: 'show', who: 'bomb', x: 380 },
+          {
+            at: 1500, do: 'explode', target: 'maligno', intensity: 10,
+            vaporize: ['maligno', 'bomb'],
+          },
+          // exagerado de propósito: é o final "ele levou o próprio troco"
+          {
+            at: 1540, do: 'burst', who: 'maligno',
+            emojis: ['💥', '🔥', '🌀', '🏐'], count: 20, power: 300, size: 36,
+          },
+          { at: 1560, do: 'shake', intensity: 10 },
         ],
       },
     ],
