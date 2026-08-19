@@ -22,6 +22,11 @@
  *              do card. Sem o campo vale a regra do projeto: emoji é
  *              interface, nunca boca. Hoje só o Vinicius tem
  *   shape      'blocky' tira o arredondamento dos membros (o Michas é do Minecraft)
+ *   rig        troca o rig humano pelo <template id="tpl-SEUVALOR"> do index.html.
+ *              É a saída para quem não tem braço nem perna (o FIESTA) sem
+ *              deixar de ser personagem: nick, marca, entrada e card continuam
+ *              funcionando. Quem usa isso não tem face/hair/accessory — o
+ *              desenho inteiro mora no template
  *   colors     --skin (cabeça e braços), --cloth (o tronco), --pants (as pernas),
  *              --outline (contorno), --accent (o acessório) e --eye opcional
  *              (os olhos vermelhos do Pedro Maligno). TODO MUNDO É HUMANO: pele
@@ -313,5 +318,42 @@ export const characters = {
                A9 9 0 0 1 98 47 A6 6 0 0 1 91 44 C90 30 90 20 86 12
                A5 5 0 0 1 78 10 A5 5 0 0 1 69 10 A5 5 0 0 1 60 11 Z" />
     `,
+  },
+
+  /* -------------------------------------------------------------- *
+   * FIESTA — o carro. Não é salvador nem antagonista: é um objeto de
+   * 900 kg que aparece por acaso, no pior momento possível, e vai
+   * embora sem explicar nada.
+   *
+   * Único do elenco com rig próprio (`rig: 'fiesta'`): um boneco
+   * humano pintado de carro seria outra piada, e pior.
+   * -------------------------------------------------------------- */
+  fiesta: {
+    id: 'fiesta',
+    name: 'Fiesta',
+    nick: 'FIESTA',
+    rig: 'fiesta',
+    // 130 de altura contra os 190 do Pedro — o carro é mais BAIXO que ele e
+    // muito mais largo (o viewBox é 200 × 112, então isso dá ~232 de largura).
+    h: 130,
+    build: 1,
+    // Na frente de todo mundo: ele cai POR CIMA da cena, não dentro dela.
+    z: 4,
+    // À direita do Pedro (que está em x 500) e sem cobrir a bomba (x 620).
+    mark: { x: 760, y: 470 },
+    // Carro parado balança na suspensão. É o mesmo `sway` do Vinicius — não
+    // existe animação de parado por personagem, e nem deveria.
+    idle: 'sway',
+    // Ele SEMPRE cai do céu, e cai acelerando: o `gait` de queda troca a
+    // desaceleração padrão da entrada por gravidade (juice.css).
+    enter: { from: 'above', ms: 620, gait: 'queda' },
+    // A buzina é a fala dele, e "BIBI 🚗" é a fala inteira. A permissão é do
+    // PERSONAGEM, como a do Vinicius: um carro não tem boca humana, e o emoji
+    // aqui é o próprio som saindo do capô.
+    emojiNaFala: true,
+    // Azul de carro popular; o acento é o cromado do para-choque.
+    colors: {
+      skin: '#2f7fd0', cloth: '#1f5da0', outline: '#12141c', accent: '#cfd6e2',
+    },
   },
 };

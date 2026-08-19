@@ -121,6 +121,41 @@
       </div>
     </template>
 
+    <!-- O FIESTA. Não usa o rig humano — carro não tem braço nem perna — mas é
+         um PERSONAGEM de verdade: characters.js aponta para este template pelo
+         campo `rig`, e por isso ele ganha nick, entrada própria e pode posar
+         no card de final como qualquer outro do elenco.
+
+         O <g class="frame"> é obrigatório em todo rig: é o que as poses
+         (`burnt`, `dead`) e a tremida animam sem saber quem está em cena. -->
+    <template id="tpl-fiesta">
+      <div class="actor" data-actor="fiesta">
+        <svg class="rig" viewBox="0 0 200 112" aria-label="Fiesta">
+          <g class="frame">
+            <g class="lataria">
+              <path class="chassi"
+                    d="M12 88 V70 Q12 60 24 58 L54 56 L78 30 Q83 24 94 24 L138 24
+                       Q149 24 154 31 L170 55 L182 59 Q190 62 190 72 V88
+                       Q190 94 182 94 H20 Q12 94 12 88 Z" />
+              <path class="vidro" d="M84 32 L98 32 L98 54 L66 55 Z" />
+              <path class="vidro" d="M108 32 L136 32 Q142 32 146 38 L156 54 L108 54 Z" />
+              <rect class="vinco" x="24" y="70" width="150" height="5" rx="2.5" />
+              <ellipse class="farol" cx="184" cy="68" rx="7" ry="6" />
+              <ellipse class="lanterna" cx="17" cy="68" rx="5" ry="6" />
+            </g>
+            <g class="roda roda-t">
+              <circle class="pneu" cx="58" cy="92" r="18" />
+              <circle class="calota" cx="58" cy="92" r="7" />
+            </g>
+            <g class="roda roda-d">
+              <circle class="pneu" cx="150" cy="92" r="18" />
+              <circle class="calota" cx="150" cy="92" r="7" />
+            </g>
+          </g>
+        </svg>
+      </div>
+    </template>
+
     <script type="module" src="./src/main.js"></script>
   </body>
 </html>

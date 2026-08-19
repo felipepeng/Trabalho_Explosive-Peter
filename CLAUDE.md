@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Explosive Peter** — jogo de navegador em HTML/CSS/JS vanilla (Vite só como build, zero dependência de runtime). Uma rodada dura ≤ 15 s: o timer corre, alguém invade a cena, o Pedro normalmente explode, aparece o card de final. A única interação do jogo é o botão de reiniciar.
 
-Catálogo atual (fonte da verdade é `src/data/scenes.js`): **6 cenas, 15 finais, 5 personagens**.
+Catálogo atual (fonte da verdade é `src/data/scenes.js`): **7 cenas, 16 finais, 6 personagens** (o sexto é o FIESTA, único com rig próprio).
 
 Idioma: **português em tudo** — código, comentários, commits, conteúdo do jogo e também a conversa com o usuário.
 Responda e faça perguntas sempre em português; termos técnicos consagrados (commit, build, branch, beat, timeline) ficam em inglês dentro da frase.
@@ -35,7 +35,7 @@ Leitura obrigatória antes de mudar qualquer coisa estrutural: `docs/ARCHITECTUR
 
 ### A ideia central: conteúdo é dado, não código
 
-Uma cena é um objeto em `src/data/scenes.js` com uma lista de beats `{ at, do, ...params }`. Escrever as 6 cenas e os 15 finais não mudou uma linha de `director.js`, `picker.js`, `clock.js` nem da máquina de estados. **Se adicionar conteúdo exigir tocar no motor, o motor está errado.**
+Uma cena é um objeto em `src/data/scenes.js` com uma lista de beats `{ at, do, ...params }`. Escrever as 7 cenas e os 16 finais não mudou uma linha de `director.js`, `picker.js`, `clock.js` nem da máquina de estados. **Se adicionar conteúdo exigir tocar no motor, o motor está errado.**
 
 ### Regra de dependência
 
@@ -97,7 +97,7 @@ O palco ocupa a janela inteira (sem letterbox); as 1000 × 600 unidades são uma
 
 Acima da cabeça de cada ator há uma **pilha de três andares**, e a ordem é regra: balão de fala → plaquinha de nick → cabeça. Quem sustenta isso é o token `--tag-h` em `chars.css`: `.actor` declara `0px`, `.actor.has-tag` declara a altura real da plaquinha, e o `.balloon` soma esse valor no próprio `bottom`. **Mexeu no padding ou no line-height da `.nametag`? Ajuste o `--tag-h` junto**, senão o balão volta a cobrir o nick. A classe `has-tag` é escrita por `ui/rig.js`, que só pendura a plaquinha em quem tem `nick` (a bomba não tem).
 
-Personagens: **um único rig SVG** (`#tpl-actor` no `index.html`, montado por `ui/rig.js`) vestido por `data/characters.js` — cor, proporção (`--h`/`--build`), `nick` e fragmentos SVG de rosto/acessório. Personagem novo é um objeto; nenhum HTML ou CSS por personagem. `ui/stage.js` cria e destrói atores; `engine/actions.js` só modifica o que já existe.
+Quase todo personagem usa **um único rig SVG** (`#tpl-actor` no `index.html`, montado por `ui/rig.js`) vestido por `data/characters.js` — cor, proporção (`--h`/`--build`), `nick` e fragmentos SVG de rosto/acessório. Personagem novo é um objeto; nenhum HTML ou CSS por personagem. A exceção é quem não tem corpo humano: o campo `rig: 'fiesta'` manda o `buildActor` clonar `#tpl-fiesta` no lugar do `#tpl-actor`, e o resto (nick, marca, entrada, card de final) continua igual para todo mundo. Rig próprio não tem os slots de rosto e cabelo — as injeções usam `?.` e ignoram esses campos em silêncio. `ui/stage.js` cria e destrói atores; `engine/actions.js` só modifica o que já existe.
 
 Duas camadas de efeito: `#fx-back` (antes de `#cast`) e `#fx-layer` (depois) — um filho de `#fx-layer` não consegue passar para trás do elenco.
 
@@ -113,7 +113,7 @@ Consequência: `src/data/messages.js` está **fora do ar** (ninguém importa o a
 
 O `title` continua na tela, mas como **legenda pequena** embaixo do personagem: ele é o nome que a coleção usa, não a manchete. Quem fala com o jogador é o personagem.
 
-Poses disponíveis em `chars.css` (`cast.pose` e o verbo `pose` usam a mesma lista): `jump · reach · throw · item · cut · burnt · dead · zen · wave · shrug · celebrate · glitch`.
+Poses disponíveis em `chars.css` (`cast.pose` e o verbo `pose` usam a mesma lista): `jump · reach · throw · item · cut · burnt · dead · zen · wave · shrug · celebrate · scared · glitch`.
 
 ### `--juice` e acessibilidade
 
@@ -121,7 +121,7 @@ Todo keyframe de JUICE multiplica a amplitude por `var(--juice, 1)`; `prefers-re
 
 ### Áudio (`engine/audio.js`)
 
-Não existe arquivo de áudio: os 11 SFX (`tick`, `tick-urgente`, `boom`, `whoosh`, `splash`, `portal`, `corte`, `fanfarra`, `fracasso`, `drop`, `glitch`) são sintetizados na hora com osciladores e ruído. O `AudioContext` só nasce no primeiro gesto; `play()` é no-op silencioso antes disso. Cada verbo que faz barulho tem um som padrão — o beat pode trocar (`sfx: 'drop'`) ou calar (`sfx: null`).
+Não existe arquivo de áudio: os 12 SFX (`tick`, `tick-urgente`, `boom`, `whoosh`, `splash`, `portal`, `corte`, `fanfarra`, `fracasso`, `drop`, `buzina`, `glitch`) são sintetizados na hora com osciladores e ruído. O `AudioContext` só nasce no primeiro gesto; `play()` é no-op silencioso antes disso. Cada verbo que faz barulho tem um som padrão — o beat pode trocar (`sfx: 'drop'`) ou calar (`sfx: null`).
 
 ### Save (`state/progress.js`)
 

@@ -302,6 +302,11 @@ body.is-frozen *::after {
   animation-fill-mode: both;
 }
 
+/* QUEDA: o padrão da entrada desacelera no fim (alguém chegando e parando).
+   Coisa caindo faz o contrário — acelera até bater. Vem depois das regras
+   acima de propósito: mesma especificidade, quem está por último ganha. */
+.actor.gait-queda { animation-timing-function: cubic-bezier(0.6, 0, 1, 0.5); }
+
 .actor.is-enter-left { animation-name: enter-left; }
 .actor.is-enter-right { animation-name: enter-right; }
 .actor.is-enter-above { animation-name: enter-above; }

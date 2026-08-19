@@ -647,4 +647,92 @@ export const scenes = [
       },
     ],
   },
+
+  /* ================================================================ *
+   * §6.7 — o FIESTA que cai do céu.
+   *
+   * A única cena do catálogo que PROMETE que dessa vez vai dar certo:
+   * o mostrador zera, o pavio morre e o Pedro comemora — a bomba
+   * falhou. Ele tem quatro segundos de vida feliz.
+   *
+   * Duas decisões de ritmo sustentam a piada:
+   *   1. a comemoração precisa durar tempo demais. Corta em 1,5s e o
+   *      jogador entende que era pegadinha antes de acreditar;
+   *   2. entre o carro bater no chão e o "BIBI" há 1,5s de silêncio.
+   *      É a única pausa longa do jogo, e é ela que faz a buzina doer.
+   *
+   * É também a primeira vez que o Pedro REAGE a alguma coisa (a pose
+   * `scared`, em chars.css). Ele reage, e morre assim mesmo.
+   * ================================================================ */
+  {
+    id: 'fiesta-do-ceu',
+    character: 'fiesta',
+    // Peso 2 contra 3 das cenas de personagem: o setup é longo e a graça é o
+    // susto, que enfraquece na terceira vez. Rara, não rara demais.
+    weight: 2,
+    // A cena começa QUANDO O MOSTRADOR ZERA — nada acontece antes disso, de
+    // propósito: os 10s de countdown são o setup inteiro.
+    invadeAt: 10000,
+    // 5,5s depois do fim do countdown, e no meio do "BIBI": a explosão corta
+    // a fala do carro em vez de esperar educadamente por ela.
+    climaxAt: 15500,
+    timeline: [
+      // O pavio morre. `pose-cut` some com pavio e faísca — a mesma pose que o
+      // JP usa quando corta o fio, aqui sem ninguém para cortar nada.
+      { at: 0, do: 'pose', who: 'bomb', as: 'cut', sfx: 'fracasso' },
+      { at: 500, do: 'pose', who: 'peter', as: 'celebrate', sfx: 'fanfarra' },
+      // 1,7s de comemoração antes de qualquer coisa aparecer no céu.
+      { at: 2200, do: 'enter', who: 'fiesta' },
+      // O impacto: a entrada dura 620ms, então isto cai exatamente no chão.
+      { at: 2820, do: 'shake', intensity: 9 },
+      { at: 2820, do: 'sfx', name: 'boom' },
+      {
+        at: 2820, do: 'burst', who: 'fiesta',
+        emojis: ['💨'], count: 9, power: 130, dir: 0, spread: 170, size: 26,
+      },
+      { at: 3300, do: 'pose', who: 'peter', as: 'celebrate', off: true },
+      { at: 3350, do: 'pose', who: 'peter', as: 'scared' },
+      // Silêncio de 1s. Depois a buzina.
+      { at: 4300, do: 'say', who: 'fiesta', text: 'BIBI 🚗', ms: 1500 },
+      { at: 4300, do: 'sfx', name: 'buzina' },
+    ],
+    endings: [
+      {
+        // O carro explode com o Pedro junto e SOBRA em cena, pegando fogo:
+        // ele não está na lista de `vaporize`. Quem some é a vítima.
+        id: 'fiesta-bibi',
+        title: 'ELE VEIO DE FIESTA',
+        weight: 1,
+        survives: false,
+        icon: '🚗',
+        theme: 'fogo',
+        // Fogo no fundo, azul de lataria no acento: a única cor fria de um
+        // card de morte, porque é a cor do assassino.
+        colors: { top: '#4a2a12', bot: '#0f0704', ink: '#ffe9d6', accent: '#5aa6e8' },
+        // Quem voou aparece no alto. E quem matou é quem fala.
+        cast: { who: 'fiesta', pose: 'burnt', at: 'top' },
+        line: 'BIBI. 🚗',
+        kicker: 'A BOMBA FALHOU. O CÉU NÃO 🚗',
+        button: 'DAR A PARTIDA DE NOVO 🔑',
+        timeline: [
+          // A explosão nasce no CARRO, não na bomba: a bomba já tinha falhado.
+          { at: 0, do: 'explode', target: 'fiesta', intensity: 9, vaporize: ['peter', 'bomb'] },
+          {
+            at: 40, do: 'burst', who: 'fiesta',
+            emojis: ['💥', '🔥', '💀'], count: 15, power: 270, size: 32,
+          },
+          // A lataria carbonizada fica. `gravity: -1` faz a chama SUBIR.
+          { at: 620, do: 'pose', who: 'fiesta', as: 'burnt' },
+          {
+            at: 700, do: 'burst', who: 'fiesta',
+            emojis: ['🔥'], count: 9, power: 110, dir: 0, spread: 130, size: 26, gravity: -1,
+          },
+          {
+            at: 1250, do: 'burst', who: 'fiesta',
+            emojis: ['🔥', '💨'], count: 6, power: 90, dir: 0, spread: 110, size: 22, gravity: -1,
+          },
+        ],
+      },
+    ],
+  },
 ];

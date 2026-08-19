@@ -10,6 +10,11 @@
  * título. Duplicar a montagem em dois lugares é a receita para o card ficar
  * desatualizado quando o rig mudar.
  *
+ * Um personagem pode trazer o PRÓPRIO template pelo campo `rig` — é assim que
+ * o FIESTA entra no elenco sem virar um boneco humano com rodas. Lá os slots de
+ * rosto e cabelo não existem, e por isso toda injeção abaixo usa `?.`: campo
+ * que não tem onde entrar é ignorado, não derruba a montagem (P5).
+ *
  * `insertAdjacentHTML` com conteúdo de `data/` é seguro aqui e só aqui: são
  * fragmentos SVG escritos por nós no repositório, nunca entrada do jogador.
  * O jogo não tem campo de texto, servidor nem URL com parâmetro.
@@ -28,9 +33,13 @@ export function buildActor(id, { idle = true, anchor = true, tag = true } = {}) 
   const character = characters[id];
   if (!character) return null;
 
-  const tpl = document.getElementById('tpl-actor');
+  // Quase todo mundo veste o rig humano. Quem declara `rig` traz o PRÓPRIO
+  // template (o FIESTA, que não tem braço nem perna) e continua sendo
+  // personagem para todo o resto do jogo: nick, entrada, marca e card de final.
+  const tplId = character.rig ? `tpl-${character.rig}` : 'tpl-actor';
+  const tpl = document.getElementById(tplId);
   if (!tpl) {
-    console.warn('[rig] falta o #tpl-actor no index.html');
+    console.warn(`[rig] falta o #${tplId} no index.html`);
     return null;
   }
 
@@ -53,20 +62,20 @@ export function buildActor(id, { idle = true, anchor = true, tag = true } = {}) 
   if (character.colors?.eye) el.style.setProperty('--eye', character.colors.eye);
   if (character.shape) el.classList.add(`shape-${character.shape}`);
 
-  if (character.face) el.querySelector('.face').insertAdjacentHTML('afterbegin', character.face);
+  if (character.face) el.querySelector('.face')?.insertAdjacentHTML('afterbegin', character.face);
   // O cabelo das COSTAS entra antes de todo mundo, no primeiro filho do
   // .frame — `hairBack` cai atrás do corpo e dos braços. Ele não pode ser filho
   // da cabeça (SVG não tem z-index: quem desenha depois cobre), então a
   // sincronia com a respiração é feita no CSS, aplicando a MESMA animação com
   // a mesma duração e o mesmo atraso do `.head`.
   if (character.hairBack) {
-    el.querySelector('.hair-back').insertAdjacentHTML('afterbegin', character.hairBack);
+    el.querySelector('.hair-back')?.insertAdjacentHTML('afterbegin', character.hairBack);
   }
   // O cabelo da frente entra DENTRO da cabeça, não na camada de acessório: é o
   // que o faz acompanhar o `idle-breathe` (que anima .head) sem descolar do crânio.
-  if (character.hair) el.querySelector('.hair').insertAdjacentHTML('afterbegin', character.hair);
+  if (character.hair) el.querySelector('.hair')?.insertAdjacentHTML('afterbegin', character.hair);
   if (character.accessory) {
-    el.querySelector('.accessory').insertAdjacentHTML('afterbegin', character.accessory);
+    el.querySelector('.accessory')?.insertAdjacentHTML('afterbegin', character.accessory);
   }
   // `hand` entra DENTRO do braco esquerdo, e nao na camada de acessorio: assim
   // a taca do Vinicius gira junto com o gesto em vez de flutuar parada ao lado

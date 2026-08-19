@@ -119,6 +119,16 @@ export function createAudio() {
       [988, 1318].forEach((f, i) => tom({ freq: f, dur: 0.3, type: 'sine', gain: 0.4, delay: i * 0.11 }));
     },
 
+    // a buzina do FIESTA: dois toques curtos, cada um com duas vozes em terça
+    // maior. É "bi-bi", não uma nota — o gag da cena depende de soar como
+    // buzina de carro popular, e nenhum dos outros onze sons chega perto.
+    buzina: () => {
+      [0, 0.2].forEach((atraso) => {
+        tom({ freq: 440, dur: 0.15, type: 'square', gain: 0.34, delay: atraso });
+        tom({ freq: 554, dur: 0.15, type: 'square', gain: 0.26, delay: atraso + 0.004 });
+      });
+    },
+
     // registro corrompido: ruído seco e uma nota errada
     glitch: () => {
       chiado({ dur: 0.16, gain: 0.4, type: 'bandpass', freq: 1400, q: 6 });
