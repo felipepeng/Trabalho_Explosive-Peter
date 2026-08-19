@@ -86,8 +86,8 @@ Para testar o consumo de tokens com diferentes tamanhos de contexto, solicitamos
 *   **Versão B: Solicitação ao prompt-engineer, responsável por estruturar o pedido e orientar a geração da nova cena utilizando exemplos e/ou raciocínio estruturado.**
 
 **Comparação de Consumo:**
-*   **Tokens Versão A:** **[Relatório de custo](/docs/relatorio_curadoria_1.md)**
-*   **Tokens Versão B:** **[Relatório de custo](/docs/relatorio_curadoria_2.md)**
+*   **Tokens Versão A:** **[Relatório de custo](/docs/relatorio_curadoria_01.md)**
+*   **Tokens Versão B:** **[Relatório de custo](/docs/relatorio_curadoria_02.md)**
 
 **Evidência do Teste:**
 
@@ -95,6 +95,15 @@ Para testar o consumo de tokens com diferentes tamanhos de contexto, solicitamos
 
 <img src="prints/curadoria/prompt c1.png" width="500"> <img src="prints/eng-prompt.png" width="500"> 
 
+## Resultado dos Testes:
+
+**Versão A -**
+
+<img src="prints/curadoria/resultado_01.png" width="500">
+
+**Versão B -**
+
+<img src="prints/curadoria/resultado_02.png" width="500">
 ---
 
 ## 5. Tabela de Chamadas e Custos
