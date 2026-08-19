@@ -160,7 +160,7 @@ export const characters = {
     enter: { from: 'left', ms: 1500, gait: 'walk' },
     colors: {
       skin: '#e8b98d', cloth: '#9b9aa6', pants: '#7f7e8a',
-      outline: '#12141c', accent: '#a9a7b3',
+      outline: '#12141c', accent: '#8a6a4a',
     },
     // Olhos semicerrados: dois traços, não dois pontos. Boca reta — ele não ri.
     face: `
