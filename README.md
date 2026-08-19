@@ -4,8 +4,11 @@
 **Opção escolhida:** Projeto de livre escolha.
 
 ## Explosive Peter
-Um jogo de navegador que começa sozinho: você abre o link e já tem um timer correndo, o Pedro sorrindo e uma bomba com o pavio aceso. Alguém pode invadir a cena para salvá-lo. Normalmente piora tudo.
-O jogo não é sobre vencer, é sobre colecionar absurdos. O jogador é explicitamente impotente, e a piada é exatamente essa: a tela diz "não tem como salvar ele", e mesmo assim você clica trinta vezes, porque cada rodada é uma piada nova e existe um contador de finais para completar.
+Um jogo de navegador que não espera você começar: abriu o link, o caos já começou. Um timer está correndo, Pedro está sorrindo tranquilamente e uma bomba está com o pavio aceso. Em algum momento, alguém pode aparecer para tentar salvá-lo. Quase sempre, isso é uma péssima ideia.
+
+O objetivo não é vencer. O objetivo é descobrir quantas maneiras diferentes essa situação pode dar errado. O jogador é deliberadamente impotente, e essa é justamente a piada: a tela avisa que “não tem como salvar ele”, mas você continua clicando como se, dessa vez, fosse diferente.
+
+Cada tentativa pode terminar de um jeito absurdo, e cada final descoberto aumenta o contador. No fim, não existe herói, não existe estratégia e, provavelmente, não existe Pedro. Só uma coleção de finais ridículos esperando para ser completada.
 
 ---
 
@@ -14,7 +17,7 @@ O jogo não é sobre vencer, é sobre colecionar absurdos. O jogador é explicit
 Nossa abordagem não utilizou apenas um system prompt global, mas sim uma estrutura segmentada para direcionar o agente de forma eficiente. 
 
 ### System Prompt 1: Engenheiro de Prompt
-Este prompt foi utilizado para estruturar a forma como o jogo deveria ser concebido antes da geração do código.
+Este prompt foi utilizado para estruturar a forma como o jogo deveria ser antes da geração do código. Embora concebido, este prompt não foi utilizado durante a construção final do projeto, sua função se manteve na fase de curadoria do projeto.
 > 📄 **Arquivo:** [`engenheiro-de-prompt.md`](roles/engenheiro-de-prompt.md)
 ### System Prompt 2: Game-Designer
 Este agente foi o responsável por receber as diretrizes de design e gerar tanto a narrativa (personagens/finais) quanto o código final da aplicação.
@@ -22,14 +25,15 @@ Este agente foi o responsável por receber as diretrizes de design e gerar tanto
 
 
 **Evidência dos Agentes:**
-> **[Print dos agentes abertos no claudo ]**
+
+<img src="prints/eng-prompt.png" width="500"> <img src="prints/game-designer.png" width="500">
 
 ---
 
 ## 3. Técnica de Prompt Engineering: Few-Shot
 
 **Justificativa:** 
-Aplicamos a técnica de **Few-Shot** na comunicação com o `game-designer` para garantir a consistência da estrutura do jogo. Como o jogo depende de um formato específico de saída `{personagem, cena, final}`, fornecer exemplos prévios evitou que a IA gerasse os dados e o código de forma despadronizada a cada tentativa, facilitando a estabilidade da aplicação final.
+Para garantir a consistência na comunicação com o game-designer, foram fornecidos exemplos práticos da estrutura esperada para as respostas. Como o jogo depende de um formato específico `{personagem, cena, final}`, essas referências ajudaram a orientar a IA na geração dos dados e do código, evitando respostas despadronizadas e facilitando a integração com a aplicação final.
  
 ### Exemplos e Estruturas
 
@@ -72,23 +76,24 @@ Para guiar a geração do conteúdo, padronizamos as cenas e características do
 ]
 ```
 
-Falta os prints 
-
 ---
 
 ## 4. Teste de Curadoria de Contexto
 
 Para testar o consumo de tokens com diferentes tamanhos de contexto, solicitamos à IA uma alteração específica (ex: adicionar a implementação de uma segunda cena/personagem) de duas formas diferentes:
 
-*   **Versão A (Contexto Cheio):**   
-*   **Versão B (Contexto Curado):**
+*   **Versão A: Solicitação direta ao game-designer, utilizando o contexto e as instruções já definidas para o projeto.**   
+*   **Versão B: Solicitação ao prompt-engineer, responsável por estruturar o pedido e orientar a geração da nova cena utilizando exemplos e/ou raciocínio estruturado.**
 
 **Comparação de Consumo:**
-*   **Tokens Versão A:** [PREENCHER NÚMERO DE TOKENS IN/OUT]
-*   **Tokens Versão B:** [PREENCHER NÚMERO DE TOKENS IN/OUT]
+*   **Tokens Versão A:** **[Relatório de custo](/docs/relatorio_curadoria_1.md)**
+*   **Tokens Versão B:** **[Relatório de custo](/docs/relatorio_curadoria_2.md)**
 
 **Evidência do Teste:**
-> **[Print dos prompts enviados e o consumo lado a lado]**
+
+<img src="prints/curadoria/branch.png" width="500">
+
+<img src="prints/curadoria/prompt c1.png" width="500"> <img src="prints/eng-prompt.png" width="500"> 
 
 ---
 
@@ -98,15 +103,20 @@ Para testar o consumo de tokens com diferentes tamanhos de contexto, solicitamos
 
 *Fórmula utilizada:* `(tokens_input / 1_000_000) * preco_input + (tokens_output / 1_000_000) * preco_output`
 
-**[Relatório de custo](/docs/relatorio-tokens.md)**
+### Relátorios de custos por integrante
+
+**Felipe Barreto: [Relatório de custo](/docs/relatorio-tokens.md)**
+
+**Vinicius Reginaldo: [Relatório de custo](/docs/relatorio-tokens-vinicius.md)**
+
 
 ---
 
 ## 6. Evidências de Consumo (Dashboard/Logs)
 
-Abaixo estão os registros do terminal (`/cost`) e dos logs locais de *transcript* comprovando os números apresentados na tabela acima.
+Abaixo estão os registros do terminal e os logs locais de transcript utilizados para verificar o consumo de tokens apresentado na tabela acima. O registro também evidencia uma indisponibilidade momentânea do Claude Code durante a execução.
 
-> **[Print da /cost]**
+> <img src="prints/custo.png" width="500">
 
 ---
 
