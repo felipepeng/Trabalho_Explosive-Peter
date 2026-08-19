@@ -154,7 +154,7 @@ export const scenes = [
         icon: '🕯️',
         theme: 'pedra',
         colors: { top: '#4a3a26', bot: '#14100b', ink: '#fdf1de', accent: '#f0c987' },
-        cast: { who: 'vinicius', pose: 'wave', at: 'right' },
+        cast: { who: 'vinicius', pose: 'burnt', at: 'right' },
         line: 'O fim é o que dá sentido a jornada🗿',
         kicker: 'ELE PEDIU LICENÇA ANTES 🗿',
         button: 'ACENDER OUTRA VELA 🕯️',

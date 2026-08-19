@@ -10,10 +10,6 @@
  */
 
 .rig {
-  --skin: #f5f1e6;
-  --outline: #12141c;
-  --accent: #cfc6ad;
-
   /* --build estica o boneco de lado sem tirar os pés do chão. É o que separa
      o JP (atarracado) do Vinicius (normal) sem um segundo rig. */
   transform: scaleX(var(--build, 1));
@@ -34,24 +30,24 @@
    declara roupa fica pelado da cor da pele, como era antes. */
 .rig .arm > rect,
 .rig .skull {
-  fill: var(--skin);
-  stroke: var(--outline);
+  fill: var(--skin, #f5f1e6);
+  stroke: var(--outline, #12141c);
   stroke-width: 5;
   stroke-linejoin: round;
   paint-order: stroke;
 }
 
 .rig .body > rect {
-  fill: var(--cloth, var(--skin));
-  stroke: var(--outline);
+  fill: var(--cloth, var(--skin, #f5f1e6));
+  stroke: var(--outline, #12141c);
   stroke-width: 5;
   stroke-linejoin: round;
   paint-order: stroke;
 }
 
 .rig .leg > rect {
-  fill: var(--pants, var(--cloth, var(--skin)));
-  stroke: var(--outline);
+  fill: var(--pants, var(--cloth, var(--skin, #f5f1e6)));
+  stroke: var(--outline, #12141c);
   stroke-width: 5;
   stroke-linejoin: round;
   paint-order: stroke;
@@ -89,8 +85,8 @@
 
 /* forma preenchida com contorno grosso; `style="--part:#cor"` troca a cor */
 .rig .ink {
-  fill: var(--part, var(--accent));
-  stroke: var(--outline);
+  fill: var(--part, var(--accent, #cfc6ad));
+  stroke: var(--outline, #12141c);
   stroke-width: 5;
   stroke-linejoin: round;
   paint-order: stroke;
@@ -102,7 +98,7 @@
 /* traço puro: sobrancelha, boca, olho semicerrado */
 .rig .line {
   fill: none;
-  stroke: var(--outline);
+  stroke: var(--outline, #12141c);
   stroke-width: 5;
   stroke-linecap: round;
 }
@@ -110,7 +106,7 @@
 /* olho: ponto por padrão, mas a cor é trocável — é o que faz os olhos
    vermelhos do Pedro Maligno serem dado e não um seletor por nome. */
 .rig .eye {
-  fill: var(--eye, var(--outline));
+  fill: var(--eye, var(--outline, #12141c));
   stroke: none;
 }
 
@@ -253,8 +249,8 @@
    continuar azul nas duas telas. */
 
 .actor[data-actor="fiesta"] .chassi {
-  fill: var(--skin);
-  stroke: var(--outline);
+  fill: var(--skin, #f5f1e6);
+  stroke: var(--outline, #12141c);
   stroke-width: 5;
   stroke-linejoin: round;
   paint-order: stroke;
@@ -262,37 +258,37 @@
 
 .actor[data-actor="fiesta"] .vidro {
   fill: #cfe6f5;
-  stroke: var(--outline);
+  stroke: var(--outline, #12141c);
   stroke-width: 4;
   stroke-linejoin: round;
 }
 
 /* o vinco lateral: a mesma cor da lataria, um tom mais escura */
 .actor[data-actor="fiesta"] .vinco {
-  fill: var(--cloth, var(--skin));
+  fill: var(--cloth, var(--skin, #f5f1e6));
   stroke: none;
 }
 
 .actor[data-actor="fiesta"] .farol {
   fill: #ffe9a8;
-  stroke: var(--outline);
+  stroke: var(--outline, #12141c);
   stroke-width: 4;
 }
 
 .actor[data-actor="fiesta"] .lanterna {
   fill: #e2604a;
-  stroke: var(--outline);
+  stroke: var(--outline, #12141c);
   stroke-width: 4;
 }
 
 .actor[data-actor="fiesta"] .pneu {
   fill: #16171f;
-  stroke: var(--outline);
+  stroke: var(--outline, #12141c);
   stroke-width: 5;
 }
 
 .actor[data-actor="fiesta"] .calota {
-  fill: var(--accent);
+  fill: var(--accent, #cfc6ad);
   stroke: none;
 }
 

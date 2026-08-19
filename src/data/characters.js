@@ -241,7 +241,7 @@ export const characters = {
     // na timeline; o que é dele é subir junto com ela.
     enter: { from: 'below', ms: 900 },
     colors: {
-      skin: '#c98a5f', cloth: '#1f5580', pants: '#173a5c',
+      skin: '#9c6846', cloth: '#00847a', pants: '#4040a0',
       outline: '#12141c', accent: '#9fb0c4', eye: '#132a3a',
     },
     // Cara de bloco: olhos quadrados e boca reta. Nada de curva.
