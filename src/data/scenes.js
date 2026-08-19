@@ -111,8 +111,10 @@ export const scenes = [
       // A 🍷 do Vinicius é FIGURINO: mora na mão dele, no rig. A 🗿 já foi
       // cenário aqui, solta no canto da tela — saiu de cena e virou o emoji
       // do `kicker` dos três finais desta cena, que é texto de interface.
-      // 2,2s para atravessar: devagar é o traço dele, não sobra de tempo
-      { at: 0, do: 'enter', who: 'vinicius', x: 700, ms: 2200 },
+      // 2,2s para atravessar: devagar é o traço dele, não sobra de tempo.
+      // Marca a 560, colado no Pedro (500): ele pega a bomba JUNTO da
+      // vítima, não num canto isolado — é o que os três finais precisam.
+      { at: 0, do: 'enter', who: 'vinicius', x: 560, ms: 2200 },
       { at: 2600, do: 'say', who: 'vinicius', text: 'A dor é apenas opinião.', ms: 3000 },
       { at: 5200, do: 'grab', who: 'vinicius', target: 'bomb' },
       { at: 6200, do: 'say', who: 'vinicius', text: 'Está tudo sob controle. 👌', ms: 2600 },
@@ -128,11 +130,11 @@ export const scenes = [
         theme: 'pedra',
         colors: { top: '#3b3d46', bot: '#121317', ink: '#f2efe4', accent: '#d8d0b6' },
         cast: { who: 'vinicius', pose: 'zen', at: 'right' },
-        line: 'A explosão também é indiferente.',
+        line: 'O que é externo não me toca🍷',
         kicker: 'A BOMBA PERDEU O DEBATE 🗿',
         button: 'FILOSOFAR MAIS UMA VEZ 🧘',
         timeline: [
-          { at: 0, do: 'say', who: 'vinicius', text: 'A bomba explode. Eu não.', ms: 3000 },
+          { at: 0, do: 'say', who: 'vinicius', text: 'Vou tentar conter a explosão🗿', ms: 3000 },
           { at: 900, do: 'explode', target: 'bomb', intensity: 4, vaporize: ['bomb'] },
           // a explosão que ele contém escapa entre os dedos
           {
@@ -153,7 +155,7 @@ export const scenes = [
         theme: 'pedra',
         colors: { top: '#4a3a26', bot: '#14100b', ink: '#fdf1de', accent: '#f0c987' },
         cast: { who: 'vinicius', pose: 'wave', at: 'right' },
-        line: 'Alguém tinha que ir. Não precisava ser você.',
+        line: 'O fim é o que dá sentido a jornada🗿',
         kicker: 'ELE PEDIU LICENÇA ANTES 🗿',
         button: 'ACENDER OUTRA VELA 🕯️',
         timeline: [
@@ -177,8 +179,8 @@ export const scenes = [
         icon: '⏳',
         theme: 'fogo',
         colors: { top: '#57330a', bot: '#140a06', ink: '#ffeed8', accent: '#ffa63c' },
-        cast: { who: 'peter', pose: 'burnt', at: 'left' },
-        line: 'Ele analisou muito bem. Enquanto eu explodia.',
+        cast: { who: 'vinicius', pose: 'burnt', at: 'right' },
+        line: 'Reclamar do fim é não ter entendido o começo. 🗿',
         kicker: 'ANALISOU ATÉ EXPLODIR 🗿',
         button: 'PENSAR UM POUCO MENOS ⏳',
         timeline: [
