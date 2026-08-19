@@ -5,6 +5,10 @@
 
 .EXEMPLO
   powershell -ExecutionPolicy Bypass -File scripts\gerar-relatorio-tokens.ps1
+
+.EXEMPLO
+  # so uma sessao (um chat), com titulo proprio:
+  #   ... -Session 5896cca9 -OutFile docs\relatorio_curadoria_01.md -Titulo 'Curadoria 01'
 #>
 param(
   [string]$ProjectDir  = "$env:USERPROFILE\.claude\projects\G--Peng-Repositorys-Trabalho-Explosive-Peter",
@@ -13,7 +17,10 @@ param(
   [double]$PrecoOutput = 25.0,   # USD por 1M tokens de saida    (Claude Opus 5)
   [double]$MultCacheW  = 2.0,    # escrita de cache: 2x (TTL 1h) ou 1.25x (TTL 5min)
   [double]$MultCacheR  = 0.10,   # leitura de cache: 10% do preco de entrada
-  [int]$MaxPromptChars = 160
+  [int]$MaxPromptChars = 160,
+  # Prefixo do id da sessao (o nome do .jsonl). Vazio = todas as sessoes.
+  [string]$Session     = '',
+  [string]$Titulo      = 'Relatorio de Tokens - Explosive Peter'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,6 +29,13 @@ if (-not (Test-Path $ProjectDir)) { throw "Pasta de transcripts nao encontrada: 
 
 $files = Get-ChildItem -Path $ProjectDir -Filter *.jsonl -File | Sort-Object LastWriteTime
 if (-not $files) { throw "Nenhum arquivo .jsonl em $ProjectDir" }
+
+# Um transcript por sessao: filtrar pelo NOME DO ARQUIVO e o mesmo que filtrar
+# pelo sessionId, e evita ler megabytes de chat que nao entram no relatorio.
+if ($Session) {
+  $files = @($files | Where-Object { $_.BaseName -like "$Session*" })
+  if (-not $files) { throw "Nenhuma sessao comecando com '$Session' em $ProjectDir" }
+}
 
 function New-Entry($sid, $text, $ts) {
   [pscustomobject]@{
@@ -81,16 +95,23 @@ function Custo($e) {
 }
 
 $sb = New-Object System.Text.StringBuilder
-[void]$sb.AppendLine('# Relatorio de Tokens - Explosive Peter')
+[void]$sb.AppendLine("# $Titulo")
 [void]$sb.AppendLine()
 [void]$sb.AppendLine("Gerado em: $(Get-Date -Format 'yyyy-MM-dd HH:mm')  ")
 [void]$sb.AppendLine("Fonte: transcripts do Claude Code em ``$ProjectDir``  ")
 [void]$sb.AppendLine("Modelo: **Claude Opus 5** - `$$PrecoInput /1M input, `$$PrecoOutput /1M output")
 [void]$sb.AppendLine()
+if ($Session) {
+  [void]$sb.AppendLine("Escopo: **somente a sessao ``$Session``** - um unico chat  ")
+  [void]$sb.AppendLine()
+}
 [void]$sb.AppendLine('> **Input** = `input_tokens` + `cache_creation_input_tokens` + `cache_read_input_tokens`.')
 [void]$sb.AppendLine("> O custo aplica os multiplicadores de cache: escrita ${MultCacheW}x, leitura ${MultCacheR}x do preco de entrada.")
 [void]$sb.AppendLine('> Os tokens de cada resposta sao atribuidos ao prompt que a originou.')
 [void]$sb.AppendLine('> Linhas com 0 tokens sao prompts enfileirados: foram enviados junto com o prompt seguinte, que carrega o custo dos dois.')
+if ($Session) {
+  [void]$sb.AppendLine('> Rodando DENTRO da sessao relatada, o ultimo prompt fica subestimado: as chamadas da resposta que gera este arquivo ainda nao foram gravadas no transcript.')
+}
 [void]$sb.AppendLine()
 [void]$sb.AppendLine('## Prompts')
 [void]$sb.AppendLine()

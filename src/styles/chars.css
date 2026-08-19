@@ -244,6 +244,63 @@
   100% { r: calc(6px + 3px * var(--juice, 1)); opacity: 0.65; }
 }
 
+/* ---------- FIESTA ---------- */
+/* O outro ator sem rig humano — mas, ao contrário da bomba, um PERSONAGEM:
+   o desenho vem de <template id="tpl-fiesta"> e as cores de characters.js.
+
+   Seletor por `data-actor`, nunca por `#fiesta`: no palco o stage.js dá id ao
+   ator, mas no CARD DE FINAL ele é montado sem id nenhum — e o carro precisa
+   continuar azul nas duas telas. */
+
+.actor[data-actor="fiesta"] .chassi {
+  fill: var(--skin);
+  stroke: var(--outline);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+.actor[data-actor="fiesta"] .vidro {
+  fill: #cfe6f5;
+  stroke: var(--outline);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+/* o vinco lateral: a mesma cor da lataria, um tom mais escura */
+.actor[data-actor="fiesta"] .vinco {
+  fill: var(--cloth, var(--skin));
+  stroke: none;
+}
+
+.actor[data-actor="fiesta"] .farol {
+  fill: #ffe9a8;
+  stroke: var(--outline);
+  stroke-width: 4;
+}
+
+.actor[data-actor="fiesta"] .lanterna {
+  fill: #e2604a;
+  stroke: var(--outline);
+  stroke-width: 4;
+}
+
+.actor[data-actor="fiesta"] .pneu {
+  fill: #16171f;
+  stroke: var(--outline);
+  stroke-width: 5;
+}
+
+.actor[data-actor="fiesta"] .calota {
+  fill: var(--accent);
+  stroke: none;
+}
+
+/* A suspensão balança em torno das RODAS, não do quadril de um boneco: o
+   `idle-sway` genérico gira em 60px 168px, que no viewBox 200 × 112 do carro
+   cai fora do desenho. Dois zeros de especificidade a mais para vencer. */
+.actor[data-actor="fiesta"] .frame { transform-origin: 100px 108px; }
+
 /* ---------- plaquinha de nick (estilo Minecraft) ---------- */
 /* Filha do ator, como o balão: acompanha entrada, tremida, saída e
    vaporização sem nenhum verbo saber que ela existe.
@@ -471,6 +528,25 @@
 @keyframes pose-celebrate {
   from { transform: translateY(0); }
   to   { transform: translateY(calc(-10px * var(--juice, 1))); }
+}
+
+/* PAVOR: braços para cima, corpo jogado para trás e tremendo. Nasceu do
+   `fiesta-do-ceu` — é a primeira vez no jogo que o Pedro REAGE a alguma coisa,
+   e ela dura um segundo antes de ele morrer mesmo assim.
+
+   O tranco é em `steps`, como o do Maligno: tremor contínuo lê como bug de
+   render; tremor em degraus lê como medo. */
+.pose-scared .arm-l { transform: rotate(150deg); }
+.pose-scared .arm-r { transform: rotate(-150deg); }
+.pose-scared .frame {
+  animation: pose-scared 110ms steps(2, end) infinite;
+  transform-origin: 60px 168px;
+}
+
+@keyframes pose-scared {
+  0%   { transform: rotate(-7deg) translateX(calc(-2px * var(--juice, 1))); }
+  50%  { transform: rotate(-7deg) translateX(calc(2px * var(--juice, 1))); }
+  100% { transform: rotate(-7deg) translateX(calc(-2px * var(--juice, 1))); }
 }
 
 /* registro corrompido: o Pedro Maligno não fica parado no quadro.
