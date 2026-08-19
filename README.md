@@ -135,6 +135,8 @@ O projeto foi publicado via GitHub Pages e está funcional no link abaixo:
 
 🔗 [▶ Jogar](https://felipepeng.github.io/Trabalho_Explosive-Peter/)
 
+🔗[Link Canva](https://canva.link/i3qq2ndkce1vgnj)
+
 ---
 
 ## 8. Integrantes do Grupo
