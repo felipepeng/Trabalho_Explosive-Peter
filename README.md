@@ -75,7 +75,7 @@ Para guiar a geração do conteúdo, padronizamos as cenas e características do
 
 ]
 ```
-
+<img src="prints/image.png" width="500"> 
 ---
 
 ## 4. Teste de Curadoria de Contexto
