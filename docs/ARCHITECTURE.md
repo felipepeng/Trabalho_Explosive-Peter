@@ -72,7 +72,7 @@ index.html
     { id: 'vin-contido',        // PERMANENTE — é chave de save. `title` é livre.
       title: 'CONTIDO PELO ESTOICISMO',
       weight: 3,
-      survives: true,           // true | false | null (null = ambíguo, ex. mal-censurado)
+      survives: true,           // true | false | null (null = ambíguo — não mexe no contador)
       timeline: [ /* `at` conta a partir do clímax */ ] },
   ]
 }
@@ -117,7 +117,7 @@ Escritos: `enter · exit · say · grab · shake · flash · explode · pose · 
 
 **`pose`** não estava na lista original e substitui uma família inteira: `{ do:'pose', who:'jp', as:'jump' }` liga a classe `pose-jump` e o gesto mora num `@keyframes`. Sem ele, cada gesto novo (pular, esticar, arremessar, cortar o pavio) viraria um verbo, e o vocabulário cresceria com o conteúdo em vez de ficar estável.
 
-**`blackout`** também é novo, e pela mesma lógica do `pose`: um flash preto que não volta não é um `flash` (que tem teto de frequência e sempre desaparece). São 8 linhas, e é o corte para tela preta do `mal-censurado`.
+**`blackout`** também é novo, e pela mesma lógica do `pose`: um flash preto que não volta não é um `flash` (que tem teto de frequência e sempre desaparece). São 8 linhas, e é o corte para tela preta que um final ambíguo pediria.
 
 ⚠️ **`setTimer` mexe no MOSTRADOR, não no relógio.** Quem decide quando a rodada estoura é o `climaxAt` da cena. Em `maligno-portal` os dois números foram calculados na mão para bater (o mostrador zera em 7700 ms, o clímax é 7800 ms) — e o validador **não** consegue conferir isso, porque teria que simular o countdown. É o único acoplamento manual do conteúdo.
 
@@ -295,7 +295,7 @@ Quando o final não declara `kicker`, o veredito sai do `survives` (`PEDRO SOBRE
 
 ### 7.1 Classificação de `survives` *(decidida no D4)*
 
-Os 14 finais do catálogo (GDD §6), já classificados — o D7 e o D8 só transcrevem.
+Os 17 finais do catálogo (`src/data/scenes.js`), já classificados — o D7 e o D8 só transcrevem.
 
 | Final | `survives` | Por quê |
 | --- | --- | --- |
@@ -303,16 +303,19 @@ Os 14 finais do catálogo (GDD §6), já classificados — o D7 e o D8 só trans
 | `vin-contido` | `true` | Vinicius segura a explosão; Pedro sobrevive |
 | `vin-memento` | `true` | Vinicius leva a bomba embora e explode sozinho |
 | `vin-dicotomia` | `false` | O tempo acaba, os dois explodem |
+| `jp-alcance` | `false` | JP não alcança, o timer zera |
+| `jp-fio-errado` | `false` | Cortou o fio errado |
+| `jp-arremesso` | `true` | Pedro vira projétil, mas sobrevive machucado |
 | `mic-correnteza` | `true` | A bomba explode no céu; Pedro sobrevive |
 | `mic-afogado` | `false` | Bomba desarmada, Pedro afogado. Morto é morto |
 | `mic-subaquatica` | `false` | Explosão subaquática em câmera lenta |
 | `mic-drop` | `true` | A bomba vira item; Pedro sobrevive confuso |
 | `mal-paradoxo` | `false` | Explosão dupla, os dois morrem |
 | `mal-troca` | `true` | O Pedro bom é salvo; quem explode é o maligno |
-| `mal-censurado` | `null` | "Tecnicamente não explodiu". O contador não se mexer É a piada |
-| `jp-alcance` | `false` | JP não alcança, o timer zera |
-| `jp-fio-errado` | `false` | Cortou o fio errado |
-| `jp-arremesso` | `true` | Pedro vira projétil, mas sobrevive machucado |
+| `mal-arremesso-peter` | `false` | O maligno arremessa e é o Pedro bom quem explode |
+| `mal-arremesso-maligno` | `true` | O maligno arremessa e explode ele mesmo |
+| `bomb-cedo` | `false` | A bomba estoura antes de qualquer salvador agir |
+| `fiesta-bibi` | `false` | O FIESTA atropela a cena; ninguém salva ninguém |
 
 **Nota sobre `mic-afogado`:** o final é uma quebra de expectativa (a bomba foi
 desarmada e mesmo assim o Pedro morreu), mas `survives` não mede se a bomba
@@ -390,7 +393,7 @@ export default { base: './' }
 | 7 paletas por MOOD, escolhidas pelo dado | Uma cor por final, ou um seletor por id | Final novo escolhe um tema existente; o CSS não cresce com o catálogo |
 | Kicker cai para o `survives` quando ausente | Todo final declarar tudo | Final novo funciona sem configurar nada |
 | `explode` recebe `vaporize: [...]` | O verbo consultar `ending.survives` | Quem some é dado da timeline; o verbo continua sem saber que final está rodando |
-| `survives: true/false/null` | `outcome` de 3 valores | `null` deixa `mal-censurado` não mexer no contador — que é a piada |
+| `survives: true/false/null` | `outcome` de 3 valores | `null` deixa o final não mexer no contador, para quem for ambíguo |
 | Forçar `ninguem-veio` no `main.js` | `if` de `id` no picker | Motor não conhece o catálogo |
 | `weight: 0` = nunca sorteável | Um campo `firstRunOnly` filtrado no `main.js` | "Aparece só na primeira rodada" vira dado puro; o picker segue sem conhecer o catálogo |
 | Teto de 15 s no validador | Cronometrar à mão | O número mais importante do GDD vira erro em dev |

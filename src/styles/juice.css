@@ -252,7 +252,8 @@ body.is-frozen *::after {
 
 /* ---------- corte para preto (verbo `blackout`) ---------- */
 /* Fica preto: sem teto de frequência, sem volta. O card do final aparece
-   por cima (z-index 10), que é exatamente a piada do `mal-censurado`. */
+   por cima (z-index 10) — pensado para um final tipo "dados corrompidos",
+   que hoje nenhum final do catálogo usa. */
 
 #fx-layer .blackout {
   position: absolute;

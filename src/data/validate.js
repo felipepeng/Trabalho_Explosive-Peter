@@ -31,7 +31,7 @@ export function validate(scenes, {
   sfx = [],
   characters = [],
   emojiNaFala = [],
-  maxRoundMs = 15000,
+  maxRoundMs = 20000,
   dramaticPauseMs = 600,
   joinGap = 400,
   designW = 1000,

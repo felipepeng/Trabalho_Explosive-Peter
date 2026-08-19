@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Explosive Peter** — jogo de navegador em HTML/CSS/JS vanilla (Vite só como build, zero dependência de runtime). Uma rodada dura ≤ 15 s: o timer corre, alguém invade a cena, o Pedro normalmente explode, aparece o card de final. A única interação do jogo é o botão de reiniciar.
 
-Catálogo atual (fonte da verdade é `src/data/scenes.js`): **7 cenas, 16 finais, 6 personagens** (o sexto é o FIESTA, único com rig próprio).
+Catálogo atual (fonte da verdade é `src/data/scenes.js`): **7 cenas, 17 finais, 6 personagens** (o sexto é o FIESTA, único com rig próprio).
 
 Idioma: **português em tudo** — código, comentários, commits, conteúdo do jogo e também a conversa com o usuário.
 Responda e faça perguntas sempre em português; termos técnicos consagrados (commit, build, branch, beat, timeline) ficam em inglês dentro da frase.
@@ -140,11 +140,10 @@ Não existe arquivo de áudio: os 12 SFX (`tick`, `tick-urgente`, `boom`, `whoos
 
 ## Adicionar conteúdo
 
-Cena nova = um objeto em `src/data/scenes.js` (o cabeçalho do arquivo documenta o contrato completo de beat, `climaxAt`, tema, `cast` e `line` do card). Final novo precisa de `cast.who` **e** `line` — sem os dois o card fica mudo, e o validador reclama. Verbos disponíveis: `enter · exit · say · grab · shake · flash · explode · pose · setTimer · hide · show · blackout · flood · portal · sfx`. Gesto novo é um `@keyframes` + `{ do: 'pose', as: '...' }`, não um verbo novo.
+Cena nova = um objeto em `src/data/scenes.js` (o cabeçalho do arquivo documenta o contrato completo de beat, `climaxAt`, tema, `cast` e `line` do card). Final novo precisa de `cast.who` **e** `line` — sem os dois o card fica mudo, e o validador reclama. Verbos disponíveis: `enter · exit · say · grab · shake · flash · explode · pose · setTimer · hide · show · blackout · flood · portal · sfx · burst · prop`. Gesto novo é um `@keyframes` + `{ do: 'pose', as: '...' }`, não um verbo novo.
 
 Constantes de tuning ficam todas em `src/config.js`.
 
 ## Observações sobre a documentação
 
-- `docs/ARCHITECTURE.md` §7.1 lista **14** finais (a tabela de `survives` é anterior ao `bomb-cedo`). O catálogo real tem 15 — confira sempre `src/data/scenes.js`.
 - `roles/` são prompts de subagente do trabalho acadêmico, não guia de implementação. `roles/dev-frontend.md` descreve uma stack antiga (arquivo único, Canvas 2D, sem build) que **não** corresponde ao projeto atual — não siga.

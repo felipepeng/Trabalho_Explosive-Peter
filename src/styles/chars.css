@@ -549,9 +549,10 @@
   100% { transform: rotate(-7deg) translateX(calc(-2px * var(--juice, 1))); }
 }
 
-/* registro corrompido: o Pedro Maligno não fica parado no quadro.
+/* registro corrompido: o ator não fica parado no quadro.
    `steps(2)` de propósito — tremida contínua parece bug de render; tremida
-   em degraus parece vídeo quebrado, que é a piada do `mal-censurado`. */
+   em degraus parece vídeo quebrado. Nenhum final do catálogo atual usa esta
+   pose — foi pensada para um final tipo "dados corrompidos". */
 .pose-glitch .frame {
   animation: pose-glitch 280ms steps(2, end) infinite;
 }

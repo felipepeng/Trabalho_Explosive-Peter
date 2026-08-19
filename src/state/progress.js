@@ -97,7 +97,7 @@ export function record({ ending }) {
 
   state.rounds += 1;
 
-  // `survives: null` (o `mal-censurado`) não mexe nos contadores — que é a piada.
+  // `survives: null` (final ambíguo) não mexe nos contadores — que é a piada.
   if (ending.survives === true) state.saves += 1;
   else if (ending.survives === false) state.deaths += 1;
 
