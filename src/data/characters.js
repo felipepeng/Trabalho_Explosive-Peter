@@ -149,7 +149,9 @@ export const characters = {
     h: 195,
     build: 1,
     z: 3,
-    mark: { x: 300, y: 470 },
+    // À direita da bomba (620), como todo invasor: com `z: 3` contra o `z: 2`
+    // do Pedro, quem para à esquerda dela acaba tapando a vítima.
+    mark: { x: 730, y: 470 },
     idle: 'sway',
     // A ÚNICA boca do jogo que pode usar emoji. A regra geral do projeto é
     // emoji em interface, nunca em fala — e ela continua valendo para todo o

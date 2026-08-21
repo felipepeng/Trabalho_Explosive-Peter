@@ -112,9 +112,12 @@ export const scenes = [
       // cenário aqui, solta no canto da tela — saiu de cena e virou o emoji
       // do `kicker` dos três finais desta cena, que é texto de interface.
       // 2,2s para atravessar: devagar é o traço dele, não sobra de tempo.
-      // Marca a 560, colado no Pedro (500): ele pega a bomba JUNTO da
-      // vítima, não num canto isolado — é o que os três finais precisam.
-      { at: 0, do: 'enter', who: 'vinicius', x: 560, ms: 2200 },
+      // Marca a 730, à DIREITA da bomba (620) — a mesma faixa em que o JP
+      // (730) e o Michas (760) param. A 560 ele ficava entre o Pedro (500) e
+      // a bomba, e como todo invasor tem `z: 3` contra o `z: 2` do Pedro,
+      // parava tapando a vítima. Continua perto o bastante para pegar a bomba
+      // junto dela, que é o que os três finais precisam.
+      { at: 0, do: 'enter', who: 'vinicius', x: 730, ms: 2200 },
       { at: 2600, do: 'say', who: 'vinicius', text: 'A dor é apenas opinião.', ms: 3000 },
       { at: 5200, do: 'grab', who: 'vinicius', target: 'bomb' },
       { at: 6200, do: 'say', who: 'vinicius', text: 'Está tudo sob controle. 👌', ms: 2600 },
