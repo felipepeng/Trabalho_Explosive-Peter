@@ -76,6 +76,7 @@
   .pose-celebrate .frame,
   .pose-glitch .frame,
   .actor.pose-item > .rig,
+  .actor.sigil > .rig,
   #bomb .spark,
   #fx-layer .flood::before,
   #fx-layer .flood::after,
@@ -363,6 +364,14 @@ html, body {
   --card-accent: #b06bea;
 }
 
+/* a demonstração do professor: azul de slide, com o laranja do disparo */
+#ending-card[data-theme="neural"] {
+  --card-top: #131a3f;
+  --card-bot: #05070f;
+  --card-ink: #e2ecff;
+  --card-accent: #7fa4ff;
+}
+
 /* [DADOS CORROMPIDOS]: terminal quebrado. Troca até a fonte do título. */
 #ending-card[data-theme="corrompido"] {
   --card-top: #04120a;
@@ -608,3 +617,4 @@ html, body {
 #ending-gallery .cell[data-theme="drop"] { --cell: #45e08a; }
 #ending-gallery .cell[data-theme="fenda"] { --cell: #b06bea; }
 #ending-gallery .cell[data-theme="corrompido"] { --cell: #7dff9a; }
+#ending-gallery .cell[data-theme="neural"] { --cell: #7fa4ff; }

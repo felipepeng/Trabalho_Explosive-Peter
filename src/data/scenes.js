@@ -647,4 +647,106 @@ export const scenes = [
       },
     ],
   },
+
+  /* ================================================================ *
+   * §6.7 — Pedro Professor.
+   *
+   * A única cena em que a bomba NÃO é o problema: o professor chega,
+   * parte a bomba ao meio com um laser — e aí resolve demonstrar a
+   * ferramenta. Invoca as três IAs, elas se oferecem para ajudar em
+   * coro, e pulverizam o aluno. A bomba fica no chão, aberta, inútil,
+   * até o fim da rodada: é ela quem conta a piada.
+   *
+   * Geografia: o professor entra pela DIREITA e para em x 810, do lado
+   * oposto ao Pedro (x 500) — assim o laser cruza até a bomba (x 620)
+   * sem passar por cima da vítima. As três IAs ficam em 340 / 500 / 660,
+   * simétricas em torno do eixo do Pedro, bem acima da cabeça dele.
+   *
+   * FINAL ÚNICO, por decisão: a cena inteira é uma demonstração levada
+   * até o fim, e ramificar no meio dela ("as IAs erram", "as IAs se
+   * recusam") quebraria a lógica de quem já viu o professor mirar.
+   * ================================================================ */
+  {
+    id: 'professor-ia',
+    character: 'professor',
+    weight: 3,
+    invadeAt: 3000,
+    // 11,6s: o mostrador zera aos 10s e as três IAs ainda estão carregando.
+    // O timer é mentiroso (GDD §3.2), e aqui ele é mentiroso de novo.
+    climaxAt: 11600,
+    timeline: [
+      { at: 0, do: 'enter', who: 'professor', x: 810 },
+      { at: 900, do: 'say', who: 'professor', text: 'Chegou a hora da avaliação prática.', ms: 2600 },
+
+      // O LASER. A pose levanta o braço com o ponteiro; o raio sai de lá.
+      //
+      // A origem é a PONTA DO GESTO, não o centro do boneco, e por isso vem
+      // escrita à mão: com o braço em 102° (chars.css) o ponteiro para em
+      // ~(712, 338) no espaço de design, com ele marcado em x 810. Mexeu no
+      // ângulo da pose ou na marca dele? estes dois números mudam junto.
+      { at: 3000, do: 'pose', who: 'professor', as: 'laser', sfx: null },
+      {
+        at: 3200, do: 'beam', from: 'professor', to: 'bomb',
+        x: 712, y: 338, color: '#ff5a3c', width: 12, ms: 480, sfx: 'laser',
+      },
+      { at: 3520, do: 'pose', who: 'bomb', as: 'split', sfx: 'corte' },
+      {
+        at: 3560, do: 'burst', who: 'bomb',
+        emojis: ['⚙️', '💥'], count: 7, power: 150, spread: 140, size: 22, ms: 900,
+      },
+      { at: 3900, do: 'shake', intensity: 4 },
+      { at: 4000, do: 'pose', who: 'professor', as: 'laser', off: true },
+
+      { at: 4200, do: 'say', who: 'professor', text: 'Vou te mostrar como usar a IA de verdade!', ms: 2900 },
+
+      // A INVOCAÇÃO, uma por vez. `from: 'portal'` faz cada emblema crescer
+      // no lugar em vez de vir da borda — é o que "ser invocado" parece.
+      { at: 6500, do: 'enter', who: 'claude', from: 'portal', x: 340, y: 190, ms: 520, sfx: 'invocar' },
+      { at: 7150, do: 'enter', who: 'gpt', from: 'portal', x: 500, y: 176, ms: 520, sfx: 'invocar' },
+      { at: 7800, do: 'enter', who: 'gemini', from: 'portal', x: 660, y: 190, ms: 520, sfx: 'invocar' },
+
+      // CANALIZANDO: as três pulsam juntas. É o aviso de que vem coisa.
+      { at: 8500, do: 'pose', who: 'claude', as: 'canalizar', sfx: null },
+      { at: 8500, do: 'pose', who: 'gpt', as: 'canalizar', sfx: null },
+      { at: 8500, do: 'pose', who: 'gemini', as: 'canalizar', sfx: null },
+    ],
+    endings: [
+      {
+        // Os três raios convergem no Pedro ao mesmo tempo. Não sobra nada —
+        // e a bomba continua caída ali, partida, sem ter feito nada.
+        id: 'prof-pulverizado',
+        title: 'AULA PRÁTICA',
+        weight: 1,
+        survives: false,
+        icon: '🎓',
+        theme: 'neural',
+        colors: { top: '#1a2352', bot: '#05070f', ink: '#e6eeff', accent: '#8fb0ff' },
+        cast: { who: 'professor', pose: 'shrug', at: 'right' },
+        line: 'Eu só demonstrei a ferramenta.',
+        kicker: 'A FERRAMENTA FUNCIONOU 🎓',
+        button: 'REPETIR A DEMONSTRAÇÃO 🎓',
+        timeline: [
+          // As três falam ao mesmo tempo, no tom de assistente prestativo.
+          // É a última coisa que o Pedro ouve.
+          { at: 0, do: 'say', who: 'claude', text: 'Claro, posso ajudar.', ms: 1700 },
+          { at: 0, do: 'say', who: 'gpt', text: 'Ótima pergunta!', ms: 1700 },
+          { at: 0, do: 'say', who: 'gemini', text: 'Deixa comigo.', ms: 1700 },
+
+          // OS TRÊS RAIOS, no mesmo milissegundo. Cada um com a cor da IA.
+          { at: 1500, do: 'beam', from: 'claude', to: 'peter', color: '#d97757', width: 16, ms: 620 },
+          { at: 1500, do: 'beam', from: 'gpt', to: 'peter', color: '#f2f2f2', width: 16, ms: 620, sfx: null },
+          { at: 1500, do: 'beam', from: 'gemini', to: 'peter', color: '#6f9cf5', width: 16, ms: 620, sfx: null },
+
+          // PULVERIZADO: some o Pedro, fica o professor e a bomba aberta.
+          // O ponto é o PEITO dele (y 375), não os pés — é onde os três
+          // raios se encontram, e uma explosão no chão não leria como isso.
+          { at: 1780, do: 'explode', x: 500, y: 375, intensity: 9, vaporize: ['peter'] },
+          {
+            at: 1820, do: 'burst', x: 500, y: 375,
+            emojis: ['✨', '💀', '🤖'], count: 15, power: 280, size: 32,
+          },
+        ],
+      },
+    ],
+  },
 ];

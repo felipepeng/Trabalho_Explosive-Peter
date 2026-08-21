@@ -58,6 +58,31 @@ const ondeFica = (ctx, { who, x, y }) => {
   };
 };
 
+/**
+ * O PONTO DE MIRA de um ator: o meio do corpo dele, não os pés.
+ *
+ * `--y` é a base do ator (o transform é `translate(-50%, -100%)`), então um
+ * raio ligado direto no `--y` de dois bonecos passaria rente ao chão em vez de
+ * cruzar o peito. `lift` é a fração da altura a subir — 0,5 é a cintura/peito
+ * de qualquer um, e serve tanto para a bomba quanto para um emblema flutuando.
+ * Mesma conta que o `grab` já faz para reposicionar o que foi agarrado.
+ */
+const miraDe = (ctx, who, { x, y, lift = 0.5 } = {}) => {
+  const el = who ? ctx.stage.get(who) : null;
+  const num = (prop) => Number(el?.style.getPropertyValue(prop)) || null;
+  const ay = y ?? num('--y') ?? 470;
+  // `--h` do personagem é inline (rig.js escreve), mas o da bomba e o dos
+  // emblemas de IA vem do CSS — daí a segunda tentativa no estilo computado.
+  const ah = num('--h')
+    ?? (el ? Number(getComputedStyle(el).getPropertyValue('--h')) || null : null)
+    ?? 160;
+  return {
+    x: x ?? num('--x') ?? 500,
+    // com `y` explícito o dado mandou a altura exata e o lift não se intromete
+    y: y === undefined ? Math.round(ay - ah * lift) : y,
+  };
+};
+
 export const actions = {
   /**
    * Põe um ator em cena vindo de fora da janela.
@@ -242,6 +267,28 @@ export const actions = {
     holder.classList.add('is-grabbing');
     item.classList.add('is-held');
     holder.appendChild(item);
+  },
+
+  /**
+   * `{ do:'beam', from:'professor', to:'bomb', color:'#ff4d4d', ms:520 }`
+   *
+   * Um RAIO de um ponto a outro. Nasceu com a cena do Pedro Professor e serve
+   * os DOIS momentos dela: o laser que sai da mão dele e parte a bomba, e os
+   * três raios que as IAs disparam ao mesmo tempo no Pedro. Um verbo, dois
+   * usos — a alternativa era um `laser` e um `raio` fazendo a mesma conta.
+   *
+   * `from`/`to` são atores em cena e o raio liga o PEITO de um ao do outro
+   * (ver `miraDe`). `x`/`y` passam por cima da origem e `tx`/`ty` do alvo,
+   * para quando o dado quiser um ponto cru — a mão levantada, o céu.
+   */
+  beam(ctx, beat) {
+    const { from, to, x, y, tx, ty, lift, color, width, ms } = beat;
+    if (ctx.signal?.aborted) return;
+
+    const origem = miraDe(ctx, from, { x, y, lift });
+    const alvo = miraDe(ctx, to, { x: tx, y: ty, lift });
+    ctx.fx.beam({ ...origem, tx: alvo.x, ty: alvo.y, color, width, ms });
+    soar(ctx, beat, 'raio');
   },
 
   /** `{ do:'flash', ms:260 }` — clarão de tela cheia, com teto de 2 por segundo. */

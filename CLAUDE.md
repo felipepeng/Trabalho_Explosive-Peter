@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## O projeto
 
-**Explosive Peter** — jogo de navegador em HTML/CSS/JS vanilla (Vite só como build, zero dependência de runtime). Uma rodada dura ≤ 15 s: o timer corre, alguém invade a cena, o Pedro normalmente explode, aparece o card de final. A única interação do jogo é o botão de reiniciar.
+**Explosive Peter** — jogo de navegador em HTML/CSS/JS vanilla (Vite só como build, zero dependência de runtime). Uma rodada dura ≤ 20 s: o timer corre, alguém invade a cena, o Pedro normalmente explode, aparece o card de final. A única interação do jogo é o botão de reiniciar.
 
-Catálogo atual (fonte da verdade é `src/data/scenes.js`): **6 cenas, 15 finais, 5 personagens**.
+Catálogo atual (fonte da verdade é `src/data/scenes.js`): **7 cenas, 16 finais, 6 personagens**.
 
 Idioma: **português em tudo** — código, comentários, commits, conteúdo do jogo e também a conversa com o usuário.
 Responda e faça perguntas sempre em português; termos técnicos consagrados (commit, build, branch, beat, timeline) ficam em inglês dentro da frase.
@@ -22,7 +22,7 @@ npm run preview  # serve o dist/
 
 **Não há suíte de testes automatizados** — é uma ausência deliberada (`docs/ARCHITECTURE.md` §11). O que faz o papel de teste:
 
-- **Validador de conteúdo** (`src/data/validate.js`): roda no boot **só em dev** e imprime no console. Reprova verbo/som/tema inexistente, `id` de final duplicado, posição fora do espaço de design, emoji em fala de personagem (`say` e `line`), final sem `line` ou sem `cast.who`, `cast.who` que não existe em `characters.js`, `climaxAt` antes do último beat da cena e — o principal — qualquer combinação cena × final que passe de **15 s**. Depois de mexer em `src/data/`, rode `npm run dev` e confira o `[validate] ok — …` no console.
+- **Validador de conteúdo** (`src/data/validate.js`): roda no boot **só em dev** e imprime no console. Reprova verbo/som/tema inexistente, `id` de final duplicado, posição fora do espaço de design, emoji em fala de personagem (`say` e `line`), final sem `line` ou sem `cast.who`, `cast.who` que não existe em `characters.js`, `climaxAt` antes do último beat da cena e — o principal — qualquer combinação cena × final que passe de **20 s**. Depois de mexer em `src/data/`, rode `npm run dev` e confira o `[validate] ok — …` no console.
 - **Bancada de verbos**: em dev, `main.js` expõe `clock`, `stage`, `fx`, `audio`, `actions`, `scenes`, `progress`, `session`, `phase`, `round` e um helper `beat()` no `window`. Para testar um verbo isolado no console: `beat({ do: 'shake', intensity: 10 })`.
   ⚠️ `window.phase` e `window.round` são **cópias do boot, não getters vivos** — o `Object.assign` executa o getter na hora e guarda o valor. Para saber a fase de verdade, leia `document.body.className` (`state-countdown`, `state-ending`, …).
 - Para resetar o save: `localStorage.removeItem('explosive-peter:v1')`.
@@ -35,7 +35,7 @@ Leitura obrigatória antes de mudar qualquer coisa estrutural: `docs/ARCHITECTUR
 
 ### A ideia central: conteúdo é dado, não código
 
-Uma cena é um objeto em `src/data/scenes.js` com uma lista de beats `{ at, do, ...params }`. Escrever as 6 cenas e os 15 finais não mudou uma linha de `director.js`, `picker.js`, `clock.js` nem da máquina de estados. **Se adicionar conteúdo exigir tocar no motor, o motor está errado.**
+Uma cena é um objeto em `src/data/scenes.js` com uma lista de beats `{ at, do, ...params }`. Escrever as 7 cenas e os 16 finais não mudou uma linha de `director.js`, `picker.js`, `clock.js` nem da máquina de estados. **Se adicionar conteúdo exigir tocar no motor, o motor está errado.**
 
 ### Regra de dependência
 
@@ -113,7 +113,7 @@ Consequência: `src/data/messages.js` está **fora do ar** (ninguém importa o a
 
 O `title` continua na tela, mas como **legenda pequena** embaixo do personagem: ele é o nome que a coleção usa, não a manchete. Quem fala com o jogador é o personagem.
 
-Poses disponíveis em `chars.css` (`cast.pose` e o verbo `pose` usam a mesma lista): `jump · reach · throw · item · cut · burnt · dead · zen · wave · shrug · celebrate · glitch`.
+Poses disponíveis em `chars.css` (`cast.pose` e o verbo `pose` usam a mesma lista): `jump · reach · throw · item · cut · split · laser · canalizar · burnt · dead · zen · wave · shrug · celebrate · glitch`.
 
 ### `--juice` e acessibilidade
 
@@ -121,7 +121,7 @@ Todo keyframe de JUICE multiplica a amplitude por `var(--juice, 1)`; `prefers-re
 
 ### Áudio (`engine/audio.js`)
 
-Não existe arquivo de áudio: os 11 SFX (`tick`, `tick-urgente`, `boom`, `whoosh`, `splash`, `portal`, `corte`, `fanfarra`, `fracasso`, `drop`, `glitch`) são sintetizados na hora com osciladores e ruído. O `AudioContext` só nasce no primeiro gesto; `play()` é no-op silencioso antes disso. Cada verbo que faz barulho tem um som padrão — o beat pode trocar (`sfx: 'drop'`) ou calar (`sfx: null`).
+Não existe arquivo de áudio: os 14 SFX (`tick`, `tick-urgente`, `boom`, `whoosh`, `splash`, `portal`, `corte`, `laser`, `raio`, `invocar`, `fanfarra`, `fracasso`, `drop`, `glitch`) são sintetizados na hora com osciladores e ruído. O `AudioContext` só nasce no primeiro gesto; `play()` é no-op silencioso antes disso. Cada verbo que faz barulho tem um som padrão — o beat pode trocar (`sfx: 'drop'`) ou calar (`sfx: null`).
 
 ### Save (`state/progress.js`)
 
@@ -140,11 +140,11 @@ Não existe arquivo de áudio: os 11 SFX (`tick`, `tick-urgente`, `boom`, `whoos
 
 ## Adicionar conteúdo
 
-Cena nova = um objeto em `src/data/scenes.js` (o cabeçalho do arquivo documenta o contrato completo de beat, `climaxAt`, tema, `cast` e `line` do card). Final novo precisa de `cast.who` **e** `line` — sem os dois o card fica mudo, e o validador reclama. Verbos disponíveis: `enter · exit · say · grab · shake · flash · explode · pose · setTimer · hide · show · blackout · flood · portal · sfx`. Gesto novo é um `@keyframes` + `{ do: 'pose', as: '...' }`, não um verbo novo.
+Cena nova = um objeto em `src/data/scenes.js` (o cabeçalho do arquivo documenta o contrato completo de beat, `climaxAt`, tema, `cast` e `line` do card). Final novo precisa de `cast.who` **e** `line` — sem os dois o card fica mudo, e o validador reclama. Verbos disponíveis: `enter · exit · say · grab · shake · flash · explode · beam · pose · setTimer · hide · show · blackout · flood · portal · burst · prop · sfx`. Gesto novo é um `@keyframes` + `{ do: 'pose', as: '...' }`, não um verbo novo.
 
 Constantes de tuning ficam todas em `src/config.js`.
 
 ## Observações sobre a documentação
 
-- `docs/ARCHITECTURE.md` §7.1 lista **14** finais (a tabela de `survives` é anterior ao `bomb-cedo`). O catálogo real tem 15 — confira sempre `src/data/scenes.js`.
+- `docs/ARCHITECTURE.md` §7.1 lista **14** finais (a tabela de `survives` é anterior ao `bomb-cedo`). O catálogo real tem 16 — confira sempre `src/data/scenes.js`.
 - `roles/` são prompts de subagente do trabalho acadêmico, não guia de implementação. `roles/dev-frontend.md` descreve uma stack antiga (arquivo único, Canvas 2D, sem build) que **não** corresponde ao projeto atual — não siga.

@@ -117,7 +117,95 @@
           <rect class="cap" x="52" y="26" width="18" height="14" rx="3" />
           <circle class="shell" cx="46" cy="76" r="38" />
           <circle class="shine" cx="32" cy="62" r="9" />
+          <!-- A BOMBA PARTIDA AO MEIO. Invisível até a pose `split` ligar (o
+               laser do Pedro Professor). São duas metades do MESMO círculo da
+               .shell, para o corte cair exatamente onde a casca estava. Custa
+               dois <path> ocultos e evita um segundo template de bomba. -->
+          <g class="halves">
+            <path class="half half-l" d="M46 38 A38 38 0 0 0 46 114 Z" />
+            <path class="half half-r" d="M46 38 A38 38 0 0 1 46 114 Z" />
+          </g>
         </svg>
+      </div>
+    </template>
+
+    <!-- ================= as IAs invocadas ================= -->
+    <!--
+      Três atores que NÃO usam o rig humano — mesma decisão da bomba: um rig
+      com braço e perna escondidos custaria mais que o desenho abaixo.
+
+      Por serem `.actor`, elas ganham de graça os verbos que já existem:
+      `enter` (com `from: 'portal'` crescem no lugar, que é exatamente o que
+      "ser invocada" parece), `pose` (a canalização), `say` (o balão) e `exit`.
+      O único verbo novo desta cena é o `beam` — e ele serve tanto ao laser do
+      professor quanto aos três raios delas.
+
+      `has-tag` já vem escrito no template porque a plaquinha é fixa: o nick de
+      um emblema não muda de cena para cena, e é ela quem faz o balão de fala
+      subir para CIMA do nome em vez de cobri-lo.
+
+      As logos são APROXIMAÇÕES desenhadas à mão, em paródia: nenhum arquivo de
+      marca de terceiro entra no repositório.
+    -->
+
+    <template id="tpl-claude">
+      <div id="claude" class="actor sigil sigil-claude has-tag" data-actor="claude">
+        <svg class="rig" viewBox="0 0 100 100" aria-label="Claude">
+          <!-- a estrela da Anthropic: raios afilados saindo do centro, em
+               comprimentos alternados. Doze <rect> girados pelo atributo
+               `transform` do SVG — que não é JS escrevendo style.transform. -->
+          <g class="glyph">
+            <rect x="46.5" y="6" width="7" height="40" rx="3.5" transform="rotate(0 50 50)" />
+            <rect x="47.5" y="16" width="5" height="30" rx="2.5" transform="rotate(30 50 50)" />
+            <rect x="46.5" y="6" width="7" height="40" rx="3.5" transform="rotate(60 50 50)" />
+            <rect x="47.5" y="16" width="5" height="30" rx="2.5" transform="rotate(90 50 50)" />
+            <rect x="46.5" y="6" width="7" height="40" rx="3.5" transform="rotate(120 50 50)" />
+            <rect x="47.5" y="16" width="5" height="30" rx="2.5" transform="rotate(150 50 50)" />
+            <rect x="46.5" y="6" width="7" height="40" rx="3.5" transform="rotate(180 50 50)" />
+            <rect x="47.5" y="16" width="5" height="30" rx="2.5" transform="rotate(210 50 50)" />
+            <rect x="46.5" y="6" width="7" height="40" rx="3.5" transform="rotate(240 50 50)" />
+            <rect x="47.5" y="16" width="5" height="30" rx="2.5" transform="rotate(270 50 50)" />
+            <rect x="46.5" y="6" width="7" height="40" rx="3.5" transform="rotate(300 50 50)" />
+            <rect x="47.5" y="16" width="5" height="30" rx="2.5" transform="rotate(330 50 50)" />
+          </g>
+        </svg>
+        <span class="nametag" aria-hidden="true">Claude</span>
+      </div>
+    </template>
+
+    <template id="tpl-gpt">
+      <div id="gpt" class="actor sigil sigil-gpt has-tag" data-actor="gpt">
+        <svg class="rig" viewBox="0 0 100 100" aria-label="ChatGPT">
+          <!-- o nó hexagonal da OpenAI, estilizado: o hexágono mais os três
+               braços internos que dão a leitura de fita entrelaçada. -->
+          <g class="glyph is-stroked">
+            <path d="M50 10 L85 30 V70 L50 90 L15 70 V30 Z" />
+            <path d="M50 10 V50 L85 70" />
+            <path d="M50 50 L15 30" />
+          </g>
+        </svg>
+        <span class="nametag" aria-hidden="true">ChatGPT</span>
+      </div>
+    </template>
+
+    <template id="tpl-gemini">
+      <div id="gemini" class="actor sigil sigil-gemini has-tag" data-actor="gemini">
+        <svg class="rig" viewBox="0 0 100 100" aria-label="Gemini">
+          <defs>
+            <linearGradient id="grad-gemini" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#8ab4f8" />
+              <stop offset="55%" stop-color="#4285f4" />
+              <stop offset="100%" stop-color="#9b72f2" />
+            </linearGradient>
+          </defs>
+          <!-- a faísca de quatro pontas: quatro lóbulos côncavos. -->
+          <g class="glyph">
+            <path style="fill:url(#grad-gemini)"
+                  d="M50 6 C54 30 70 46 94 50 C70 54 54 70 50 94
+                     C46 70 30 54 6 50 C30 46 46 30 50 6 Z" />
+          </g>
+        </svg>
+        <span class="nametag" aria-hidden="true">Gemini</span>
       </div>
     </template>
 

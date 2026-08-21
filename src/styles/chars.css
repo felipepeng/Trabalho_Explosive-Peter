@@ -99,6 +99,17 @@
 /* contorno mais fino, para peça miúda (o tridente do Michas) */
 .rig .ink.slim { stroke-width: 3; }
 
+/* LENTE de óculos: vidro quase transparente com aro grosso. Precisa ser a
+   terceira classe (e não uma `.ink` clara) porque o olho tem que continuar
+   aparecendo POR BAIXO — com fill opaco o Pedro Professor ficaria cego. */
+.rig .lens {
+  fill: rgba(214, 238, 255, 0.28);
+  stroke: var(--outline);
+  stroke-width: 4;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
 /* traço puro: sobrancelha, boca, olho semicerrado */
 .rig .line {
   fill: none;
@@ -491,4 +502,164 @@
 .pose-cut .spark {
   opacity: 0;
   transition: opacity 90ms linear;
+}
+
+/* A FAÍSCA É ANIMADA, e um @keyframes que mexe em `opacity` ganha de qualquer
+   declaração normal — o `opacity: 0` acima nunca chegava a valer nela, e a
+   faísca continuava piscando no ar depois do pavio cortado (visível em
+   `jp-fio-errado`, `mic-afogado` e `mal-censurado`). Desligar a animação é o
+   que faz a regra de cima voltar a mandar.
+
+   O seletor precisa do id: `#bomb .spark` é quem declara a animação, e uma
+   classe pura perde de um id. Mesma armadilha da pose `split` mais abaixo. */
+#bomb.pose-cut .spark { animation: none; }
+
+/* ---------- a bomba PARTIDA AO MEIO (pose `split`) ---------- */
+/* O laser do Pedro Professor não desarma a bomba: ele a abre. A casca inteira
+   sai de cena e entram as duas metades, que caem para os lados e ficam ali o
+   resto da rodada — a bomba deixa de ser o problema, e é essa a piada da cena.
+   As metades vivem ocultas dentro do #tpl-bomb; sem esta pose elas não custam
+   nada além de dois <path> com opacity 0. */
+
+/* O seletor é `#bomb.pose-split` e não `.pose-split` sozinho por causa da
+   CASCATA: as peças da bomba são pintadas por regras de `id` (`#bomb .shell`),
+   e uma classe pura perde de um id. Esconder a casca exige empatar o id. */
+
+#bomb .halves { opacity: 0; }
+#bomb .half {
+  fill: #1b1d28;
+  stroke: #000;
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+
+#bomb.pose-split .shell,
+#bomb.pose-split .shine,
+#bomb.pose-split .cap,
+#bomb.pose-split .fuse,
+#bomb.pose-split .spark { opacity: 0; }
+
+/* A faísca é ANIMADA, e um @keyframes que mexe em opacity ganha de qualquer
+   declaração normal — sem desligar a animação ela continuaria piscando no
+   vazio depois que a bomba foi partida ao meio. */
+#bomb.pose-split .spark { animation: none; }
+
+#bomb.pose-split .halves { opacity: 1; }
+
+/* Cada metade gira em torno do PRÓPRIO lado do corte, não do centro do rig:
+   é o que faz as duas abrirem como um ovo em vez de escorregarem de lado. */
+#bomb.pose-split .half-l {
+  animation: bomb-split-l 620ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  transform-origin: 46px 100px;
+}
+
+#bomb.pose-split .half-r {
+  animation: bomb-split-r 620ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  transform-origin: 46px 100px;
+}
+
+@keyframes bomb-split-l {
+  from { transform: translateX(0) rotate(0deg); }
+  to   { transform: translateX(-14px) rotate(-26deg); }
+}
+
+@keyframes bomb-split-r {
+  from { transform: translateX(0) rotate(0deg); }
+  to   { transform: translateX(14px) rotate(26deg); }
+}
+
+/* ---------- apontando (pose `laser`) ---------- */
+/* O braço ESQUERDO do rig é o que fica virado para o palco quando o ator está
+   na direita da tela — e é dentro dele que mora o ponteiro do professor
+   (`hand` em characters.js), então o laser sai da ponta do gesto de graça. */
+.pose-laser .arm-l { transform: rotate(102deg); }
+.pose-laser .arm-r { transform: rotate(-18deg); }
+
+/* ---------- os emblemas de IA ---------- */
+/* Atores sem rig humano, como a bomba. Tudo que é comum às três mora aqui;
+   o que muda de uma para outra é só a COR do brilho e do preenchimento. */
+
+.actor.sigil {
+  --h: 92;
+  --z: 6; /* acima de todo mundo: elas flutuam sobre a cena */
+  --glow: #ffffff;
+}
+
+.actor.sigil > .rig {
+  /* Flutuação lenta e permanente. É a assinatura de "invocado e à espera",
+     equivalente ao idle dos personagens — e some em reduced-motion junto com
+     os outros laços infinitos (base.css). */
+  animation: sigil-float 3200ms ease-in-out infinite;
+  filter: drop-shadow(0 0 calc(6 * var(--u)) var(--glow));
+}
+
+@keyframes sigil-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(calc(-6px * var(--juice, 1))); }
+}
+
+.sigil .glyph { fill: var(--glow); stroke: none; }
+
+/* o nó da OpenAI é traço, não mancha */
+.sigil .glyph.is-stroked {
+  fill: none;
+  stroke: var(--glow);
+  stroke-width: 7;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.sigil-claude  { --glow: #d97757; }
+.sigil-gpt     { --glow: #f2f2f2; }
+/* o Gemini tem gradiente próprio no <path>; o --glow aqui é só a auréola */
+.sigil-gemini  { --glow: #6f9cf5; }
+
+/* O BALÃO DAS IAS é menor que o de todo mundo, e a razão é geométrica: as três
+   falam AO MESMO TEMPO, com só 160 unidades de design entre um emblema e o
+   vizinho. No corpo de fala padrão (22u, caixa até 320u de largura) os três
+   balões se sobrepunham. Aqui a caixa é estreita o bastante para caber no vão
+   e a fala quebra em duas linhas em vez de invadir a do lado.
+
+   É a MESMA peça do verbo `say` — nada aqui é um segundo balão. O verbo
+   continua sem saber que quem está falando é um emblema e não uma pessoa. */
+
+.actor.sigil .balloon {
+  bottom: calc(100% + var(--tag-h, 0px) + 8 * var(--u));
+  max-width: calc(138 * var(--u));
+  padding: calc(6 * var(--u)) calc(11 * var(--u));
+  font-size: calc(15 * var(--u));
+  border-width: calc(2 * var(--u));
+  border-radius: calc(11 * var(--u));
+}
+
+/* O rabicho encolhe junto: um triângulo de tamanho normal numa caixa menor
+   fica maior que a própria ponta do balão. */
+.actor.sigil .balloon::before {
+  border-width: calc(8 * var(--u));
+  border-bottom: 0;
+}
+
+.actor.sigil .balloon::after {
+  top: calc(100% - 2 * var(--u));
+  border-width: calc(6.5 * var(--u));
+  border-bottom: 0;
+}
+
+/* CANALIZANDO (pose `canalizar`): antes de disparar, as três pulsam e
+   acendem. É o aviso de que algo vai acontecer — sem ele o raio chega do
+   nada e o jogador não tem tempo de entender de onde veio. */
+.actor.sigil.pose-canalizar > .rig {
+  animation: sigil-charge 420ms ease-in-out infinite alternate;
+}
+
+@keyframes sigil-charge {
+  from {
+    transform: scale(1);
+    filter: drop-shadow(0 0 calc(6 * var(--u)) var(--glow));
+  }
+  to {
+    transform: scale(calc(1 + 0.14 * var(--juice, 1)));
+    filter: drop-shadow(0 0 calc(22 * var(--u)) var(--glow))
+            drop-shadow(0 0 calc(44 * var(--u)) var(--glow));
+  }
 }

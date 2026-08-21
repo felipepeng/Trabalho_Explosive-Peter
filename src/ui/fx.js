@@ -307,5 +307,50 @@ export function createFx({ stage, layer, back }) {
     return el;
   }
 
-  return { flash, shake, explode, blackout, flood, portal, burst, prop };
+  /**
+   * RAIO de um ponto a outro, em unidades de design. Uma barra deitada,
+   * ancorada na origem e girada até apontar para o alvo.
+   *
+   * O ângulo e o comprimento saem daqui como CUSTOM PROPERTIES — `--ang` e
+   * `--len` — e quem gira é o @keyframes em juice.css. É a regra da §6: JS
+   * não escreve `style.transform`, mesmo quando a conta é trigonometria.
+   *
+   * NÃO multiplica por --juice, e isso é decisão: um raio a 25% do
+   * comprimento não chegaria no alvo, e o jogador não veria quem matou o
+   * Pedro. Encenação não é juice. O clarão e a tremida que acompanham, sim.
+   */
+  function beam({
+    x = 500, y = 370, tx = 500, ty = 370,
+    color = '#ffffff', width = 14, ms = 520,
+  } = {}) {
+    const dx = tx - x;
+    const dy = ty - y;
+    const len = Math.hypot(dx, dy);
+
+    const el = document.createElement('div');
+    el.className = 'beam';
+    el.style.setProperty('--x', x);
+    el.style.setProperty('--y', y);
+    el.style.setProperty('--len', len);
+    el.style.setProperty('--ang', `${(Math.atan2(dy, dx) * 180) / Math.PI}deg`);
+    el.style.setProperty('--beam-w', width);
+    el.style.setProperty('--beam-color', color);
+    el.style.setProperty('--beam-ms', `${ms}ms`);
+    el.addEventListener('animationend', (ev) => {
+      if (ev.target === el) el.remove();
+    }, { once: true });
+    layer.appendChild(el);
+
+    // O ponto de IMPACTO: sem ele o raio é uma linha bonita que não acerta
+    // nada. Faíscas curtas, saindo do alvo de volta na direção da origem.
+    burst({
+      x: tx, y: ty,
+      count: 12, power: 130, spread: 190,
+      dir: (Math.atan2(x - tx, ty - y) * 180) / Math.PI,
+      gravity: 0.4, ms: 620, size: 10, tone: 'ember',
+    });
+    return el;
+  }
+
+  return { flash, shake, explode, blackout, flood, portal, burst, prop, beam };
 }

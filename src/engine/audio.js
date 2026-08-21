@@ -104,6 +104,25 @@ export function createAudio() {
 
     corte: () => chiado({ dur: 0.09, gain: 0.45, type: 'highpass', freq: 3000, q: 2 }),
 
+    // o laser do professor: agudo caindo em rampa, seco. Corta, não explode
+    laser: () => {
+      tom({ freq: 2100, to: 240, dur: 0.22, type: 'sawtooth', gain: 0.32 });
+      chiado({ dur: 0.18, gain: 0.28, type: 'bandpass', freq: 2600, to: 600, q: 3 });
+    },
+
+    // os três raios ao mesmo tempo: grave por baixo, brilho por cima
+    raio: () => {
+      tom({ freq: 2600, to: 130, dur: 0.45, type: 'sawtooth', gain: 0.34 });
+      tom({ freq: 70, to: 42, dur: 0.5, type: 'sine', gain: 0.6, delay: 0.04 });
+      chiado({ dur: 0.4, gain: 0.4, type: 'highpass', freq: 900, to: 4200 });
+    },
+
+    // invocação: duas senoides subindo, limpas — soa a interface, não a magia
+    invocar: () => {
+      tom({ freq: 440, to: 1320, dur: 0.28, type: 'sine', gain: 0.3 });
+      tom({ freq: 660, to: 1980, dur: 0.3, type: 'triangle', gain: 0.18, delay: 0.06 });
+    },
+
     // salvamento: três notas subindo
     fanfarra: () => {
       [523, 659, 880].forEach((f, i) => tom({ freq: f, dur: 0.22, gain: 0.4, delay: i * 0.1 }));

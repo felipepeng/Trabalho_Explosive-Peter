@@ -173,7 +173,7 @@ As fases são marcadores de **uma timeline contínua** (é por isso que o timer 
 
 I5 é o pilar 1 do GDD ("o jogador é explicitamente impotente") escrito como código.
 
-**Watchdog:** se a rodada passar de `MAX_ROUND_MS = 20000`, força o clímax e vai para `ENDING`. É rede de segurança para bug, não teto de ritmo — o teto de 15 s é vigiado em dev (§9).
+**Watchdog:** se a rodada passar de `MAX_ROUND_MS = 20000`, força o clímax e vai para `ENDING`. É rede de segurança para bug, não teto de ritmo — o teto de 20 s é vigiado em dev (§9).
 
 ---
 
@@ -339,13 +339,13 @@ Se ninguém encostar na tela, a primeira rodada sai muda — e em `ninguem-veio`
 
 `data/validate.js` roda no boot só em `dev`. Recebe a lista de verbos, os temas e as constantes por parâmetro — `data/` não pode importar `engine/`. Reprova: `id` de final duplicado, verbo inexistente, `weight`/`survives` faltando, `climaxAt` antes do último beat da cena, posição fora do espaço de design, `theme` que não existe em `base.css` (degradaria em silêncio para a paleta padrão) e emoji em fala de personagem.
 
-E o principal — **o orçamento de 15 segundos**. Para cada combinação cena × final, soma a duração total e falha acima de `MAX_ROUND_MS_DESIGN = 15000`:
+E o principal — **o orçamento de rodada**. Para cada combinação cena × final, soma a duração total e falha acima de `MAX_ROUND_MS_DESIGN`, que hoje é `20000` (era 15000, o número do GDD; subiu porque as falas passavam rápido demais para serem lidas — `config.js` documenta a troca):
 
 ```
-✗ michas-mar + mic-subaquatica: 16.4s (teto 15s)
+✗ michas-mar + mic-subaquatica: 21.4s (teto 20s)
 ```
 
-O GDD chama esse número de "o que precisa ser defendido em todo o desenvolvimento". Defender à mão = cronometrar 14 combinações a olho no D10. São 5 linhas para o computador vigiar desde o primeiro final escrito, e o momento certo de descobrir que a cena está longa é enquanto ela está sendo escrita.
+O GDD chama esse número de "o que precisa ser defendido em todo o desenvolvimento". Defender à mão = cronometrar 16 combinações a olho. São 5 linhas para o computador vigiar desde o primeiro final escrito, e o momento certo de descobrir que a cena está longa é enquanto ela está sendo escrita.
 
 ---
 
@@ -393,7 +393,7 @@ export default { base: './' }
 | `survives: true/false/null` | `outcome` de 3 valores | `null` deixa `mal-censurado` não mexer no contador — que é a piada |
 | Forçar `ninguem-veio` no `main.js` | `if` de `id` no picker | Motor não conhece o catálogo |
 | `weight: 0` = nunca sorteável | Um campo `firstRunOnly` filtrado no `main.js` | "Aparece só na primeira rodada" vira dado puro; o picker segue sem conhecer o catálogo |
-| Teto de 15 s no validador | Cronometrar à mão | O número mais importante do GDD vira erro em dev |
+| Teto de rodada no validador | Cronometrar à mão | O número mais importante do GDD vira erro em dev |
 | Input engolido fora de `ENDING` | Handler global "esperto" | Pilar 1 virando código |
 | `base: './'` | `base` com nome do repo | Some o 404 de asset só-em-produção |
 | `--juice` como escalar | Media query reescrevendo keyframes | Acessibilidade + tuning + performance num knob |

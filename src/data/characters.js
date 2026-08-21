@@ -314,4 +314,81 @@ export const characters = {
                A5 5 0 0 1 78 10 A5 5 0 0 1 69 10 A5 5 0 0 1 60 11 Z" />
     `,
   },
+
+  /* -------------------------------------------------------------- *
+   * Pedro Professor — o docente. TERCEIRO Pedro do elenco, e a piada
+   * é a mesma do Maligno: silhueta idêntica, cabelo e barba iguais,
+   * só a roupa e os óculos mudam. Ele não quer matar ninguém — ele
+   * quer DEMONSTRAR uma ferramenta, e é por isso que funciona.
+   * -------------------------------------------------------------- */
+  professor: {
+    id: 'professor',
+    name: 'Pedro Professor',
+    nick: 'Pedro_Professor',
+    h: 192, // dois pontinhos mais alto que o Pedro. Postura, não porte
+    build: 1,
+    z: 3,
+    mark: { x: 810, y: 470 },
+    idle: 'breathe', // a MESMA respiração do Pedro — é o mesmo cara
+    // Entra andando pela direita, sem pressa: ele está indo dar aula, não
+    // salvar ninguém. Fica do lado OPOSTO ao Pedro para o laser cruzar o
+    // palco em direção à bomba sem passar por cima da vítima.
+    enter: { from: 'right', ms: 1200, gait: 'walk' },
+    colors: {
+      skin: '#f3c9a2', cloth: '#e6e4dd', pants: '#3c3a45',
+      outline: '#12141c', accent: '#8d6b3f',
+    },
+    // O MESMO rosto do Pedro — olhos, barba e sorriso idênticos — com os
+    // ÓCULOS por cima. Os aros são declarados DEPOIS dos olhos para desenhar
+    // sobre eles; a ponte cruza o nariz em y 28, a mesma altura das pupilas.
+    face: `
+      <ellipse class="ink slim" style="--part:#ffffff" cx="48" cy="28" rx="8.5" ry="9.5" />
+      <ellipse class="ink slim" style="--part:#ffffff" cx="72" cy="28" rx="8.5" ry="9.5" />
+      <circle class="eye" cx="49" cy="29" r="4" />
+      <circle class="eye" cx="73" cy="29" r="4" />
+      <path class="ink" style="--part:#4a3120"
+            d="M29 45 A7 7 0 0 0 33 53 A7 7 0 0 0 41 61 A7 7 0 0 0 52 66
+               A7 7 0 0 0 60 67 A7 7 0 0 0 68 66 A7 7 0 0 0 79 61
+               A7 7 0 0 0 87 53 A7 7 0 0 0 91 45
+               C86 52 80 57 72 58 Q60 60 48 58 C40 57 34 52 29 45 Z" />
+      <path class="line" d="M44 46 Q60 60 76 46" />
+      <g class="specs">
+        <rect class="lens" x="35" y="18" width="26" height="21" rx="6" />
+        <rect class="lens" x="61" y="18" width="26" height="21" rx="6" />
+        <path class="line" style="stroke-width:3" d="M61 28 H63" />
+        <path class="line" style="stroke-width:3" d="M35 26 L25 24" />
+        <path class="line" style="stroke-width:3" d="M87 26 L97 24" />
+      </g>
+    `,
+    // Cabelo do Pedro, sem tirar nem pôr um `d`. Mexeu num, copie nos três.
+    hairBack: `
+      <path class="ink" style="--part:#4a3120"
+            d="M38 14 A13 13 0 0 1 60 10 A13 13 0 0 1 82 14 A13 13 0 0 1 98 28
+               A13 13 0 0 1 108 48 A13 13 0 0 1 112 70 A13 13 0 0 1 108 92
+               A12 12 0 0 1 98 108 A12 12 0 0 1 80 116 A12 12 0 0 1 60 118
+               A12 12 0 0 1 40 116 A12 12 0 0 1 22 108 A12 12 0 0 1 12 92
+               A13 13 0 0 1 8 70 A13 13 0 0 1 12 48 A13 13 0 0 1 22 28
+               A13 13 0 0 1 38 14 Z" />
+    `,
+    hair: `
+      <path class="ink" style="--part:#4a3120"
+            d="M60 11 A5 5 0 0 1 51 10 A5 5 0 0 1 42 10 A5 5 0 0 1 34 12
+               C30 20 30 30 29 44 A6 6 0 0 1 22 47 A9 9 0 0 1 24 40
+               A11 11 0 0 1 27 23 A11 11 0 0 1 34 9 A11 11 0 0 1 46 -1
+               A11 11 0 0 1 60 -4 A11 11 0 0 1 74 -1 A11 11 0 0 1 86 9
+               A11 11 0 0 1 93 23 A11 11 0 0 1 96 40
+               A9 9 0 0 1 98 47 A6 6 0 0 1 91 44 C90 30 90 20 86 12
+               A5 5 0 0 1 78 10 A5 5 0 0 1 69 10 A5 5 0 0 1 60 11 Z" />
+    `,
+    // Jaleco aberto sobre a camisa + gravata. É peça de CORPO, então mora no
+    // accessory e não respira junto com a cabeça.
+    accessory: `
+      <path class="ink" style="--part:#cfcdc4" d="M30 62 H48 L44 132 H24 Z" />
+      <path class="ink" style="--part:#cfcdc4" d="M90 62 H72 L76 132 H96 Z" />
+      <path class="ink" style="--part:#8d3a3a" d="M56 64 H64 L67 74 L60 106 L53 74 Z" />
+    `,
+    // O PONTEIRO, dentro do braço esquerdo: gira junto com o gesto, igual à
+    // taça do Vinicius. É de onde o laser sai na pose `laser`.
+    hand: `<text class="prop small" x="16" y="128">📏</text>`,
+  },
 };

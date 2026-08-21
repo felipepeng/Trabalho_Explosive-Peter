@@ -3,11 +3,12 @@
  * Roda no boot, só em dev (ARCHITECTURE.md §9). Não corrige nada: reclama no
  * console e o jogo segue (P5).
  *
- * O principal é o ORÇAMENTO DE 15 SEGUNDOS. O GDD chama esse número de "o que
- * precisa ser defendido em todo o desenvolvimento"; defender à mão significaria
- * cronometrar 14 combinações a olho no D10. São algumas linhas para o
- * computador vigiar desde o primeiro final escrito, e o momento certo de
- * descobrir que a cena ficou longa é enquanto ela está sendo escrita.
+ * O principal é o ORÇAMENTO DE RODADA — hoje `MAX_ROUND_MS_DESIGN`, 20s (era
+ * 15s, o número original do GDD; `config.js` explica a troca). O GDD chama
+ * esse número de "o que precisa ser defendido em todo o desenvolvimento";
+ * defender à mão significaria cronometrar 16 combinações a olho. São algumas
+ * linhas para o computador vigiar desde o primeiro final escrito, e o momento
+ * certo de descobrir que a cena ficou longa é enquanto ela está sendo escrita.
  *
  * Não importa `engine/`: os nomes de verbo e as constantes chegam por
  * parâmetro, senão `data/` deixaria de ser inerte.

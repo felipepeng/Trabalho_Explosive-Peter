@@ -547,6 +547,52 @@ body.is-frozen *::after {
   }
 }
 
+/* ---------- raio (verbo `beam`) ---------- */
+/* Uma barra deitada, ancorada na ORIGEM e girada até apontar para o alvo. O
+   fx.js escreve `--len` (o comprimento, em unidades de design) e `--ang` (o
+   ângulo já calculado); girar é trabalho do @keyframes, porque JS não escreve
+   style.transform (ARCHITECTURE.md §6).
+ *
+ * O `--ang` aparece nos TRÊS quadros de propósito: um keyframe que só mexesse
+ * no scaleX apagaria a rotação, e o raio dispararia deitado.
+ *
+ * A amplitude NÃO passa por --juice: um raio a 25% do comprimento não chega no
+ * alvo e o jogador não vê quem matou o Pedro. Encenação não é juice. */
+
+#fx-layer .beam {
+  position: absolute;
+  left: calc(var(--ox) + var(--x) * var(--u));
+  top: calc(var(--oy) + var(--y) * var(--u));
+  width: calc(var(--len, 100) * var(--u));
+  height: calc(var(--beam-w, 14) * var(--u));
+  margin-top: calc(var(--beam-w, 14) * var(--u) / -2);
+  transform-origin: 0 50%;
+  border-radius: calc(var(--beam-w, 14) * var(--u));
+  z-index: 7;
+  pointer-events: none;
+
+  /* miolo branco quente com a cor do disparo nas bordas: é o que faz ler como
+     energia e não como uma barra de progresso deitada. A primeira declaração
+     é o fallback de quem não tem color-mix — mesma tática do ending card. */
+  background: var(--beam-color, #fff);
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--beam-color, #fff) 30%, transparent) 0%,
+    #ffffff 42%, #ffffff 58%,
+    color-mix(in srgb, var(--beam-color, #fff) 30%, transparent) 100%);
+  box-shadow:
+    0 0 calc(10 * var(--u)) var(--beam-color, #fff),
+    0 0 calc(28 * var(--u)) var(--beam-color, #fff);
+
+  animation: beam-fire var(--beam-ms, 520ms) cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@keyframes beam-fire {
+  0%   { transform: rotate(var(--ang, 0deg)) scale(0, 0.4); opacity: 0; }
+  14%  { transform: rotate(var(--ang, 0deg)) scale(1, 1.35); opacity: 1; }
+  62%  { transform: rotate(var(--ang, 0deg)) scale(1, 1); opacity: 1; }
+  100% { transform: rotate(var(--ang, 0deg)) scale(1, 0.15); opacity: 0; }
+}
+
 /* ---------- fenda (verbo `portal`) ---------- */
 /* Vai em #fx-back: quem sai dela tem que aparecer NA FRENTE dela, e a fenda
    do Pedro Maligno se abre atrás do Pedro (GDD §5).
