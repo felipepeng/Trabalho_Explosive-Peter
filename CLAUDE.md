@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Explosive Peter** — jogo de navegador em HTML/CSS/JS vanilla (Vite só como build, zero dependência de runtime). Uma rodada dura ≤ 15 s: o timer corre, alguém invade a cena, o Pedro normalmente explode, aparece o card de final. A única interação do jogo é o botão de reiniciar.
 
-Catálogo atual (fonte da verdade é `src/data/scenes.js`): **7 cenas, 17 finais, 6 personagens** (o sexto é o FIESTA, único com rig próprio).
+Catálogo atual (fonte da verdade é `src/data/scenes.js`): **8 cenas, 18 finais, 10 personagens**. Sete usam o rig humano; o FIESTA tem rig próprio (`#tpl-fiesta`) e as três IAs — Claude, ChatGPT e Gemini — dividem um segundo rig próprio (`#tpl-ia`), em que a logo é o `accessory` e o nome é a plaquinha de nick de sempre.
 
 Idioma: **português em tudo** — código, comentários, commits, conteúdo do jogo e também a conversa com o usuário.
 Responda e faça perguntas sempre em português; termos técnicos consagrados (commit, build, branch, beat, timeline) ficam em inglês dentro da frase.
@@ -35,7 +35,7 @@ Leitura obrigatória antes de mudar qualquer coisa estrutural: `docs/ARCHITECTUR
 
 ### A ideia central: conteúdo é dado, não código
 
-Uma cena é um objeto em `src/data/scenes.js` com uma lista de beats `{ at, do, ...params }`. Escrever as 7 cenas e os 16 finais não mudou uma linha de `director.js`, `picker.js`, `clock.js` nem da máquina de estados. **Se adicionar conteúdo exigir tocar no motor, o motor está errado.**
+Uma cena é um objeto em `src/data/scenes.js` com uma lista de beats `{ at, do, ...params }`. Escrever as 8 cenas e os 18 finais mexeu no motor uma vez só (o verbo `beam`, do laser do Pedro Professor) e não mudou uma linha de `director.js`, `picker.js`, `clock.js` nem da máquina de estados. **Se adicionar conteúdo exigir tocar no motor, o motor está errado.**
 
 ### Regra de dependência
 
@@ -113,7 +113,9 @@ Consequência: `src/data/messages.js` está **fora do ar** (ninguém importa o a
 
 O `title` continua na tela, mas como **legenda pequena** embaixo do personagem: ele é o nome que a coleção usa, não a manchete. Quem fala com o jogador é o personagem.
 
-Poses disponíveis em `chars.css` (`cast.pose` e o verbo `pose` usam a mesma lista): `jump · reach · throw · item · cut · burnt · dead · zen · wave · shrug · celebrate · scared · glitch`.
+Poses disponíveis em `chars.css` (`cast.pose` e o verbo `pose` usam a mesma lista): `jump · reach · throw · item · cut · split · burnt · dead · zen · wave · shrug · celebrate · scared · glitch · channel`.
+
+Duas delas não são de personagem: `split` parte a BOMBA ao meio (as duas metades já existem recortadas no `#tpl-bomb`, e o laser do Pedro Professor só liga a classe) e `channel` é o pulsar das IAs antes de atirar.
 
 ### `--juice` e acessibilidade
 
@@ -133,14 +135,14 @@ Não existe arquivo de áudio: os 12 SFX (`tick`, `tick-urgente`, `boom`, `whoos
 - **Emoji**: pode em `kicker`, `button`, `icon`, HUD e mensagens. **Proibido em fala de personagem** — tanto no `text` de um beat `say` quanto na `line` do final. O validador reprova os dois. **Uma exceção**: quem declara `emojiNaFala: true` em `characters.js` pode usar emoji na fala. Hoje só o Vinicius, o Estoico, que fecha frase de efeito com um. A permissão é do PERSONAGEM, não da cena — o validador recebe a lista por parâmetro e não conhece ninguém pelo nome.
 - **Verbo nunca consulta `scene.id` nem `ending.id`.** Deu vontade de escrever esse `if`? Parametrize pelo beat ou crie um verbo novo. Verbo também retorna sem fazer nada se `ctx.signal.aborted`.
 - **Nenhum seletor de CSS conhece um id de final.** O card declara tokens e `[data-theme]` os reescreve; as paletas válidas estão em `config.js` (`CARD_THEMES`) e em `base.css` — as duas listas precisam bater.
-- **`setTimer` mexe no mostrador, não no relógio.** Quem decide quando a rodada estoura é o `climaxAt`. Em `maligno-portal` os dois números foram casados à mão (mostrador zera em 7700 ms, clímax em 7800 ms) e o validador **não** consegue conferir isso.
+- **`setTimer` mexe no mostrador, não no relógio.** Quem decide quando a rodada estoura é o `climaxAt`. Em `maligno-portal` os dois números foram casados à mão (mostrador zera em 7700 ms, clímax em 7800 ms) e o validador **não** consegue conferir isso. `{ do: 'setTimer', cut: true }` parte o mostrador ao meio e o apaga — em `professor-aula` ele nunca chega a zero, e a rodada segue normalmente porque quem manda continua sendo o `climaxAt`.
 - **`grab` reparenta** o alvo em quem pegou — é o que faz um `exit` seguinte levar a bomba junto sem nenhum verbo saber disso.
 - **Erro nunca trava**: verbo inexistente vira `console.warn` e é pulado, verbo que lança é logado e a rodada segue. No pior caso o jogador vê uma explosão, nunca uma tela morta.
-- **Fora de escopo por decisão** (GDD §4.2), não por esquecimento: qualquer interação além do clique de reinício, mobile, i18n, música de fundo, backend, dois personagens na mesma cena. E, do §11 da arquitetura: TypeScript, pubsub, ECS, roteamento. Se a resposta para um problema for "instalar uma lib" ou "criar um sistema", reconsidere.
+- **Fora de escopo por decisão** (GDD §4.2), não por esquecimento: qualquer interação além do clique de reinício, mobile, i18n, música de fundo, backend, dois personagens na mesma cena — **um invasor por cena** continua valendo, e as três IAs de `professor-aula` não são a exceção que o parágrafo proíbe: elas são o equipamento do invasor (não decidem nada, não escolhem o final e nunca aparecem sem ele). E, do §11 da arquitetura: TypeScript, pubsub, ECS, roteamento. Se a resposta para um problema for "instalar uma lib" ou "criar um sistema", reconsidere.
 
 ## Adicionar conteúdo
 
-Cena nova = um objeto em `src/data/scenes.js` (o cabeçalho do arquivo documenta o contrato completo de beat, `climaxAt`, tema, `cast` e `line` do card). Final novo precisa de `cast.who` **e** `line` — sem os dois o card fica mudo, e o validador reclama. Verbos disponíveis: `enter · exit · say · grab · shake · flash · explode · pose · setTimer · hide · show · blackout · flood · portal · sfx · burst · prop`. Gesto novo é um `@keyframes` + `{ do: 'pose', as: '...' }`, não um verbo novo.
+Cena nova = um objeto em `src/data/scenes.js` (o cabeçalho do arquivo documenta o contrato completo de beat, `climaxAt`, tema, `cast` e `line` do card). Final novo precisa de `cast.who` **e** `line` — sem os dois o card fica mudo, e o validador reclama. Verbos disponíveis: `enter · exit · say · grab · shake · flash · explode · pose · setTimer · hide · show · blackout · flood · portal · sfx · burst · prop · beam`. Gesto novo é um `@keyframes` + `{ do: 'pose', as: '...' }`, não um verbo novo.
 
 Constantes de tuning ficam todas em `src/config.js`.
 

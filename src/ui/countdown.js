@@ -13,6 +13,7 @@ export function createCountdown(el, clock) {
   let rate = 1; // segundos de timer por segundo de jogo
   let since = 0; // instante do clock em que essa configuração começou
   let frozenAt = null; // trava o mostrador (ex.: bomba desarmada)
+  let cortado = false; // partido ao meio pelo laser: não desenha mais nada
   let lastShown = null;
   let rafId = 0;
   let onZero = null;
@@ -26,6 +27,13 @@ export function createCountdown(el, clock) {
   }
 
   function draw() {
+    // Mostrador cortado não desenha número nem toca tique: ele não existe
+    // mais. O rAF continua vivo só porque a rodada ainda está correndo.
+    if (cortado) {
+      rafId = requestAnimationFrame(draw);
+      return;
+    }
+
     const secs = Math.ceil(value() - 1e-6);
     if (secs !== lastShown) {
       lastShown = secs;
@@ -55,6 +63,10 @@ export function createCountdown(el, clock) {
       frozenAt = null;
       lastShown = null;
       zeroFired = false;
+      // I3: o corte do laser não pode atravessar para a rodada seguinte.
+      cortado = false;
+      el.classList.remove('is-cut');
+      el.removeAttribute('data-cut');
     },
 
     /** O verbo `setTimer` cai aqui: novo valor e/ou nova velocidade. */
@@ -69,6 +81,21 @@ export function createCountdown(el, clock) {
     /** Trava o mostrador no valor atual (bomba desarmada, cena congelada). */
     hold() {
       frozenAt = value();
+    },
+
+    /**
+     * PARTE o mostrador ao meio e o apaga (`{ do: 'setTimer', cut: true }`).
+     *
+     * O número atual vai para `data-cut`, de onde os ::before/::after do
+     * juice.css tiram as duas metades. Depois disso o componente para de
+     * desenhar: não há mais mostrador, e o tique morre junto.
+     */
+    cut() {
+      if (cortado) return;
+      cortado = true;
+      frozenAt = value();
+      el.dataset.cut = el.textContent;
+      el.classList.add('is-cut');
     },
 
     /** Callback disparado uma vez, quando o mostrador cruza o zero. */

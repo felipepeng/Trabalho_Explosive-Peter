@@ -115,6 +115,8 @@ O final é sorteado **junto com a cena**, no início da rodada.
 
 Escritos: `enter · exit · say · grab · shake · flash · explode · pose · setTimer · hide · show · blackout · flood · portal`. Dos 13 do GDD só falta `sfx` (D9).
 
+Depois do D11 entraram `sfx`, `burst`, `prop` e `beam`. O `beam` (raio de A até B) é o único verbo que nasceu de uma cena e não do GDD: o Pedro Professor precisa de um laser para partir a bomba, e o mesmo efeito serve os três raios das IAs no clímax. Um verbo que serve a dois momentos diferentes da mesma cena é o teste de que ele foi parametrizado, e não escrito para um id.
+
 **`pose`** não estava na lista original e substitui uma família inteira: `{ do:'pose', who:'jp', as:'jump' }` liga a classe `pose-jump` e o gesto mora num `@keyframes`. Sem ele, cada gesto novo (pular, esticar, arremessar, cortar o pavio) viraria um verbo, e o vocabulário cresceria com o conteúdo em vez de ficar estável.
 
 **`blackout`** também é novo, e pela mesma lógica do `pose`: um flash preto que não volta não é um `flash` (que tem teto de frequência e sempre desaparece). São 8 linhas, e é o corte para tela preta que um final ambíguo pediria.
@@ -283,7 +285,7 @@ progress.seenSet()          // Set pronto para o picker
 
 Cada célula descoberta mostra o `icon` do final e ganha a cor do `theme` dele, então a fileira vira um mapa do catálogo. **A ordem é a do catálogo e é estável**: a mesma célula é sempre o mesmo final, e o jogador aprende "falta aquele ali no canto" — o que não funcionaria se a grade se reordenasse conforme a descoberta. Com `flex-wrap`, um catálogo maior quebra em duas linhas em vez de empurrar o título para fora da tela.
 
-**Cada final se veste com o próprio tema.** O final traz `theme`, `kicker` e `button` em `data/scenes.js`; o card só declara TOKENS (`--card-top/bot/ink/accent/btn-ink/font`) e `[data-theme]` os reescreve. Nenhum seletor de CSS conhece um id de final: **sete paletas** — `fogo · pedra · festa · mar · drop · fenda · corrompido` — cobrem os catorze.
+**Cada final se veste com o próprio tema.** O final traz `theme`, `kicker` e `button` em `data/scenes.js`; o card só declara TOKENS (`--card-top/bot/ink/accent/btn-ink/font`) e `[data-theme]` os reescreve. Nenhum seletor de CSS conhece um id de final: **oito paletas** — `fogo · pedra · festa · mar · drop · fenda · corrompido · aula` — cobrem os dezoito.
 
 A tela é **translúcida** de propósito: o resultado congelado continua aparecendo por trás do tema, que é a "tela parada" do GDD §3.1.
 
@@ -295,7 +297,7 @@ Quando o final não declara `kicker`, o veredito sai do `survives` (`PEDRO SOBRE
 
 ### 7.1 Classificação de `survives` *(decidida no D4)*
 
-Os 17 finais do catálogo (`src/data/scenes.js`), já classificados — o D7 e o D8 só transcrevem.
+Os 18 finais do catálogo (`src/data/scenes.js`), já classificados — o D7 e o D8 só transcrevem.
 
 | Final | `survives` | Por quê |
 | --- | --- | --- |
@@ -316,6 +318,7 @@ Os 17 finais do catálogo (`src/data/scenes.js`), já classificados — o D7 e o
 | `mal-arremesso-maligno` | `true` | O maligno arremessa e explode ele mesmo |
 | `bomb-cedo` | `false` | A bomba estoura antes de qualquer salvador agir |
 | `fiesta-bibi` | `false` | O FIESTA atropela a cena; ninguém salva ninguém |
+| `prof-orquestra` | `false` | A bomba é desarmada e o Pedro é pulverizado pelas três IAs |
 
 **Nota sobre `mic-afogado`:** o final é uma quebra de expectativa (a bomba foi
 desarmada e mesmo assim o Pedro morreu), mas `survives` não mede se a bomba

@@ -13,7 +13,10 @@
  * parâmetro, senão `data/` deixaria de ser inerte.
  */
 
-const AT_KEYS = ['x', 'y'];
+/* Toda coordenada que um beat pode escrever, e contra qual eixo do espaço de
+ * design ela é conferida. `toX`/`toY` são o destino do verbo `beam`: sem eles
+ * aqui, um raio mirado fora da tela passaria sem ninguém reclamar. */
+const AT_KEYS = { x: 'w', y: 'h', toX: 'w', toY: 'h' };
 
 /** Pictográficos em geral. Não pega tudo, mas pega o que um humano digita. */
 const EMOJI = /\p{Extended_Pictographic}/u;
@@ -143,10 +146,10 @@ export function validate(scenes, {
       if (!known.has(beat.do)) problems.push(`${label}: verbo inexistente "${beat.do}"`);
       if (anchor + (beat.at ?? 0) < 0) problems.push(`${label}: beat "${beat.do}" cai em tempo negativo`);
 
-      for (const key of AT_KEYS) {
+      for (const [key, eixo] of Object.entries(AT_KEYS)) {
         const v = beat[key];
         if (v === undefined) continue;
-        const limit = key === 'x' ? designW : designH;
+        const limit = eixo === 'w' ? designW : designH;
         if (v < 0 || v > limit) {
           problems.push(`${label}: beat "${beat.do}" com ${key}=${v} fora do espaço de design (0..${limit})`);
         }

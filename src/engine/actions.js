@@ -154,8 +154,18 @@ export const actions = {
    * estoura é o `climaxAt` da cena — os dois precisam bater, e o validador
    * não tem como conferir isso.
    */
-  setTimer(ctx, { to, rate }) {
+  setTimer(ctx, beat) {
+    const { to, rate, cut = false } = beat;
     if (ctx.signal?.aborted) return;
+
+    // `cut: true` PARTE o mostrador ao meio e o apaga. É o mesmo laser que
+    // parte a bomba: o professor resolve o problema e leva o relógio junto.
+    // Some com o número em vez de zerá-lo, porque zero significa explosão.
+    if (cut) {
+      ctx.countdown.cut();
+      soar(ctx, beat, 'corte');
+      return;
+    }
     ctx.countdown.set({ to, rate });
   },
 
@@ -291,6 +301,36 @@ export const actions = {
     soar(ctx, beat, null); // mudo por padrão: quem faz barulho é a ação, não o confete
   },
 
+  /**
+   * `{ do:'beam', who:'professor', dx:-62, dy:-162, target:'bomb', toDy:-48 }`
+   *
+   * Um raio de A até B. Origem e destino se escrevem do mesmo jeito que
+   * qualquer posição do projeto — um ator (`who` / `target`) ou uma marca
+   * crua (`x`,`y` / `toX`,`toY`) — e os quatro deslocamentos (`dx`, `dy`,
+   * `toDx`, `toDy`) sobem do PÉ do ator, que é onde a marca dele fica, até
+   * a mão que atira ou o peito que apanha.
+   *
+   * O verbo não sabe se está cortando uma bomba ou pulverizando alguém:
+   * quem some, quem explode e quem treme continua sendo beat separado.
+   */
+  beam(ctx, beat) {
+    if (ctx.signal?.aborted) return;
+
+    const de = ondeFica(ctx, beat);
+    const para = ondeFica(ctx, { who: beat.target, x: beat.toX, y: beat.toY });
+
+    ctx.fx.beam({
+      x: de.x + (beat.dx ?? 0),
+      y: de.y + (beat.dy ?? 0),
+      toX: para.x + (beat.toDx ?? 0),
+      toY: para.y + (beat.toDy ?? 0),
+      ms: beat.ms,
+      width: beat.width,
+      color: beat.color,
+      sparks: beat.sparks,
+    });
+    soar(ctx, beat, 'corte');
+  },
   /**
    * `{ do:'prop', emoji:'X', x:120, y:470, size:90 }` — cenário parado.
    *

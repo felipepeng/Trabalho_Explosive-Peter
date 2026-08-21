@@ -307,5 +307,58 @@ export function createFx({ stage, layer, back }) {
     return el;
   }
 
-  return { flash, shake, explode, blackout, flood, portal, burst, prop };
+  /**
+   * RAIO de A até B. Nasce para o laser que o Pedro Professor dispara da mão,
+   * e o mesmo efeito serve os três raios das IAs no clímax — um efeito, dois
+   * usos, que é o teste de um verbo bem parametrizado.
+   *
+   * A única conta de geometria do arquivo está aqui: comprimento e ângulo
+   * entre dois pontos. Ela sai como --len e --beam-rot, e quem gira, estica e
+   * apaga é o @keyframes (ARCHITECTURE.md §6).
+   *
+   * `sparks: false` desliga a faísca de impacto — que é o que faz o raio
+   * bater em alguma coisa em vez de atravessar o vazio.
+   */
+  function beam({
+    x = 500, y = 400, toX = 500, toY = 400,
+    ms = 520, width = 11, color = '#8ee9ff', sparks = true,
+  } = {}) {
+    const dx = toX - x;
+    const dy = toY - y;
+    const len = Math.hypot(dx, dy);
+
+    const el = document.createElement('div');
+    el.className = 'beam';
+    el.style.setProperty('--x', x);
+    el.style.setProperty('--y', y);
+    el.style.setProperty('--len', Math.round(len));
+    el.style.setProperty('--beam-rot', `${(Math.atan2(dy, dx) * 180) / Math.PI}deg`);
+    el.style.setProperty('--beam-w', width);
+    el.style.setProperty('--beam-color', color);
+    el.style.setProperty('--beam-ms', `${ms}ms`);
+    el.addEventListener('animationend', (ev) => {
+      if (ev.target === el) el.remove();
+    }, { once: true });
+    layer.appendChild(el);
+
+    // Faísca no PONTO DE IMPACTO, jogada de volta na direção de onde o raio
+    // veio: é o que separa "acertou" de "passou por perto".
+    if (sparks) {
+      burst({
+        x: toX, y: toY,
+        count: 12,
+        power: 210,
+        // o leque do burst mede o ângulo a partir de PARA CIMA, no sentido
+        // horário — daí o atan2 trocado em vez do de sempre
+        dir: (Math.atan2(-dx, dy) * 180) / Math.PI,
+        spread: 110,
+        gravity: 0.2,
+        ms: 620,
+        size: 14,
+      });
+    }
+    return el;
+  }
+
+  return { flash, shake, explode, blackout, flood, portal, burst, prop, beam };
 }

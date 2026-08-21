@@ -835,4 +835,129 @@ export const scenes = [
       },
     ],
   },
+
+  /* ================================================================ *
+   * §6.8 — Pedro Professor.
+   * A terceira cópia do Pedro. Entra pela DIREITA (é o único), corta
+   * a bomba ao meio com um laser da mão e, de quebra, corta o
+   * mostrador do timer junto. O problema declarado está resolvido em
+   * quatro segundos — e é aí que ele resolve dar aula.
+   *
+   * A cena inteira é a montagem da piada: só o clímax revela que ele
+   * desarmou a bomba para matar o Pedro com uma coisa muito maior.
+   *
+   * Geometria (é o que sustenta a leitura, então está escrita aqui):
+   *   professor x 865  — à DIREITA da bomba (620), para que o laser
+   *                      dele não cruze o Pedro (500). Um raio passando
+   *                      por cima da vítima leria como mira nela
+   *   as três IAs      — x 380 / 500 / 620, todas em y 185: uma linha
+   *                      reta, simétrica em torno do Pedro e bem acima da
+   *                      cabeça dele. Elas sobem até onde o mostrador
+   *                      estava, e podem: ele já foi cortado fora
+   *   os deslocamentos dos beams (`dx`,`dy`,`toDx`,`toDy`) sobem do PÉ
+   *   do ator até a mão que atira e o peito que apanha
+   * ================================================================ */
+  {
+    id: 'professor-aula',
+    character: 'professor',
+    weight: 3,
+    invadeAt: 3000,
+    // O mostrador é cortado aos 6,4s, mostrando 4. Ele nunca chega a zero
+    // nesta cena, e é a única em que isso acontece: quem termina a contagem
+    // é o laser, não o tempo.
+    climaxAt: 8600,
+    timeline: [
+      { at: 0, do: 'enter', who: 'professor' },
+      // Ele chama de TURMA um palco com uma pessoa só, e essa pessoa está
+      // amarrada a uma bomba. A aula começa sem ninguém ter se matriculado.
+      {
+        at: 1150, do: 'say', who: 'professor',
+        text: 'Bom dia, turma. A aula de hoje é prática.', ms: 2600,
+      },
+      // braço para cima: é de onde o laser sai. `reach` levanta os dois, e o
+      // esquerdo é o que aponta para a bomba.
+      { at: 3000, do: 'pose', who: 'professor', as: 'reach' },
+      {
+        at: 3250, do: 'beam', who: 'professor', dx: -63, dy: -164,
+        target: 'bomb', toDx: -5, toDy: -48,
+        color: '#8ee9ff', width: 13, ms: 460,
+      },
+      // A bomba se abre em duas metades e FICA assim o resto da rodada: é a
+      // prova de que o problema do título foi resolvido.
+      { at: 3400, do: 'pose', who: 'bomb', as: 'split', sfx: 'corte' },
+      // O mesmo corte leva o mostrador. Não zera: SOME. Zero significaria
+      // explosão, e a bomba é justamente a coisa que não vai matar ninguém.
+      { at: 3400, do: 'setTimer', cut: true, sfx: null },
+      { at: 3400, do: 'shake', intensity: 3 },
+      { at: 3900, do: 'pose', who: 'professor', as: 'reach', off: true },
+      // A deixa da demonstração. Desarmar a bomba não era a aula: era a
+      // preparação do material.
+      {
+        at: 4300, do: 'say', who: 'professor',
+        text: 'Vou te mostrar como usar a IA de verdade!', ms: 3200,
+      },
+    ],
+    endings: [
+      {
+        // Invoca as três, elas concordam, e o consenso pulveriza o Pedro.
+        id: 'prof-orquestra',
+        title: 'AULA PRÁTICA',
+        weight: 3,
+        survives: false,
+        icon: '🎓',
+        // `aula`: a estrutura de terminal do `corrompido` em azul de
+        // projetor. Sem `colors` de propósito — a paleta inteira é do tema,
+        // e nenhum seletor de CSS conhece este final.
+        theme: 'aula',
+        // `wave` em vez de uma pose parada: o card é montado sem respiração
+        // (`idle: false`), então quem se mexe lá é a POSE. Ele continua
+        // gesticulando para uma turma que não existe mais.
+        cast: { who: 'professor', pose: 'wave', at: 'right' },
+        line: 'Eu só demonstrei a ferramenta.',
+        kicker: 'A FERRAMENTA FUNCIONOU 🎓',
+        button: 'REPETIR A DEMONSTRAÇÃO 🎓',
+        timeline: [
+          // Uma de cada vez, meio segundo entre elas: invocar as três juntas
+          // seria um efeito só, e o que se quer aqui é uma lista crescendo.
+          { at: 0, do: 'enter', who: 'claude', sfx: 'portal' },
+          { at: 480, do: 'enter', who: 'gpt', sfx: 'portal' },
+          { at: 960, do: 'enter', who: 'gemini', sfx: 'portal' },
+          // canalizando: as três pulsam antes de atirar. É a única deixa que
+          // o jogador tem — e ele não pode fazer nada com ela (pilar 1).
+          { at: 1500, do: 'pose', who: 'claude', as: 'channel', sfx: 'glitch' },
+          { at: 1560, do: 'pose', who: 'gpt', as: 'channel', sfx: null },
+          { at: 1620, do: 'pose', who: 'gemini', as: 'channel', sfx: null },
+          // Narrando o próprio slide enquanto o aluno é a demonstração.
+          {
+            at: 1750, do: 'say', who: 'professor',
+            text: 'Reparem bem: três modelos, um resultado só.', ms: 2300,
+          },
+          // OS TRÊS RAIOS AO MESMO TEMPO, cada um na cor da própria logo.
+          {
+            at: 4100, do: 'beam', who: 'claude', dy: -39,
+            target: 'peter', toDy: -95, color: '#d97757', width: 15, ms: 620,
+          },
+          {
+            at: 4100, do: 'beam', who: 'gpt', dy: -39,
+            target: 'peter', toDy: -95, color: '#10a37f', width: 15, ms: 620, sfx: null,
+          },
+          {
+            at: 4100, do: 'beam', who: 'gemini', dy: -39,
+            target: 'peter', toDy: -95, color: '#7aa5f7', width: 15, ms: 620, sfx: null,
+          },
+          { at: 4180, do: 'flash' },
+          // A explosão nasce no PEITO do Pedro, não na bomba: a bomba está
+          // partida ao lado, e é ela que sobra inteira no fim da rodada.
+          {
+            at: 4240, do: 'explode', target: 'peter', x: 500, y: 380,
+            intensity: 9, vaporize: ['peter'],
+          },
+          {
+            at: 4290, do: 'burst', x: 500, y: 380,
+            emojis: ['💥', '🤖', '💀'], count: 15, power: 270, size: 32,
+          },
+        ],
+      },
+    ],
+  },
 ];

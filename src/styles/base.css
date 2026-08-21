@@ -75,6 +75,8 @@
   .pose-wave .arm-r,
   .pose-celebrate .frame,
   .pose-glitch .frame,
+  .pose-channel .frame,
+  .pose-channel .halo,
   .actor.pose-item > .rig,
   #bomb .spark,
   #fx-layer .flood::before,
@@ -195,6 +197,9 @@ html, body {
 }
 
 #timer {
+  /* âncora das duas metades do corte (juice.css): elas são ::before/::after
+     posicionados sobre o número. */
+  position: relative;
   font-family: var(--font-display);
   font-size: calc(120 * var(--u));
   line-height: 0.9;
@@ -386,6 +391,32 @@ html, body {
   );
 }
 
+/* aula prática: a MESMA estrutura do `corrompido` — fonte monoespaçada e
+   linhas de varredura — em azul de projetor de sala de aula. O verde do
+   terminal quebrado não podia ser corrigido por `colors`: a varredura e a
+   tinta do botão moram no tema, e é por isso que este é um tema e não uma
+   paleta. */
+#ending-card[data-theme="aula"] {
+  --card-top: #06244e;
+  --card-bot: #01060f;
+  --card-ink: #cfe8ff;
+  --card-accent: #6fd0ff;
+  --card-btn-ink: #04182c;
+  --card-font: ui-monospace, "Cascadia Mono", "Courier New", monospace;
+}
+
+#ending-card[data-theme="aula"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(111, 208, 255, 0.08) 0 calc(2 * var(--u)),
+    rgba(0, 0, 0, 0) calc(2 * var(--u)) calc(5 * var(--u))
+  );
+}
+
 /* ---------- as peças ---------- */
 
 /* ---------- a coluna de texto: sempre a célula do meio ---------- */
@@ -516,11 +547,11 @@ html, body {
 #ending-restart {
   margin: calc(18 * var(--u)) 0 0;
   font-family: var(--card-font);
-  font-size: calc(34 * var(--u));
+  font-size: calc(27 * var(--u));
   letter-spacing: 0.06em;
   color: var(--card-btn-ink);
   background: var(--card-accent);
-  padding: calc(14 * var(--u)) calc(40 * var(--u));
+  padding: calc(11 * var(--u)) calc(32 * var(--u));
   border: calc(4 * var(--u)) solid var(--card-btn-ink);
   border-radius: calc(999 * var(--u));
   box-shadow: 0 calc(6 * var(--u)) 0 rgba(0, 0, 0, 0.55);

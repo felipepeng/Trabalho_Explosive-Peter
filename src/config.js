@@ -40,4 +40,4 @@ export const DESIGN_H = 600;
 /** Paletas de tela de final declaradas em base.css (`#ending-card[data-theme]`).
  *  Vive aqui porque o validador precisa reprovar um `theme` escrito errado —
  *  senão o final degradaria em silêncio para a paleta padrão. */
-export const CARD_THEMES = ['fogo', 'pedra', 'festa', 'mar', 'drop', 'fenda', 'corrompido'];
+export const CARD_THEMES = ['fogo', 'pedra', 'festa', 'mar', 'drop', 'fenda', 'corrompido', 'aula'];

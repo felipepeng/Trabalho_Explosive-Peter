@@ -109,14 +109,43 @@
       </div>
     </template>
 
+    <!-- A BOMBA. O desenho aparece DUAS VEZES, e isso é de propósito: cada
+         cópia é uma METADE recortada por clip-path (chars.css), e é o que
+         permite o laser do Pedro Professor partir a bomba ao meio sem que
+         nada além de um @keyframes saiba disso. As duas metades se encostam
+         com uma sobra mínima, então parada ela lê como uma bomba só.
+
+         O <g class="frame"> é obrigatório em todo rig: é o que as poses e a
+         tremida animam sem saber quem está em cena. -->
     <template id="tpl-bomb">
       <div id="bomb" class="actor" data-actor="bomb">
         <svg class="rig" viewBox="0 0 100 120" aria-label="Bomba">
-          <path class="fuse" d="M62 34 C74 18 86 22 88 8" />
-          <circle class="spark" cx="88" cy="8" r="6" />
-          <rect class="cap" x="52" y="26" width="18" height="14" rx="3" />
-          <circle class="shell" cx="46" cy="76" r="38" />
-          <circle class="shine" cx="32" cy="62" r="9" />
+          <!-- O CORTE. Em coordenadas do viewBox (userSpaceOnUse), não em
+               porcentagem: as duas metades têm bounding box diferente (só a de
+               cima tem pavio), e porcentagem sairia desalinhada. As duas faixas
+               se sobrepõem 2 unidades para não deixar fresta antes do corte. -->
+          <defs>
+            <clipPath id="bomb-cut-t" clipPathUnits="userSpaceOnUse">
+              <path d="M-10 -20 H110 V66 L-10 86 Z" />
+            </clipPath>
+            <clipPath id="bomb-cut-b" clipPathUnits="userSpaceOnUse">
+              <path d="M-10 84 L110 64 V140 H-10 Z" />
+            </clipPath>
+          </defs>
+          <g class="frame">
+            <g class="half half-t" clip-path="url(#bomb-cut-t)">
+              <path class="fuse" d="M62 34 C74 18 86 22 88 8" />
+              <circle class="spark" cx="88" cy="8" r="6" />
+              <rect class="cap" x="52" y="26" width="18" height="14" rx="3" />
+              <circle class="shell" cx="46" cy="76" r="38" />
+              <circle class="shine" cx="32" cy="62" r="9" />
+            </g>
+            <g class="half half-b" clip-path="url(#bomb-cut-b)">
+              <rect class="cap" x="52" y="26" width="18" height="14" rx="3" />
+              <circle class="shell" cx="46" cy="76" r="38" />
+              <circle class="shine" cx="32" cy="62" r="9" />
+            </g>
+          </g>
         </svg>
       </div>
     </template>
@@ -151,6 +180,25 @@
               <circle class="pneu" cx="150" cy="92" r="18" />
               <circle class="calota" cx="150" cy="92" r="7" />
             </g>
+          </g>
+        </svg>
+      </div>
+    </template>
+
+    <!-- AS IAs. Um template só para as três (Claude, ChatGPT, Gemini): o que
+         muda entre elas é a logo, que chega no slot <g class="accessory"> a
+         partir de data/characters.js, como o rosto de qualquer personagem.
+         Rig próprio porque uma logo não tem braço nem perna — mas continua
+         sendo PERSONAGEM: ganha plaquinha de nick (que é o nome escrito em
+         cima da logo, de graça), entrada, pose e vaga no card de final.
+
+         O disco atrás é o halo da invocação; a cor vem de --cloth. -->
+    <template id="tpl-ia">
+      <div class="actor is-ia">
+        <svg class="rig" viewBox="0 0 120 120">
+          <g class="frame">
+            <circle class="halo" cx="60" cy="60" r="54" />
+            <g class="accessory"></g>
           </g>
         </svg>
       </div>

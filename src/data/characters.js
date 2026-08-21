@@ -359,4 +359,182 @@ export const characters = {
       skin: '#2f7fd0', cloth: '#1f5da0', outline: '#12141c', accent: '#cfd6e2',
     },
   },
+
+  /* -------------------------------------------------------------- *
+   * Pedro Professor — a terceira cópia do Pedro (depois do Maligno).
+   * MESMA silhueta, MESMO cabelão, MESMA barba: o que muda é jaleco,
+   * óculos e o fato de ele achar que sabe o que está fazendo.
+   * Mexeu no cabelo do Pedro? copie para o Maligno E para este.
+   * -------------------------------------------------------------- */
+  professor: {
+    id: 'professor',
+    name: 'Pedro Professor',
+    nick: 'Pedro_Professor',
+    h: 192, // dois a mais que o Pedro: a mesma pessoa, de postura melhor
+    build: 1,
+    z: 3,
+    // À DIREITA da bomba (620), não à esquerda: assim o laser dele atravessa
+    // a bomba sem passar por cima do Pedro (500) — um raio cruzando a vítima
+    // leria como se ele tivesse mirado nela.
+    //
+    // 865 passa do limite de quem fala, e isso foi decidido: o balão tem 320
+    // un. de largura máxima mais 36 de padding e é centrado no ator, então a
+    // BORDA dele avança ~43 un. além da área segura. Numa janela 16:9 sobra
+    // margem de fora que absorve quase tudo; só numa janela alta e estreita a
+    // borda direita do balão encosta no fim da tela. O texto, que fica 18 un.
+    // para dentro do padding, continua inteiro nos dois casos.
+    mark: { x: 865, y: 470 },
+    idle: 'breathe',
+    // Entra andando pela direita, sem pressa: ele não veio salvar ninguém,
+    // veio dar aula.
+    enter: { from: 'right', ms: 950, gait: 'walk' },
+    colors: {
+      // A camisa é AZUL (a do Pedro, um tom mais fundo) porque o jaleco é
+      // branco: com os dois brancos o jaleco sumia dentro do tronco.
+      skin: '#f3c9a2', cloth: '#2f6f9e', pants: '#39405a',
+      outline: '#12141c', accent: '#9fb0c4',
+    },
+    // O rosto do Pedro inteiro (olhos, barba, sorriso) + os óculos por cima.
+    //
+    // ÓCULOS DE LABORATÓRIO: duas lentes REDONDAS de vidro leitoso. O fill
+    // translúcido entra pelo mesmo `--part` de sempre — a classe `.ink`
+    // aceita qualquer cor, `rgba` inclusive —, e como as lentes são
+    // declaradas DEPOIS dos olhos, o olho aparece por trás do vidro em vez
+    // de sumir. É o que separa óculos de venda.
+    //
+    // r 12 em cima dos centros do olho (48 e 72): nesse raio as duas lentes
+    // se encostam exatamente em x 60, então não existe ponte para desenhar —
+    // o que sai para os lados são as hastes. O topo para em y 16, logo abaixo
+    // do ponto em que a franja do Pedro para de descer.
+    face: `
+      <ellipse class="ink slim" style="--part:#ffffff" cx="48" cy="28" rx="8.5" ry="9.5" />
+      <ellipse class="ink slim" style="--part:#ffffff" cx="72" cy="28" rx="8.5" ry="9.5" />
+      <circle class="eye" cx="49" cy="29" r="4" />
+      <circle class="eye" cx="73" cy="29" r="4" />
+      <path class="ink" style="--part:#4a3120"
+            d="M29 45 A7 7 0 0 0 33 53 A7 7 0 0 0 41 61 A7 7 0 0 0 52 66
+               A7 7 0 0 0 60 67 A7 7 0 0 0 68 66 A7 7 0 0 0 79 61
+               A7 7 0 0 0 87 53 A7 7 0 0 0 91 45
+               C86 52 80 57 72 58 Q60 60 48 58 C40 57 34 52 29 45 Z" />
+      <path class="line" d="M44 46 Q60 60 76 46" />
+      <circle class="ink slim" style="--part:rgba(212,236,248,0.42)" cx="48" cy="28" r="12" />
+      <circle class="ink slim" style="--part:rgba(212,236,248,0.42)" cx="72" cy="28" r="12" />
+      <path class="line" style="stroke-width:3.5" d="M36 25 H29" />
+      <path class="line" style="stroke-width:3.5" d="M84 25 H91" />
+      <path class="line" style="stroke:rgba(255,255,255,0.5);stroke-width:3" d="M41 34 L47 21" />
+      <path class="line" style="stroke:rgba(255,255,255,0.5);stroke-width:3" d="M65 34 L71 21" />
+    `,
+    // O MESMO cabelo do Pedro, mesma cor: é a mesma cabeça.
+    hairBack: `
+      <path class="ink" style="--part:#4a3120"
+            d="M38 14 A13 13 0 0 1 60 10 A13 13 0 0 1 82 14 A13 13 0 0 1 98 28
+               A13 13 0 0 1 108 48 A13 13 0 0 1 112 70 A13 13 0 0 1 108 92
+               A12 12 0 0 1 98 108 A12 12 0 0 1 80 116 A12 12 0 0 1 60 118
+               A12 12 0 0 1 40 116 A12 12 0 0 1 22 108 A12 12 0 0 1 12 92
+               A13 13 0 0 1 8 70 A13 13 0 0 1 12 48 A13 13 0 0 1 22 28
+               A13 13 0 0 1 38 14 Z" />
+    `,
+    hair: `
+      <path class="ink" style="--part:#4a3120"
+            d="M60 11 A5 5 0 0 1 51 10 A5 5 0 0 1 42 10 A5 5 0 0 1 34 12
+               C30 20 30 30 29 44 A6 6 0 0 1 22 47 A9 9 0 0 1 24 40
+               A11 11 0 0 1 27 23 A11 11 0 0 1 34 9 A11 11 0 0 1 46 -1
+               A11 11 0 0 1 60 -4 A11 11 0 0 1 74 -1 A11 11 0 0 1 86 9
+               A11 11 0 0 1 93 23 A11 11 0 0 1 96 40
+               A9 9 0 0 1 98 47 A6 6 0 0 1 91 44 C90 30 90 20 86 12
+               A5 5 0 0 1 78 10 A5 5 0 0 1 69 10 A5 5 0 0 1 60 11 Z" />
+    `,
+    // O JALECO: aberto na frente, sobre o tronco. Duas abas e a gola em V —
+    // é o que separa o professor do Pedro de camiseta a três metros de
+    // distância, que é a distância em que o jogador vê a cena.
+    accessory: `
+      <path class="ink" style="--part:#eef1f6" d="M30 62 H52 L46 150 H24 Z" />
+      <path class="ink" style="--part:#eef1f6" d="M90 62 H68 L74 150 H96 Z" />
+      <path class="ink slim" style="--part:#dfe5ee" d="M52 62 L60 82 L68 62 Z" />
+      <rect class="ink slim" style="--part:#9fb0c4" x="72" y="92" width="12" height="16" rx="2" />
+    `,
+  },
+
+  /* -------------------------------------------------------------- *
+   * AS TRÊS IAs. Não são salvadoras nem antagonistas: são
+   * FERRAMENTAS invocadas por um humano — e é o humano que aponta.
+   *
+   * As três compartilham tudo menos a logo: mesmo rig (tpl-ia), mesma
+   * altura, mesma entrada por portal, mesma marca na mesma linha do
+   * céu. A logo é o `accessory`, exatamente como o rosto de qualquer
+   * personagem, e o NOME em cima dela é a plaquinha de nick padrão.
+   * -------------------------------------------------------------- */
+  claude: {
+    id: 'claude',
+    name: 'Claude',
+    nick: 'Claude',
+    rig: 'ia',
+    h: 78,
+    build: 1,
+    z: 5, // acima de todo mundo: elas flutuam no céu, não pisam no palco
+    mark: { x: 380, y: 185 },
+    idle: 'sway',
+    enter: { from: 'portal', ms: 420 },
+    colors: { skin: '#d97757', cloth: '#d97757', outline: '#12141c', accent: '#d97757' },
+    // A explosão de raios. Oito hastes saindo do centro, com o miolo cheio.
+    accessory: `
+      <g style="stroke:#d97757;stroke-width:11;stroke-linecap:round;fill:none">
+        <path d="M60 15 V45" />
+        <path d="M60 105 V75" />
+        <path d="M15 60 H45" />
+        <path d="M105 60 H75" />
+        <path d="M28 28 L49 49" />
+        <path d="M92 92 L71 71" />
+        <path d="M92 28 L71 49" />
+        <path d="M28 92 L49 71" />
+      </g>
+      <circle cx="60" cy="60" r="10" fill="#d97757" />
+    `,
+  },
+
+  gpt: {
+    id: 'gpt',
+    name: 'ChatGPT',
+    nick: 'ChatGPT',
+    rig: 'ia',
+    h: 78,
+    build: 1,
+    z: 5,
+    mark: { x: 500, y: 185 },
+    idle: 'sway',
+    enter: { from: 'portal', ms: 420 },
+    colors: { skin: '#10a37f', cloth: '#10a37f', outline: '#12141c', accent: '#10a37f' },
+    // O nó hexagonal, reduzido ao que se reconhece a três metros: o hexágono
+    // e o encontro de três braços no meio.
+    accessory: `
+      <g style="stroke:#10a37f;stroke-width:9;fill:none;stroke-linejoin:round;stroke-linecap:round">
+        <path d="M60 14 L98 36 V80 L60 102 L22 80 V36 Z" />
+        <path d="M22 36 L60 58 L98 36" />
+        <path d="M60 58 V102" />
+      </g>
+    `,
+  },
+
+  gemini: {
+    id: 'gemini',
+    name: 'Gemini',
+    nick: 'Gemini',
+    rig: 'ia',
+    h: 78,
+    build: 1,
+    z: 5,
+    mark: { x: 620, y: 185 },
+    idle: 'sway',
+    enter: { from: 'portal', ms: 420 },
+    colors: { skin: '#4285f4', cloth: '#4285f4', outline: '#12141c', accent: '#9b72f5' },
+    // A faísca de quatro pontas, com uma segunda menor por dentro: duas cores
+    // sólidas em vez de um degradê, porque id de gradiente se repetiria entre
+    // o palco e o card de final.
+    accessory: `
+      <path d="M60 12 C64 44 76 56 108 60 C76 64 64 76 60 108
+               C56 76 44 64 12 60 C44 56 56 44 60 12 Z" fill="#4285f4" />
+      <path d="M60 34 C62 52 68 58 86 60 C68 62 62 68 60 86
+               C58 68 52 62 34 60 C52 58 58 52 60 34 Z" fill="#9b72f5" />
+    `,
+  },
 };
