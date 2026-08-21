@@ -23,6 +23,7 @@
 src/
   main.js         # máquina de estados, sorteia a rodada, costura tudo
   config.js       # constantes de tuning (um lugar só)
+  dev.js          # modo dev (?dev=1) — 3 linhas, não importa nada
   engine/
     clock.js      # relógio pausável (rAF + performance.now)
     director.js   # executa a timeline
@@ -352,6 +353,21 @@ E o principal — **o orçamento de 15 segundos**. Para cada combinação cena �
 ```
 
 O GDD chama esse número de "o que precisa ser defendido em todo o desenvolvimento". Defender à mão = cronometrar 14 combinações a olho no D10. São 5 linhas para o computador vigiar desde o primeiro final escrito, e o momento certo de descobrir que a cena está longa é enquanto ela está sendo escrita.
+
+### 9.1 Modo dev — escolher o final que roda
+
+Sortear até cair o final que se quer ver custa minutos de playtest. `?dev=1` na URL destrava o clique nas células da coleção dentro do card: clicou, aquele final roda na rodada seguinte.
+
+Quatro decisões, e o porquê de cada uma:
+
+- **Reusa a coleção em vez de abrir um painel.** Os 18 finais já estão desenhados, na ordem estável, dentro da tela que aparece exatamente quando se quer escolher o próximo. Painel próprio seria um módulo, um CSS e um sexto estado para mostrar a mesma fileira.
+- **Vale também no build publicado**, ao contrário da bancada de verbos. É link de apresentação: abre com `?dev=1` e mostra o final que interessa sem depender de sorte. Nasce desligado, então quem chega pelo link normal vê o jogo de sempre — o `pointer-events: none` da fileira só cai com a classe `is-dev`.
+- **Só na sessão.** Nenhum flag gravado, nenhuma segunda chave de `localStorage` — `state/progress.js` continua sendo o único módulo que conhece storage. Recarregou sem o parâmetro, desligou.
+- **Grava progresso normalmente.** A rodada forçada é uma rodada: mesmos beats, mesmo card, I4 intacta. É o que permite fechar o X/N para uma demonstração.
+
+O `if` que conhece um id de conteúdo mora no `main.js`, ao lado do forçamento de `ninguem-veio`, pelo mesmo motivo da §4: no picker, o motor passaria a conhecer o catálogo. `gallery.js` e `ending-card.js` recebem o modo **por parâmetro** (`onPick` / `dev`) e não importam `dev.js` — sem o parâmetro, se comportam exatamente como antes.
+
+Escolher o final já decide a cena, porque o final mora dentro dela — não há um segundo seletor.
 
 ---
 

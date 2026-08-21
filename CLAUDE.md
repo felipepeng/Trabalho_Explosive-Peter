@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## O projeto
 
-**Explosive Peter** — jogo de navegador em HTML/CSS/JS vanilla (Vite só como build, zero dependência de runtime). Uma rodada dura ≤ 15 s: o timer corre, alguém invade a cena, o Pedro normalmente explode, aparece o card de final. A única interação do jogo é o botão de reiniciar.
+**Explosive Peter** — jogo de navegador em HTML/CSS/JS vanilla (Vite só como build, zero dependência de runtime). Uma rodada dura ≤ 20 s (`MAX_ROUND_MS_DESIGN`; o GDD dizia 15 s e o número subiu para as falas darem tempo de serem lidas): o timer corre, alguém invade a cena, o Pedro normalmente explode, aparece o card de final. A única interação do jogo é o botão de reiniciar.
 
-Catálogo atual (fonte da verdade é `src/data/scenes.js`): **8 cenas, 18 finais, 10 personagens**. Sete usam o rig humano; o FIESTA tem rig próprio (`#tpl-fiesta`) e as três IAs — Claude, ChatGPT e Gemini — dividem um segundo rig próprio (`#tpl-ia`), em que a logo é o `accessory` e o nome é a plaquinha de nick de sempre.
+Catálogo atual (fonte da verdade é `src/data/scenes.js`): **8 cenas, 18 finais, 10 personagens**. Seis usam o rig humano; o FIESTA tem rig próprio (`#tpl-fiesta`) e as três IAs — Claude, ChatGPT e Gemini — dividem um segundo rig próprio (`#tpl-ia`), em que a logo é o `accessory` e o nome é a plaquinha de nick de sempre.
 
 Idioma: **português em tudo** — código, comentários, commits, conteúdo do jogo e também a conversa com o usuário.
 Responda e faça perguntas sempre em português; termos técnicos consagrados (commit, build, branch, beat, timeline) ficam em inglês dentro da frase.
@@ -22,9 +22,10 @@ npm run preview  # serve o dist/
 
 **Não há suíte de testes automatizados** — é uma ausência deliberada (`docs/ARCHITECTURE.md` §11). O que faz o papel de teste:
 
-- **Validador de conteúdo** (`src/data/validate.js`): roda no boot **só em dev** e imprime no console. Reprova verbo/som/tema inexistente, `id` de final duplicado, posição fora do espaço de design, emoji em fala de personagem (`say` e `line`), final sem `line` ou sem `cast.who`, `cast.who` que não existe em `characters.js`, `climaxAt` antes do último beat da cena e — o principal — qualquer combinação cena × final que passe de **15 s**. Depois de mexer em `src/data/`, rode `npm run dev` e confira o `[validate] ok — …` no console.
-- **Bancada de verbos**: em dev, `main.js` expõe `clock`, `stage`, `fx`, `audio`, `actions`, `scenes`, `progress`, `session`, `phase`, `round` e um helper `beat()` no `window`. Para testar um verbo isolado no console: `beat({ do: 'shake', intensity: 10 })`.
+- **Validador de conteúdo** (`src/data/validate.js`): roda no boot **só em dev** e imprime no console. Reprova verbo/som/tema inexistente, `id` de final duplicado, posição fora do espaço de design, emoji em fala de personagem (`say` e `line`), final sem `line` ou sem `cast.who`, `cast.who` que não existe em `characters.js`, `climaxAt` antes do último beat da cena e — o principal — qualquer combinação cena × final que passe de **20 s** (`MAX_ROUND_MS_DESIGN`). Depois de mexer em `src/data/`, rode `npm run dev` e confira o `[validate] ok — …` no console.
+- **Bancada de verbos**: em dev, `main.js` expõe `clock`, `countdown`, `stage`, `fx`, `audio`, `director`, `actions`, `scenes`, `progress`, `session`, `phase`, `round` e um helper `beat()` no `window`. Para testar um verbo isolado no console: `beat({ do: 'shake', intensity: 10 })`.
   ⚠️ `window.phase` e `window.round` são **cópias do boot, não getters vivos** — o `Object.assign` executa o getter na hora e guarda o valor. Para saber a fase de verdade, leia `document.body.className` (`state-countdown`, `state-ending`, …).
+- **Modo dev — escolher o final**: abra com `?dev=1` (ex.: `http://localhost:5173/?dev=1`). As células da coleção dentro do card de final viram clicáveis: clicou, aquela rodada roda. O `hud-tagline` ganha um " · DEV" enquanto está ligado. Detalhes e o porquê das decisões em `docs/ARCHITECTURE.md` §9.1. Ao contrário da bancada de verbos, isto **também funciona no build publicado**, de propósito (link de apresentação) — mas nasce desligado e vale só para a sessão, sem gravar flag nenhum. A rodada forçada **grava progresso normalmente**.
 - Para resetar o save: `localStorage.removeItem('explosive-peter:v1')`.
 
 Branch de trabalho: `dev`. `push` na `main` dispara o deploy no GitHub Pages (`.github/workflows/deploy.yml`).
@@ -74,7 +75,7 @@ São marcadores de **uma timeline contínua**, não três processadores; `main.j
 - **I4** o progresso é gravado **uma vez**, na entrada de `ENDING`. Rodada abortada não conta.
 - **I5** fora de `ENDING`, **todo input é engolido**. O jogador é impotente por design (pilar 1 do GDD); o único efeito permitido de um gesto é destravar o áudio.
 
-Um watchdog em `MAX_ROUND_MS = 20000` força o clímax se a rodada travar — rede de segurança para bug, não teto de ritmo.
+Um watchdog em `MAX_ROUND_MS = 26000` força o clímax se a rodada travar — rede de segurança para bug, não teto de ritmo.
 
 ### Tempo
 
@@ -97,9 +98,11 @@ O palco ocupa a janela inteira (sem letterbox); as 1000 × 600 unidades são uma
 
 Acima da cabeça de cada ator há uma **pilha de três andares**, e a ordem é regra: balão de fala → plaquinha de nick → cabeça. Quem sustenta isso é o token `--tag-h` em `chars.css`: `.actor` declara `0px`, `.actor.has-tag` declara a altura real da plaquinha, e o `.balloon` soma esse valor no próprio `bottom`. **Mexeu no padding ou no line-height da `.nametag`? Ajuste o `--tag-h` junto**, senão o balão volta a cobrir o nick. A classe `has-tag` é escrita por `ui/rig.js`, que só pendura a plaquinha em quem tem `nick` (a bomba não tem).
 
-Quase todo personagem usa **um único rig SVG** (`#tpl-actor` no `index.html`, montado por `ui/rig.js`) vestido por `data/characters.js` — cor, proporção (`--h`/`--build`), `nick` e fragmentos SVG de rosto/acessório. Personagem novo é um objeto; nenhum HTML ou CSS por personagem. A exceção é quem não tem corpo humano: o campo `rig: 'fiesta'` manda o `buildActor` clonar `#tpl-fiesta` no lugar do `#tpl-actor`, e o resto (nick, marca, entrada, card de final) continua igual para todo mundo. Rig próprio não tem os slots de rosto e cabelo — as injeções usam `?.` e ignoram esses campos em silêncio. `ui/stage.js` cria e destrói atores; `engine/actions.js` só modifica o que já existe.
+Quase todo personagem usa **um único rig SVG** (`#tpl-actor` no `index.html`, montado por `ui/rig.js`) vestido por `data/characters.js` — cor, proporção (`--h`/`--build`), `nick` e fragmentos SVG de rosto/acessório. Personagem novo é um objeto; nenhum HTML ou CSS por personagem. A exceção é quem não tem corpo humano: o campo `rig: 'x'` manda o `buildActor` clonar `#tpl-x` no lugar do `#tpl-actor`, e o resto (nick, marca, entrada, card de final) continua igual para todo mundo. Existem dois: `#tpl-fiesta` (um carro) e `#tpl-ia`, que as três IAs dividem — lá a logo entra pelo slot `accessory`, como o rosto de qualquer um, então IA nova continua sendo um objeto em `characters.js`. Rig próprio não tem os slots de rosto e cabelo — as injeções usam `?.` e ignoram esses campos em silêncio. `ui/stage.js` cria e destrói atores; `engine/actions.js` só modifica o que já existe.
 
-Duas camadas de efeito: `#fx-back` (antes de `#cast`) e `#fx-layer` (depois) — um filho de `#fx-layer` não consegue passar para trás do elenco.
+Duas camadas de efeito: `#fx-back` (antes de `#cast`) e `#fx-layer` (depois) — um filho de `#fx-back` não consegue passar para a frente do elenco.
+
+⚠️ Estar depois no DOM **não** basta para ficar na frente: `#fx-layer` é `z-index: auto`, e todo ator tem `--z` ≥ 1, então por padrão o elenco é desenhado **por cima** dos efeitos (é por isso que o FIESTA, em `--z: 4`, cai na frente da explosão). Quem precisa passar na frente do elenco declara `z-index` próprio na camada — é o caso do `.beam`, em 9.
 
 ### Texto de tela: duas frases fixas, e o título só depois da morte
 
@@ -119,7 +122,7 @@ Duas delas não são de personagem: `split` parte a BOMBA ao meio (as duas metad
 
 ### `--juice` e acessibilidade
 
-Todo keyframe de JUICE multiplica a amplitude por `var(--juice, 1)`; `prefers-reduced-motion` põe `.25` e desliga os laços infinitos. **Encenação não é juice**: entrada, saída, subida da água e aparição do card **não** multiplicam. O verbo `flash` tem teto duro de **2 flashes/segundo**, independente de configuração.
+Todo keyframe de JUICE multiplica a amplitude por `var(--juice, 1)`; `prefers-reduced-motion` põe `.25` e desliga os laços infinitos. **Encenação não é juice**: entrada, saída, subida da água, aparição do card, o raio do `beam`, a bomba se partindo (`pose-split`) e o corte do mostrador **não** multiplicam — a 25% de amplitude o raio não chegaria ao alvo e as duas metades ficariam encostadas. O verbo `flash` tem teto duro de **2 flashes/segundo**, independente de configuração.
 
 ### Áudio (`engine/audio.js`)
 

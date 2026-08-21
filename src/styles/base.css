@@ -639,3 +639,31 @@ html, body {
 #ending-gallery .cell[data-theme="drop"] { --cell: #45e08a; }
 #ending-gallery .cell[data-theme="fenda"] { --cell: #b06bea; }
 #ending-gallery .cell[data-theme="corrompido"] { --cell: #7dff9a; }
+
+/* ------------------------------------------------------------------ *
+ * Modo dev (?dev=1) — a coleção vira um seletor de final
+ * ------------------------------------------------------------------ */
+
+/* A fileira é `pointer-events: none` por regra (nada além do botão de restart
+   é clicável). Só o modo dev devolve o clique, e só na fileira: o resto do
+   card continua inerte. */
+#ending-gallery.is-dev {
+  pointer-events: auto;
+}
+
+#ending-gallery.is-dev .cell {
+  cursor: pointer;
+}
+
+/* Affordance mínima. Nada de animação nova: o card já é uma foto parada. */
+#ending-gallery.is-dev .cell:hover {
+  border-color: var(--card-ink);
+  background: color-mix(in srgb, var(--cell) 45%, transparent);
+  color: var(--card-ink);
+}
+
+/* O único aviso de tela de que o modo está ligado — sem elemento novo. */
+body.is-dev #hud-tagline::after {
+  content: " · DEV";
+  opacity: 0.55;
+}

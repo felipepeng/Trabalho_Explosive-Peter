@@ -28,6 +28,7 @@ import {
   FIRST_RUN_SCENE,
   CARD_THEMES,
 } from './config.js';
+import { devMode } from './dev.js';
 import { createClock, bindVisibility } from './engine/clock.js';
 import { createDirector, buildRound } from './engine/director.js';
 import { actions } from './engine/actions.js';
@@ -88,7 +89,15 @@ const stage = createStage({ cast: el.cast, layers: [el.fx, el.fxBack] });
 const fx = createFx({ stage: el.stage, layer: el.fx, back: el.fxBack });
 const audio = createAudio();
 const hud = createHud({ deaths: el.deaths });
-const endingCard = createEndingCard(el.card, { onRestart: startRound, endings: ALL_ENDINGS });
+const endingCard = createEndingCard(el.card, {
+  onRestart: startRound,
+  endings: ALL_ENDINGS,
+  dev: devMode,
+});
+
+// Marca o <body> para o CSS mostrar que a coleção virou clicável. É o único
+// sinal de tela do modo — nada de painel, nada de elemento novo.
+if (devMode) el.body.classList.add('is-dev');
 
 let phase = PHASE.BOOT;
 
@@ -140,10 +149,37 @@ function fallbackEnding(scene) {
   return { id: `${scene?.id}:sem-final`, title: 'FIM', survives: null, timeline: [], synthetic: true };
 }
 
+/** Acha a cena dona de um final. O final não guarda a cena, mas mora dentro
+ *  dela — por isso escolher o final já decide a cena, e o modo dev não
+ *  precisa de um segundo seletor. */
+function roundOfEnding(endingId) {
+  for (const scene of scenes) {
+    const ending = (scene.endings ?? []).find((e) => e.id === endingId);
+    if (ending) return { scene, ending };
+  }
+  console.warn(`[main] modo dev: final "${endingId}" não existe no catálogo`);
+  return null;
+}
+
 /** A cena e o final são sorteados JUNTOS, no início da rodada — o final
- *  precisa estar decidido antes do primeiro beat da cena rodar. */
-function pickRound() {
+ *  precisa estar decidido antes do primeiro beat da cena rodar.
+ *
+ *  @param {string} [forcedEndingId] modo dev: roda este final em vez de
+ *    sortear. A rodada segue idêntica dali em diante — mesmos beats, mesmo
+ *    card, e o progresso grava normalmente (I4 continua valendo). */
+function pickRound(forcedEndingId) {
   const seen = progress.seenSet();
+
+  // Modo dev. Fica aqui, junto do forçamento de `ninguem-veio`, pelo mesmo
+  // motivo: é regra que conhece um id de conteúdo, e o picker não pode
+  // conhecer o catálogo. O histórico é alimentado igual, para o
+  // anti-repetição das rodadas seguintes não ficar mentindo.
+  const forcada = forcedEndingId ? roundOfEnding(forcedEndingId) : null;
+  if (forcada) {
+    session.history.push(forcada.scene.id);
+    session.lastEndingByScene[forcada.scene.id] = forcada.ending.id;
+    return forcada;
+  }
 
   // GDD §3.2: a primeira rodada da vida do jogador é sempre `ninguem-veio`.
   // Ela estabelece a regra para que todas as outras funcionem como quebra.
@@ -175,8 +211,11 @@ function setPhase(next) {
   el.body.classList.add(`state-${phase}`);
 }
 
-/** COUNTDOWN. I3: desmonta o palco e remonta — zero estado residual (P4). */
-function startRound() {
+/** COUNTDOWN. I3: desmonta o palco e remonta — zero estado residual (P4).
+ *
+ *  @param {string} [forcedEndingId] só chega em modo dev, quando o jogador
+ *    clicou numa célula da coleção em vez do botão de restart. */
+function startRound(forcedEndingId) {
   const id = ++roundId;
 
   // Beat de rodada velha que já estava na fila do frame corrente morre aqui.
@@ -189,7 +228,7 @@ function startRound() {
   countdown.reset(COUNTDOWN_MS / 1000);
   countdown.mount();
 
-  const { scene, ending } = pickRound();
+  const { scene, ending } = pickRound(forcedEndingId);
   const { beats, invadeAt, climaxAt, endsAt } = buildRound(scene, ending, { joinGap: JOIN_GAP });
   round = { scene, ending, climaxAt, endsAt, signal: roundAbort.signal };
 

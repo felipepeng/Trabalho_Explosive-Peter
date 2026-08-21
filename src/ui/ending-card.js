@@ -30,13 +30,25 @@ const KICKER_PADRAO = {
 const BOTAO_PADRAO = 'DE NOVO 🔁';
 const TEMA_PADRAO = 'fogo';
 
-export function createEndingCard(el, { onRestart, endings = [] }) {
+/**
+ * @param {HTMLElement} el
+ * @param {object} o
+ * @param {(endingId?: string) => void} o.onRestart  começa a rodada seguinte.
+ *   Recebe um id quando o modo dev escolheu o final na coleção.
+ * @param {object[]} o.endings
+ * @param {boolean} [o.dev]  modo dev: destrava o clique na coleção.
+ */
+export function createEndingCard(el, { onRestart, endings = [], dev = false }) {
   const kicker = el.querySelector('#ending-kicker');
   const title = el.querySelector('#ending-title');
   const count = el.querySelector('#ending-count');
   const button = el.querySelector('#ending-restart');
   const cast = el.querySelector('#ending-cast');
-  const gallery = createGallery(el.querySelector('#ending-gallery'));
+  // Escolher um final é reiniciar com destino: passa pelo MESMO `armed` do
+  // botão, então clique duplo e clique em rodada velha morrem igual (I1).
+  const gallery = createGallery(el.querySelector('#ending-gallery'), {
+    onPick: dev ? (id) => fire(id) : null,
+  });
 
   let armed = false;
 
@@ -78,11 +90,12 @@ export function createEndingCard(el, { onRestart, endings = [] }) {
     cast.appendChild(actor);
   }
 
-  function fire() {
+  /** @param {string} [endingId] final forçado pelo modo dev, se houver. */
+  function fire(endingId) {
     if (!armed) return; // I1: engole o 2º clique de um duplo
     armed = false;
     button.disabled = true;
-    onRestart();
+    onRestart(typeof endingId === 'string' ? endingId : undefined);
   }
 
   return {
