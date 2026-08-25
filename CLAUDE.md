@@ -128,7 +128,7 @@ Todo keyframe de JUICE multiplica a amplitude por `var(--juice, 1)`; `prefers-re
 
 ### Áudio (`engine/audio.js`)
 
-Não existe arquivo de áudio: os 12 SFX (`tick`, `tick-urgente`, `boom`, `whoosh`, `splash`, `portal`, `corte`, `fanfarra`, `fracasso`, `drop`, `buzina`, `glitch`) são sintetizados na hora com osciladores e ruído. O `AudioContext` só nasce no primeiro gesto; `play()` é no-op silencioso antes disso. Cada verbo que faz barulho tem um som padrão — o beat pode trocar (`sfx: 'drop'`) ou calar (`sfx: null`).
+Não existe arquivo de áudio: os 12 SFX (`tick`, `tick-urgente`, `boom`, `whoosh`, `splash`, `portal`, `corte`, `fanfarra`, `fracasso`, `drop`, `buzina`, `glitch`) são sintetizados na hora com osciladores e ruído. O `AudioContext` só nasce no primeiro gesto; `play()` é no-op silencioso antes disso. A escuta de gesto (`bindUnlock`) **não é `once`**: ela só cai quando o contexto está `running` de verdade — confirmado na promessa do `resume()`, nunca lendo `ctx.state` na linha seguinte — e volta se ele travar de novo (aba que ficou escondida). Não reintroduza o `once`. Cada verbo que faz barulho tem um som padrão — o beat pode trocar (`sfx: 'drop'`) ou calar (`sfx: null`).
 
 ### Save (`state/progress.js`)
 

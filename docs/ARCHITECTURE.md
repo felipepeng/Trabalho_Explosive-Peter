@@ -333,7 +333,8 @@ O jogo começa sem clique, e navegador bloqueia áudio antes de um gesto. Então
 
 - `AudioContext` só nasce no primeiro gesto; antes disso não existe.
 - `audio.play()` é **no-op silencioso** enquanto suspenso — nunca lança, nunca dispara atrasado na rodada seguinte.
-- `unlock()` no **primeiro gesto qualquer** do documento (`pointerdown`/`keydown`, listener em captura, `{once:true}`). Basta o primeiro clique de restart: da segunda rodada em diante o jogo tem som. Não é interação nova — não há botão nem consequência de jogo.
+- `unlock()` em **gesto qualquer** do documento (`pointerdown`, `pointerup`, `click`, `touchend`, `keydown`; listener em captura). Basta o clique de restart que o jogador já ia dar. Não é interação nova — não há botão nem consequência de jogo.
+- **A escuta NÃO é `once`.** `resume()` é assíncrono e pode não pegar (aba que voltou do background, gesto que o navegador não aceitou como ativação), e `ctx.state` só é confiável depois que a promessa resolve. A escuta cai quando o contexto está `running` de verdade e **volta** se ele travar de novo. Com `{once:true}`, um único gesto perdido deixava o jogo mudo para sempre — era o bug de "às vezes tem som, às vezes não".
 - `visibilitychange` suspende o contexto junto com o clock.
 
 Se ninguém encostar na tela, a primeira rodada sai muda — e em `ninguem-veio` ("explosão seca, sem graça") isso até ajuda a piada.

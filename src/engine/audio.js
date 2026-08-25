@@ -13,8 +13,12 @@
  *   - o `AudioContext` só nasce no primeiro gesto — antes disso não existe;
  *   - `play()` é NO-OP SILENCIOSO enquanto não houver contexto rodando. Nunca
  *     lança, nunca dispara atrasado na rodada seguinte;
- *   - `unlock()` no primeiro gesto qualquer do documento, em captura e `once`.
- *     Basta o primeiro clique de restart: da segunda rodada em diante tem som;
+ *   - `unlock()` em gesto qualquer do documento, em captura. NÃO é `once`:
+ *     a escuta só é desligada quando o contexto está `running` DE VERDADE, e
+ *     volta se ele travar de novo. `resume()` é assíncrono e pode não pegar
+ *     (aba que voltou do background, gesto que o navegador não aceitou como
+ *     ativação) — com `once` um único gesto perdido deixava o jogo mudo para
+ *     sempre, que era o bug de "às vezes tem som, às vezes não";
  *   - `suspend`/`resume` junto com o clock, no `visibilitychange`.
  *
  * Se ninguém encostar na tela, a primeira rodada sai muda — e em `ninguem-veio`
@@ -136,10 +140,68 @@ export function createAudio() {
     },
   };
 
+  /** Avisado toda vez que se sabe se o contexto está rodando ou não.
+   *  É por aqui que `bindUnlock` liga e desliga a escuta de gesto. */
+  let aoSaber = null;
+  /** Um `resume()` de cada vez: sem isto, um tique por segundo com a aba
+   *  suspensa viraria uma fila de promessas pendentes. */
+  let tentando = false;
+
+  /** Nasce no primeiro gesto — antes disso o contexto não existe (§8). */
+  function criar() {
+    const AC = window.AudioContext ?? window.webkitAudioContext;
+    if (!AC) return; // navegador sem Web Audio: o jogo segue mudo
+
+    try {
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = MASTER;
+      master.connect(ctx.destination);
+
+      // 1s de ruído branco serve a explosão, água, whoosh e corte
+      ruido = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const dados = ruido.getChannelData(0);
+      for (let i = 0; i < dados.length; i += 1) dados[i] = Math.random() * 2 - 1;
+    } catch (err) {
+      console.warn('[audio] sem áudio nesta máquina:', err);
+      ctx = null;
+    }
+  }
+
+  /**
+   * Tenta pôr o contexto para rodar e AVISA o resultado.
+   *
+   * O detalhe que importa: `resume()` devolve uma promessa, e o estado só é
+   * confiável depois que ela resolve. Perguntar `ctx.state` na linha seguinte
+   * responde "suspended" mesmo quando vai destravar — foi o que fazia o som
+   * sumir logo depois de um gesto válido.
+   */
+  function confirmar() {
+    if (!ctx || tentando) return;
+    if (ctx.state === 'running') {
+      aoSaber?.(true);
+      return;
+    }
+    tentando = true;
+    const fim = () => {
+      tentando = false;
+      aoSaber?.(ctx?.state === 'running');
+    };
+    // `then(fim, fim)`: promessa rejeitada é resposta como qualquer outra —
+    // significa "continua travado", e quem escuta gesto precisa saber disso.
+    ctx.resume().then(fim, fim);
+  }
+
   return {
     /** Toca, se houver som. Silêncio nunca é erro. */
     play(name) {
-      if (!ctx || ctx.state !== 'running' || !name) return;
+      if (!name) return;
+      if (!ctx || ctx.state !== 'running') {
+        // Continua no-op silencioso — mas aproveita para tentar destravar, em
+        // vez de só desistir. O próximo som já sai.
+        confirmar();
+        return;
+      }
 
       const som = SONS[name];
       if (!som) {
@@ -154,39 +216,28 @@ export function createAudio() {
       }
     },
 
-    /** Chamado no primeiro gesto. Depois disso o jogo tem som. */
+    /** Chamado a cada gesto ENQUANTO não há som. Idempotente de propósito:
+     *  criar o contexto acontece uma vez, tentar destravar acontece sempre. */
     unlock() {
-      if (ctx) {
-        if (ctx.state === 'suspended') ctx.resume();
-        return;
-      }
-      const AC = window.AudioContext ?? window.webkitAudioContext;
-      if (!AC) return; // navegador sem Web Audio: o jogo segue mudo
-
-      try {
-        ctx = new AC();
-        master = ctx.createGain();
-        master.gain.value = MASTER;
-        master.connect(ctx.destination);
-
-        // 1s de ruído branco serve a explosão, água, whoosh e corte
-        ruido = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-        const dados = ruido.getChannelData(0);
-        for (let i = 0; i < dados.length; i += 1) dados[i] = Math.random() * 2 - 1;
-
-        ctx.resume();
-      } catch (err) {
-        console.warn('[audio] sem áudio nesta máquina:', err);
-        ctx = null;
-      }
+      if (!ctx) criar();
+      confirmar();
     },
 
     suspend() {
       if (ctx?.state === 'running') ctx.suspend();
     },
 
+    /** A aba voltou. Se o navegador não devolver o som sem um gesto novo,
+     *  `confirmar` avisa e a escuta de gesto volta sozinha. */
     resume() {
-      if (ctx?.state === 'suspended') ctx.resume();
+      confirmar();
+    },
+
+    /** `fn(rodando)` a cada vez que se descobre o estado real do contexto.
+     *  Um ouvinte só: quem usa isto é o `bindUnlock`. */
+    onSaber(fn) {
+      aoSaber = fn;
+      if (ctx?.state === 'running') fn(true);
     },
 
     get pronto() {
@@ -201,13 +252,31 @@ export function createAudio() {
 }
 
 /**
- * Destrava no PRIMEIRO gesto qualquer do documento. Não é interação nova (o
- * GDD §4.2 proíbe): não há botão, não há consequência de jogo, e o clique de
- * restart que o jogador já ia dar serve.
+ * Destrava em gesto qualquer do documento. Não é interação nova (o GDD §4.2
+ * proíbe): não há botão, não há consequência de jogo, e o clique de restart
+ * que o jogador já ia dar serve. É o ÚNICO efeito que um gesto pode ter fora
+ * de ENDING (invariante I5).
+ *
+ * A escuta fica de pé enquanto não houver som e cai assim que houver — e
+ * volta se o contexto travar de novo, que é o caso da aba que passou tempo
+ * escondida. Era aqui que morava o "às vezes tem som, às vezes não": com
+ * `once`, o primeiro gesto gastava a única chance, mesmo quando o navegador
+ * não destravava nada com ele.
+ *
+ * Cinco eventos porque nem todo clique passa pelos mesmos: `pointerdown` é o
+ * caso normal, `click` cobre o botão acionado pelo teclado, `touchend` cobre
+ * navegador de toque que só considera o toque terminado como ativação.
  */
 export function bindUnlock(audio) {
+  const EVENTOS = ['pointerdown', 'pointerup', 'click', 'touchend', 'keydown'];
+  const opts = { capture: true, passive: true };
   const destravar = () => audio.unlock();
-  const opts = { once: true, capture: true, passive: true };
-  document.addEventListener('pointerdown', destravar, opts);
-  document.addEventListener('keydown', destravar, opts);
+
+  // Registrar o MESMO par (função, opções) duas vezes é no-op por
+  // especificação, então ligar de novo enquanto já está ligado não empilha.
+  const ligar = () => EVENTOS.forEach((e) => document.addEventListener(e, destravar, opts));
+  const desligar = () => EVENTOS.forEach((e) => document.removeEventListener(e, destravar, opts));
+
+  audio.onSaber((rodando) => (rodando ? desligar() : ligar()));
+  ligar();
 }
