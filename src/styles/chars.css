@@ -455,6 +455,25 @@
   100% { transform: rotate(calc(-14deg * var(--juice, 1))); }
 }
 
+/* ESTALO DE DEDOS: um braço só, dobrado à frente na altura do peito, e um
+   tranco seco no corpo quando o dedo estala. O outro braço fica caído — o
+   gesto é PEQUENO de propósito: quem apaga alguém com um estalo não precisa
+   de pose grande.
+
+   O tranco é em degraus (steps), como o da pose-scared: movimento contínuo lê como
+   dança; em degraus, lê como um estalo. */
+.pose-snap .arm-r { transform: rotate(-118deg); }
+.pose-snap .frame {
+  animation: pose-snap 260ms steps(2, end) both;
+  transform-origin: 60px 168px;
+}
+
+@keyframes pose-snap {
+  0%   { transform: translateX(0) rotate(0deg); }
+  40%  { transform: translateX(calc(-3px * var(--juice, 1))) rotate(calc(-3deg * var(--juice, 1))); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
 /* virou item de Minecraft: menor, girando e flutuando */
 .actor.pose-item > .rig {
   height: calc(72 * var(--u));

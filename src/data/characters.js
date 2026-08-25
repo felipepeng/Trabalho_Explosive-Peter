@@ -27,6 +27,13 @@
  *              deixar de ser personagem: nick, marca, entrada e card continuam
  *              funcionando. Quem usa isso não tem face/hair/accessory — o
  *              desenho inteiro mora no template
+ *   cell       a cor DELE na coleção de finais: todo final de uma cena em que
+ *              ele invade ganha essa cor na fileira do card. Opcional — sem
+ *              ela vale `colors.cloth` (a roupa é o que identifica alguém de
+ *              longe), e sem roupa, a pele. Só existe para quem a roupa
+ *              representa mal: o Maligno (roxo escuro demais num quadrado de
+ *              28 un.), o FIESTA (a lataria é `skin`, não `cloth`) e o
+ *              Professor (o ciano do laser diz mais que a camisa azul)
  *   colors     --skin (cabeça e braços), --cloth (o tronco), --pants (as pernas),
  *              --outline (contorno), --accent (o acessório) e --eye opcional
  *              (os olhos vermelhos do Pedro Maligno). TODO MUNDO É HUMANO: pele
@@ -280,6 +287,9 @@ export const characters = {
     idle: 'breathe', // a MESMA respiração do Pedro, o que piora tudo
     // Sai de uma fenda atrás do Pedro: cresce no lugar, não vem da borda.
     enter: { from: 'portal', ms: 620 },
+    // A túnica dele (#3a1f5c) é escura demais para uma célula de 28 un.:
+    // lê como buraco preto na fileira. A cor dele é o roxo do acento.
+    cell: '#8b2fd6',
     colors: {
       skin: '#cfa78e', cloth: '#3a1f5c', pants: '#241238',
       outline: '#0b0510', accent: '#8b2fd6', eye: '#ff2d2d',
@@ -356,6 +366,9 @@ export const characters = {
     // PERSONAGEM, como a do Vinicius: um carro não tem boca humana, e o emoji
     // aqui é o próprio som saindo do capô.
     emojiNaFala: true,
+    // Num carro a "roupa" é a saia de baixo: quem identifica o FIESTA é a
+    // LATARIA, que mora em `skin`.
+    cell: '#2f7fd0',
     // Azul de carro popular; o acento é o cromado do para-choque.
     colors: {
       skin: '#2f7fd0', cloth: '#1f5da0', outline: '#12141c', accent: '#cfd6e2',
@@ -390,6 +403,10 @@ export const characters = {
     // Entra andando pela direita, sem pressa: ele não veio salvar ninguém,
     // veio dar aula.
     enter: { from: 'right', ms: 950, gait: 'walk' },
+    // A camisa dele é azul como a do Pedro e como a do JP — na fileira os
+    // três viravam a mesma célula. O que é só DELE é o ciano do laser, e é
+    // com ele que a aula aparece na coleção.
+    cell: '#6fd0ff',
     colors: {
       // A camisa é AZUL (a do Pedro, um tom mais fundo) porque o jaleco é
       // branco: com os dois brancos o jaleco sumia dentro do tronco.

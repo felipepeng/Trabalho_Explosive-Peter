@@ -13,6 +13,23 @@
  *  Luz piscando acima de ~3 Hz é gatilho fotossensível (ARCHITECTURE.md §6). */
 const FLASH_MIN_GAP_MS = 500;
 
+/** Os SLOTS do rig que uma relíquia pode herdar (`keep` do verbo `dissolve`).
+ *  São nomes de SLOT — o rig tem face/hair/accessory —, nunca nomes de
+ *  personagem: o efeito continua sem saber de quem é o cabelo que ficou. */
+const SLOTS = {
+  hair: ['.hair-back', '.hair'],
+  face: ['.face'],
+  accessory: ['.accessory'],
+};
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** O alfabeto das colunas de código. Sem letra acentuada e sem emoji: é
+ *  despejo de terminal, não fala de personagem. */
+const GLIFOS = '01ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎ<>[]{}/#$%&*+=?';
+
+const sorteia = (n) => Math.floor(Math.random() * n);
+
 export function createFx({ stage, layer, back }) {
   let lastFlash = -Infinity;
 
@@ -360,5 +377,157 @@ export function createFx({ stage, layer, back }) {
     return el;
   }
 
-  return { flash, shake, explode, blackout, flood, portal, burst, prop, beam };
+  /**
+   * BUG DE TELA. Fatias horizontais da imagem escorregam de lado e trocam de
+   * cor por alguns quadros — a realidade rasgando antes de o portal abrir.
+   *
+   * A distorção é de verdade, não pintura por cima: cada fatia usa
+   * `backdrop-filter` sobre o que já está desenhado (juice.css). Onde o
+   * navegador não tiver backdrop-filter a fatia ainda pinta uma faixa
+   * ciano/magenta, e o efeito degrada em vez de sumir (P5).
+   *
+   * `intensity` escala o deslocamento lateral; `--juice` também multiplica,
+   * porque isto é JUICE: sem ele a cena continua legível.
+   */
+  function glitch({ ms = 520, intensity = 1, slices = 7 } = {}) {
+    const el = document.createElement('div');
+    el.className = 'glitch';
+    el.style.setProperty('--glitch-ms', `${ms}ms`);
+    el.style.setProperty('--glitch-amp', intensity);
+
+    for (let i = 0; i < slices; i += 1) {
+      const fatia = document.createElement('span');
+      fatia.className = 'glitch-slice';
+      fatia.style.setProperty('--slice-top', sorteia(88));
+      fatia.style.setProperty('--slice-h', 3 + sorteia(12));
+      fatia.style.setProperty('--slice-dx', -70 + sorteia(140));
+      fatia.style.setProperty('--slice-delay', `${Math.round(Math.random() * ms * 0.5)}ms`);
+      el.appendChild(fatia);
+    }
+
+    // `animationend` BORBULHA: as fatias terminam antes do véu, e sem o filtro
+    // a primeira delas levaria o efeito inteiro embora.
+    el.addEventListener('animationend', (ev) => {
+      if (ev.target === el) el.remove();
+    }, { once: true });
+    layer.appendChild(el);
+    return el;
+  }
+
+  /**
+   * A RELÍQUIA: o que sobra de quem foi apagado.
+   *
+   * Clona os slots pedidos do rig do ator para um SVG novo, com o mesmo
+   * viewBox e as mesmas custom properties (cor, proporção, marca) — então a
+   * peça nasce exatamente onde estava e só depois tomba.
+   *
+   * Não sabe o que está clonando: recebe nome de slot e devolve um elemento.
+   */
+  function relic(actor, slots, { ms = 1100, delay = 0 } = {}) {
+    const rig = actor.querySelector('.rig');
+    if (!rig) return null;
+
+    const alvos = (Array.isArray(slots) ? slots : [slots]).flatMap((s) => SLOTS[s] ?? []);
+    const pecas = alvos
+      .map((sel) => rig.querySelector(sel))
+      .filter((g) => g && g.childNodes.length);
+    if (!pecas.length) return null; // slot vazio (a bomba não tem cabelo): sem relíquia
+
+    const el = document.createElement('div');
+    el.className = 'actor relic';
+    el.dataset.relicOf = actor.dataset.actor ?? '';
+    // Herda --x, --y, --h, --build e as cores do ator de uma vez só: é o que
+    // faz a peça cair do lugar certo, no tamanho certo, sem repetir nada.
+    el.style.cssText = actor.style.cssText;
+    el.style.setProperty('--relic-ms', `${ms}ms`);
+    el.style.setProperty('--relic-delay', `${delay}ms`);
+
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('class', 'rig');
+    svg.setAttribute('viewBox', rig.getAttribute('viewBox') ?? '0 0 120 180');
+    svg.setAttribute('aria-hidden', 'true');
+    const frame = document.createElementNS(SVG_NS, 'g');
+    frame.setAttribute('class', 'frame');
+    pecas.forEach((g) => frame.appendChild(g.cloneNode(true)));
+    svg.appendChild(frame);
+    el.appendChild(svg);
+    layer.appendChild(el);
+    return el;
+  }
+
+  /**
+   * APAGAMENTO EM CÓDIGO. O ator vira colunas de glifo verde e some.
+   *
+   * `reverse: true` roda ao contrário — as colunas SOBEM e o ator volta — e é
+   * a mesma função porque desfazer tem que ler como o inverso exato do fazer:
+   * se fossem dois efeitos, um deles envelheceria sozinho.
+   *
+   * `keep` deixa um slot do rig para trás (ver `relic`). O efeito não sabe que
+   * slot é esse nem de quem.
+   *
+   * Encenação, não juice: a chuva de código É o acontecimento da cena, então a
+   * distância percorrida não multiplica por --juice.
+   */
+  function dissolve(target, {
+    ms = 900, reverse = false, keep = null, columns = 16, color = '#7dff9a',
+  } = {}) {
+    if (!target) return null;
+
+    const px = Number(target.style.getPropertyValue('--x')) || 500;
+    const py = Number(target.style.getPropertyValue('--y')) || 470;
+    const alt = Number(target.style.getPropertyValue('--h')) || 160;
+    const larg = alt * 0.6; // largura útil do rig, para espalhar as colunas
+
+    target.style.setProperty('--dissolve-ms', `${ms}ms`);
+    target.classList.toggle('is-dissolving', !reverse);
+    target.classList.toggle('is-recoding', reverse);
+
+    for (let i = 0; i < columns; i += 1) {
+      const col = document.createElement('span');
+      col.className = 'code-col';
+
+      // Uma coluna é uma pilha de glifos, um por linha (white-space: pre).
+      const linhas = 5 + sorteia(7);
+      let texto = '';
+      for (let k = 0; k < linhas; k += 1) texto += `${GLIFOS[sorteia(GLIFOS.length)]}\n`;
+      col.textContent = texto;
+
+      col.style.setProperty('--x', Math.round(px - larg / 2 + Math.random() * larg));
+      // desce da cabeça aos pés; no reverse, sobe dos pés à cabeça
+      col.style.setProperty('--y', Math.round(reverse ? py : py - alt));
+      col.style.setProperty('--code-dy', Math.round(reverse ? -alt : alt));
+      col.style.setProperty('--code-ms', `${Math.round(ms * (0.55 + Math.random() * 0.5))}ms`);
+      col.style.setProperty('--code-delay', `${Math.round(Math.random() * ms * 0.45)}ms`);
+      col.style.setProperty('--code-size', 13 + sorteia(6));
+      col.style.setProperty('--code-color', color);
+      col.addEventListener('animationend', () => col.remove(), { once: true });
+      layer.appendChild(col);
+    }
+
+    if (reverse) {
+      // Quem volta reabsorve a própria relíquia: ela apaga onde caiu.
+      const sobra = layer.querySelector(`.relic[data-relic-of="${target.dataset.actor}"]`);
+      if (sobra) {
+        sobra.style.setProperty('--relic-ms', `${ms}ms`);
+        sobra.style.setProperty('--relic-delay', '0ms');
+        sobra.classList.add('is-gone');
+        sobra.addEventListener('animationend', (ev) => {
+          if (ev.target === sobra) sobra.remove();
+        }, { once: true });
+      }
+      return null;
+    }
+
+    // A relíquia só APARECE quando o corpo já sumiu: o atraso é a duração
+    // inteira do apagamento, e o primeiro quadro do keyframe é invisível
+    // (juice.css). Sem as duas coisas o cabelo ficaria destacado, intacto e
+    // brilhando, em cima de alguém que ainda está sendo apagado.
+    return keep
+      ? relic(target, keep, { ms: Math.round(ms * 1.1), delay: ms })
+      : null;
+  }
+
+  return {
+    flash, shake, explode, blackout, flood, portal, burst, prop, beam, glitch, dissolve,
+  };
 }

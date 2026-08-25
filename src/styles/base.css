@@ -318,7 +318,7 @@ html, body {
 
 #ending-card[hidden] { display: none; }
 
-/* ---------- as sete paletas ---------- */
+/* ---------- as nove paletas ---------- */
 
 /* morte por explosão: ninguem-veio, vin-dicotomia, jp-alcance, jp-fio-errado */
 #ending-card[data-theme="fogo"] {
@@ -387,6 +387,31 @@ html, body {
   background: repeating-linear-gradient(
     180deg,
     rgba(125, 255, 154, 0.07) 0 calc(2 * var(--u)),
+    rgba(0, 0, 0, 0) calc(2 * var(--u)) calc(5 * var(--u))
+  );
+}
+
+/* apagado em código: a MESMA estrutura do `corrompido` — fonte monoespaçada e
+   linhas de varredura — na cor da fenda de onde o Pedro Maligno saiu. O verde
+   de terminal contava a história errada: quem apagou o Pedro não foi um bug,
+   foi ELE, e a coleção precisa dizer isso na cor dele. */
+#ending-card[data-theme="apagado"] {
+  --card-top: #2d0d52;
+  --card-bot: #0b0218;
+  --card-ink: #e6cdff;
+  --card-accent: #b06bea;
+  --card-btn-ink: #1a0630;
+  --card-font: ui-monospace, "Cascadia Mono", "Courier New", monospace;
+}
+
+#ending-card[data-theme="apagado"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(176, 107, 234, 0.09) 0 calc(2 * var(--u)),
     rgba(0, 0, 0, 0) calc(2 * var(--u)) calc(5 * var(--u))
   );
 }
@@ -631,14 +656,12 @@ html, body {
   box-shadow: 0 0 calc(9 * var(--u)) var(--cell);
 }
 
-/* as sete cores dos temas, para a fileira virar um mapa do catálogo */
-#ending-gallery .cell[data-theme="fogo"] { --cell: #ff6a3c; }
-#ending-gallery .cell[data-theme="pedra"] { --cell: #c9c2ac; }
-#ending-gallery .cell[data-theme="festa"] { --cell: #ffc93d; }
-#ending-gallery .cell[data-theme="mar"] { --cell: #4fb9e8; }
-#ending-gallery .cell[data-theme="drop"] { --cell: #45e08a; }
-#ending-gallery .cell[data-theme="fenda"] { --cell: #b06bea; }
-#ending-gallery .cell[data-theme="corrompido"] { --cell: #7dff9a; }
+/* A cor da célula NÃO mora mais aqui. Ela é a do PERSONAGEM que invade
+   aquela cena, escrita em --cell por ui/gallery.js a partir de
+   data/characters.js — todos os finais de um mesmo invasor formam um bloco
+   de uma cor só na fileira, e o tema do card fica livre para contar o clima
+   sem disputar a mesma cor. O #6c7080 acima continua sendo o cinza de quem
+   ainda não foi descoberto. */
 
 /* ------------------------------------------------------------------ *
  * Modo dev (?dev=1) — a coleção vira um seletor de final

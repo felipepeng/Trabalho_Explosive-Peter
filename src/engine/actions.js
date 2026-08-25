@@ -20,6 +20,7 @@
  * D7: exit · grab · flash · pose — o que as primeiras timelines pediram.
  * D8: setTimer · hide · show · blackout — o Michas e o Pedro Maligno.
  * D9: sfx — e um som padrão em cada verbo que faz barulho por natureza.
+ * D13: glitch · dissolve — o apagamento em código do Pedro Maligno.
  *
  * SOM: todo verbo aceita `sfx`. Onde faz sentido existe um padrão (entrar
  * faz whoosh, explodir faz boom), e o dado pode trocar (`sfx: 'drop'`) ou
@@ -377,5 +378,42 @@ export const actions = {
     if (ctx.signal?.aborted) return;
     ctx.fx.portal({ x: beat.x, y: beat.y, w: beat.w, h: beat.h, ms: beat.ms });
     soar(ctx, beat, 'portal');
+  },
+
+  /**
+   * `{ do:'glitch', ms:520, intensity:1.4 }` — a tela inteira bugando.
+   *
+   * Fatias da imagem escorregam de lado e trocam de cor por alguns quadros.
+   * Não é enfeite de fundo: é o aviso de que alguma coisa está entrando por
+   * onde não devia. Como todo verbo, não sabe QUEM está chegando.
+   */
+  glitch(ctx, beat = {}) {
+    if (ctx.signal?.aborted) return;
+    ctx.fx.glitch({ ms: beat.ms, intensity: beat.intensity, slices: beat.slices });
+    soar(ctx, beat, 'glitch');
+  },
+
+  /**
+   * `{ do:'dissolve', who:'peter', keep:'hair', ms:1100 }` — apagado em código.
+   *
+   * O ator vira colunas de glifo verde e some. `reverse: true` roda ao
+   * contrário: o código sobe e ele volta inteiro.
+   *
+   * `keep` é o nome de um SLOT DO RIG (hair | face | accessory), não de um
+   * personagem — o que fica para trás tomba e pousa na linha do chão. É como
+   * o cabelo do Pedro sobrevive ao dono sem que o verbo saiba que existe um
+   * Pedro (regra 1).
+   */
+  dissolve(ctx, beat) {
+    const { who, keep = null, reverse = false, ms, columns, color } = beat;
+    if (ctx.signal?.aborted || !who) return;
+
+    const el = ctx.stage.get(who);
+    if (!el) {
+      console.warn(`[actions] dissolve sem ator em cena: "${who}"`);
+      return;
+    }
+    ctx.fx.dissolve(el, { ms, reverse, keep, columns, color });
+    soar(ctx, beat, 'glitch');
   },
 };

@@ -15,18 +15,37 @@
  * arquivo se comporta exatamente como antes — não existe um `if (dev)` aqui
  * dentro: o modo entra por parâmetro, como todo o resto do motor.
  *
+ * A COR de cada célula é a do PERSONAGEM que invade aquela cena, não a do
+ * tema do card (`ui/rig.js` importa `data/characters.js` pelo mesmo motivo:
+ * quem desenha personagem precisa saber a cor dele). Assim a fileira vira um
+ * mapa de QUEM, enquanto o card continua sendo o clima — duas leituras que
+ * antes disputavam a mesma cor. Cena sem invasor cai no Pedro: quem está em
+ * cena é ele.
+ *
  * A ordem é a do catálogo e é ESTÁVEL: a mesma célula é sempre o mesmo final,
  * então o jogador aprende "falta aquele ali no canto" — o que não funcionaria
  * se a grade se reordenasse conforme a descoberta.
  */
+
+import { characters } from '../data/characters.js';
+
+/** A cor de um personagem na fileira: o campo `cell`, e sem ele a roupa —
+ *  que é o que identifica alguém de longe. Sem roupa, a pele. */
+function corDe(id) {
+  const c = characters[id] ?? characters.peter;
+  return c?.cell ?? c?.colors?.cloth ?? c?.colors?.skin ?? null;
+}
 
 /**
  * @param {HTMLElement} el
  * @param {object} [o]
  * @param {(id: string) => void} [o.onPick]  modo dev: célula clicada roda
  *   aquele final. Ausente = fileira decorativa, o comportamento normal.
+ * @param {Map<string, string|null>} [o.charOf]  de qual personagem é cada
+ *   final. Chega de fora porque quem sabe casar cena e final é o main.js —
+ *   o final não repete no dado uma coisa que a cena dele já diz.
  */
-export function createGallery(el, { onPick = null } = {}) {
+export function createGallery(el, { onPick = null, charOf = null } = {}) {
   if (!el) return { render() {} };
 
   /** @type {Map<string, HTMLElement>} */
@@ -49,8 +68,11 @@ export function createGallery(el, { onPick = null } = {}) {
     for (const ending of endings) {
       const li = document.createElement('li');
       li.className = 'cell';
-      li.dataset.theme = ending.theme ?? 'fogo';
       li.dataset.ending = ending.id;
+      // `peter` quando a cena não tem invasor (`ninguem-veio`,
+      // `bomba-impaciente`): quem está em cena nessas duas é o próprio Pedro.
+      const cor = corDe(charOf?.get(ending.id) ?? 'peter');
+      if (cor) li.style.setProperty('--cell', cor);
       el.appendChild(li);
       celulas.set(ending.id, li);
     }

@@ -122,7 +122,7 @@ Depois do D11 entraram `sfx`, `burst`, `prop` e `beam`. O `beam` (raio de A até
 
 **`blackout`** também é novo, e pela mesma lógica do `pose`: um flash preto que não volta não é um `flash` (que tem teto de frequência e sempre desaparece). São 8 linhas, e é o corte para tela preta que um final ambíguo pediria.
 
-⚠️ **`setTimer` mexe no MOSTRADOR, não no relógio.** Quem decide quando a rodada estoura é o `climaxAt` da cena. Em `maligno-portal` os dois números foram calculados na mão para bater (o mostrador zera em 7700 ms, o clímax é 7800 ms) — e o validador **não** consegue conferir isso, porque teria que simular o countdown. É o único acoplamento manual do conteúdo.
+⚠️ **`setTimer` mexe no MOSTRADOR, não no relógio.** Quem decide quando a rodada estoura é o `climaxAt` da cena. Quando uma cena acelera o mostrador, os dois números são calculados na mão para bater — e o validador **não** consegue conferir isso, porque teria que simular o countdown. É o único acoplamento manual do conteúdo. (`maligno-portal` era o exemplo disso até o D13: hoje ela não acelera nada, e o mostrador é PARTIDO no clímax.)
 
 **`grab` reparenta.** O alvo vira filho de quem pegou. Não é detalhe de implementação: é o que faz um `exit` seguinte levar a bomba junto sem nenhum verbo saber disso — `vin-memento` ("abraça a bomba, sai de cena e explode sozinho") custa dois beats por causa disso.
 
@@ -284,9 +284,9 @@ progress.seenSet()          // Set pronto para o picker
 
 **A coleção de finais mora dentro do ending card**, não numa tela separada: uma fileira de quadradinhos abaixo do `X/N`, com `?` no que falta. Decorativa e não clicável (`pointer-events: none`). Assim não há interação nova (GDD §4.2 proíbe), não há sexto estado, e o gancho de "falta um" aparece toda rodada em vez de ficar atrás de um botão.
 
-Cada célula descoberta mostra o `icon` do final e ganha a cor do `theme` dele, então a fileira vira um mapa do catálogo. **A ordem é a do catálogo e é estável**: a mesma célula é sempre o mesmo final, e o jogador aprende "falta aquele ali no canto" — o que não funcionaria se a grade se reordenasse conforme a descoberta. Com `flex-wrap`, um catálogo maior quebra em duas linhas em vez de empurrar o título para fora da tela.
+Cada célula descoberta mostra o `icon` do final e ganha a cor do **personagem que invade aquela cena** — o campo `cell` de `data/characters.js`, e sem ele a roupa dele; cena sem invasor cai no Pedro. Então a fileira vira um mapa de QUEM: todos os finais de um mesmo invasor formam um bloco de uma cor só. A cor sai de `ui/gallery.js` como custom property inline, e não de um seletor por tema — o `theme` continua mandando só no card, que conta o CLIMA. Antes as duas leituras disputavam a mesma cor. **A ordem é a do catálogo e é estável**: a mesma célula é sempre o mesmo final, e o jogador aprende "falta aquele ali no canto" — o que não funcionaria se a grade se reordenasse conforme a descoberta. Com `flex-wrap`, um catálogo maior quebra em duas linhas em vez de empurrar o título para fora da tela.
 
-**Cada final se veste com o próprio tema.** O final traz `theme`, `kicker` e `button` em `data/scenes.js`; o card só declara TOKENS (`--card-top/bot/ink/accent/btn-ink/font`) e `[data-theme]` os reescreve. Nenhum seletor de CSS conhece um id de final: **oito paletas** — `fogo · pedra · festa · mar · drop · fenda · corrompido · aula` — cobrem os dezoito.
+**Cada final se veste com o próprio tema.** O final traz `theme`, `kicker` e `button` em `data/scenes.js`; o card só declara TOKENS (`--card-top/bot/ink/accent/btn-ink/font`) e `[data-theme]` os reescreve. Nenhum seletor de CSS conhece um id de final: **nove paletas** — `fogo · pedra · festa · mar · drop · fenda · corrompido · aula · apagado` — cobrem os dezesseis.
 
 A tela é **translúcida** de propósito: o resultado congelado continua aparecendo por trás do tema, que é a "tela parada" do GDD §3.1.
 
@@ -298,7 +298,7 @@ Quando o final não declara `kicker`, o veredito sai do `survives` (`PEDRO SOBRE
 
 ### 7.1 Classificação de `survives` *(decidida no D4)*
 
-Os 18 finais do catálogo (`src/data/scenes.js`), já classificados — o D7 e o D8 só transcrevem.
+Os 16 finais do catálogo (`src/data/scenes.js`), já classificados — o D7 e o D8 só transcrevem.
 
 | Final | `survives` | Por quê |
 | --- | --- | --- |
@@ -313,10 +313,8 @@ Os 18 finais do catálogo (`src/data/scenes.js`), já classificados — o D7 e o
 | `mic-afogado` | `false` | Bomba desarmada, Pedro afogado. Morto é morto |
 | `mic-subaquatica` | `false` | Explosão subaquática em câmera lenta |
 | `mic-drop` | `true` | A bomba vira item; Pedro sobrevive confuso |
-| `mal-paradoxo` | `false` | Explosão dupla, os dois morrem |
-| `mal-troca` | `true` | O Pedro bom é salvo; quem explode é o maligno |
-| `mal-arremesso-peter` | `false` | O maligno arremessa e é o Pedro bom quem explode |
-| `mal-arremesso-maligno` | `true` | O maligno arremessa e explode ele mesmo |
+| `mal-deletado` | `false` | Apagado em código por um estalo de dedos. Não explodiu, mas morto é morto |
+| `mal-backup` | `true` | O cabelo que sobrou remonta o Pedro; o maligno foge pela fenda |
 | `bomb-cedo` | `false` | A bomba estoura antes de qualquer salvador agir |
 | `fiesta-bibi` | `false` | O FIESTA atropela a cena; ninguém salva ninguém |
 | `prof-orquestra` | `false` | A bomba é desarmada e o Pedro é pulverizado pelas três IAs |
@@ -360,7 +358,7 @@ Sortear até cair o final que se quer ver custa minutos de playtest. `?dev=1` na
 
 Quatro decisões, e o porquê de cada uma:
 
-- **Reusa a coleção em vez de abrir um painel.** Os 18 finais já estão desenhados, na ordem estável, dentro da tela que aparece exatamente quando se quer escolher o próximo. Painel próprio seria um módulo, um CSS e um sexto estado para mostrar a mesma fileira.
+- **Reusa a coleção em vez de abrir um painel.** Os 16 finais já estão desenhados, na ordem estável, dentro da tela que aparece exatamente quando se quer escolher o próximo. Painel próprio seria um módulo, um CSS e um sexto estado para mostrar a mesma fileira.
 - **Vale também no build publicado**, ao contrário da bancada de verbos. É link de apresentação: abre com `?dev=1` e mostra o final que interessa sem depender de sorte. Nasce desligado, então quem chega pelo link normal vê o jogo de sempre — o `pointer-events: none` da fileira só cai com a classe `is-dev`.
 - **Só na sessão.** Nenhum flag gravado, nenhuma segunda chave de `localStorage` — `state/progress.js` continua sendo o único módulo que conhece storage. Recarregou sem o parâmetro, desligou.
 - **Grava progresso normalmente.** A rodada forçada é uma rodada: mesmos beats, mesmo card, I4 intacta. É o que permite fechar o X/N para uma demonstração.
@@ -409,7 +407,7 @@ export default { base: './' }
 | `enter` padrão no personagem | Repetir `from` em toda timeline | "JP sempre sobe de baixo" é traço dele, e o motor segue sem importar `data/` |
 | Coleção dentro do ending card | Galeria como tela | Sem interação nova, sem sexto estado, mais barato |
 | Restart num `<button>` dentro do card | Card inteiro clicável | Alvo explícito; teclado e foco de graça; o card fica só como leitura |
-| 7 paletas por MOOD, escolhidas pelo dado | Uma cor por final, ou um seletor por id | Final novo escolhe um tema existente; o CSS não cresce com o catálogo |
+| 9 paletas por MOOD, escolhidas pelo dado | Uma cor por final, ou um seletor por id | Final novo escolhe um tema existente; o CSS não cresce com o catálogo |
 | Kicker cai para o `survives` quando ausente | Todo final declarar tudo | Final novo funciona sem configurar nada |
 | `explode` recebe `vaporize: [...]` | O verbo consultar `ending.survives` | Quem some é dado da timeline; o verbo continua sem saber que final está rodando |
 | `survives: true/false/null` | `outcome` de 3 valores | `null` deixa o final não mexer no contador, para quem for ambíguo |

@@ -82,6 +82,13 @@ const el = {
 const ALL_ENDINGS = scenes.flatMap((s) => s.endings ?? []);
 const TOTAL_ENDINGS = ALL_ENDINGS.length;
 
+/** De qual PERSONAGEM é cada final. A coleção pinta a célula com a cor dele
+ *  (ui/gallery.js), e é aqui que a costura acontece: o final não precisa
+ *  repetir no dado uma coisa que a cena dele já diz. */
+const CHAR_BY_ENDING = new Map(
+  scenes.flatMap((s) => (s.endings ?? []).map((e) => [e.id, s.character ?? null])),
+);
+
 const clock = createClock();
 const director = createDirector({ clock });
 const countdown = createCountdown(el.timer, clock);
@@ -92,6 +99,7 @@ const hud = createHud({ deaths: el.deaths });
 const endingCard = createEndingCard(el.card, {
   onRestart: startRound,
   endings: ALL_ENDINGS,
+  charOf: CHAR_BY_ENDING,
   dev: devMode,
 });
 

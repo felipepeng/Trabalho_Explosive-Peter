@@ -38,7 +38,7 @@ const TEMA_PADRAO = 'fogo';
  * @param {object[]} o.endings
  * @param {boolean} [o.dev]  modo dev: destrava o clique na coleção.
  */
-export function createEndingCard(el, { onRestart, endings = [], dev = false }) {
+export function createEndingCard(el, { onRestart, endings = [], charOf = null, dev = false }) {
   const kicker = el.querySelector('#ending-kicker');
   const title = el.querySelector('#ending-title');
   const count = el.querySelector('#ending-count');
@@ -48,6 +48,7 @@ export function createEndingCard(el, { onRestart, endings = [], dev = false }) {
   // botão, então clique duplo e clique em rodada velha morrem igual (I1).
   const gallery = createGallery(el.querySelector('#ending-gallery'), {
     onPick: dev ? (id) => fire(id) : null,
+    charOf,
   });
 
   let armed = false;

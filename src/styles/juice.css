@@ -727,3 +727,162 @@ body.is-frozen *::after {
   62%  { transform: scale(1, 1); opacity: 1; }
   100% { transform: scale(1, 0.15); opacity: 0; }
 }
+
+/* ---------- bug de tela (verbo `glitch`) ---------- */
+/* A realidade rasgando antes de o portal abrir. Fatias horizontais escorregam
+   de lado e trocam de cor por alguns quadros.
+
+   `backdrop-filter` distorce o que JÁ ESTÁ desenhado — é o que separa isto de
+   uma faixa colorida por cima. Onde o navegador não tiver backdrop-filter, o
+   gradiente de fundo ainda pinta a faixa e o efeito degrada em vez de sumir.
+
+   `steps()` de propósito: distorção contínua lê como movimento; em degraus,
+   lê como quadro perdido. Isto é JUICE puro — multiplica por --juice. */
+
+#fx-layer .glitch {
+  position: absolute;
+  /* Na frente de TODO ator, como o .beam e o .blackout: o backdrop-filter das
+     fatias precisa enxergar o elenco para distorcê-lo, e a #fx-layer é
+     z-index auto. Sem isto o bug de tela ficaria atrás do Pedro. */
+  z-index: 9;
+  inset: 0;
+  pointer-events: none;
+  animation: glitch-veil var(--glitch-ms, 520ms) steps(6, end) both;
+}
+
+@keyframes glitch-veil {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  72%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+#fx-layer .glitch-slice {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--slice-top, 40) * 1%);
+  height: calc(var(--slice-h, 6) * 1%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 0, 120, 0.22),
+    rgba(0, 255, 220, 0.22)
+  );
+  backdrop-filter: hue-rotate(120deg) saturate(2.4) contrast(1.35);
+  /* A fatia dura um terço do véu e tem atraso próprio: as sete não podem
+     pular juntas, senão a tela inteira lê como um flash colorido. */
+  animation:
+    glitch-slip calc(var(--glitch-ms, 520ms) * 0.34)
+    steps(3, end) var(--slice-delay, 0ms) both;
+}
+
+@keyframes glitch-slip {
+  0%   { transform: translateX(0); opacity: 0; }
+  30%  { transform: translateX(calc(var(--slice-dx, 40) * var(--u) * var(--juice))); opacity: 1; }
+  62%  { transform: translateX(calc(var(--slice-dx, 40) * -0.6 * var(--u) * var(--juice))); opacity: 1; }
+  100% { transform: translateX(0); opacity: 0; }
+}
+
+/* ---------- apagado em código (verbo `dissolve`) ---------- */
+/* O ator esverdeia e some em degraus, enquanto as colunas de glifo passam por
+   cima dele. NÃO usa clip-path: a plaquinha de nick mora FORA da caixa do ator
+   (bottom: 100% + ...), e qualquer recorte a apagaria inteira no primeiro
+   quadro. Some por opacidade, em steps, que é o que lê como "deletado".
+
+   `is-recoding` é o mesmo caminho ao contrário, para o final em que ele volta. */
+
+.actor.is-dissolving {
+  animation: dissolve-out var(--dissolve-ms, 900ms) steps(9, end) both;
+}
+
+@keyframes dissolve-out {
+  0%   { opacity: 1; filter: none; }
+  12%  { opacity: 1; filter: brightness(1.9) sepia(1) hue-rotate(65deg) saturate(6); }
+  55%  { opacity: 0.55; filter: brightness(2.2) sepia(1) hue-rotate(65deg) saturate(6); }
+  100% { opacity: 0; filter: brightness(2.6) sepia(1) hue-rotate(65deg) saturate(6); }
+}
+
+.actor.is-recoding {
+  animation: dissolve-in var(--dissolve-ms, 900ms) steps(9, end) both;
+}
+
+@keyframes dissolve-in {
+  0%   { opacity: 0; filter: brightness(2.6) sepia(1) hue-rotate(65deg) saturate(6); }
+  45%  { opacity: 0.55; filter: brightness(2.2) sepia(1) hue-rotate(65deg) saturate(6); }
+  88%  { opacity: 1; filter: brightness(1.6) sepia(1) hue-rotate(65deg) saturate(4); }
+  100% { opacity: 1; filter: none; }
+}
+
+/* AS COLUNAS DE CÓDIGO. Cada uma é uma pilha de glifos (white-space: pre) que
+   varre o corpo de cima a baixo — ou de baixo para cima, quando o código está
+   sendo desfeito e o --code-dy chega negativo.
+
+   z-index próprio pelo mesmo motivo do `.beam`: a #fx-layer é z-index auto e
+   todo ator tem --z >= 1, então sem isto o código passaria POR TRÁS de quem
+   está sendo apagado.
+
+   Encenação, não juice: a distância percorrida é o corpo inteiro, e a 25% de
+   amplitude o código pararia no peito. */
+
+#fx-layer .code-col {
+  position: absolute;
+  z-index: 8;
+  left: calc(var(--ox) + var(--x) * var(--u));
+  top: calc(var(--oy) + var(--y) * var(--u));
+  white-space: pre;
+  text-align: center;
+  font-family: var(--font-nick);
+  font-size: calc(var(--code-size, 14) * var(--u));
+  line-height: 1.05;
+  color: var(--code-color, #7dff9a);
+  text-shadow: 0 0 calc(6 * var(--u)) var(--code-color, #7dff9a);
+  animation: code-fall var(--code-ms, 700ms) linear var(--code-delay, 0ms) both;
+}
+
+@keyframes code-fall {
+  0%   { transform: translate(-50%, 0) scaleY(0.55); opacity: 0; }
+  18%  { opacity: 1; }
+  82%  { opacity: 1; }
+  100% { transform: translate(-50%, calc(var(--code-dy, 160) * var(--u))) scaleY(1); opacity: 0; }
+}
+
+/* ---------- a relíquia: o que sobra de quem foi apagado ---------- */
+/* Um SVG com os slots que o `keep` pediu, clonados do rig e postos na MESMA
+   marca — então a peça nasce onde estava e só depois tomba. Cai por --relic-fall
+   (0,6 da altura do ator), que é a distância entre a cabeça e a linha do chão.
+
+   Não existe chão neste jogo: ela para onde o keyframe manda, e fica lá
+   (`both`) até a rodada acabar. */
+
+#fx-layer .relic {
+  z-index: 8;
+  --relic-fall: calc(0.6 * var(--h, 160) * var(--u));
+  transform-origin: 50% 62%;
+  animation:
+    relic-fall var(--relic-ms, 1100ms)
+    cubic-bezier(0.3, 0.8, 0.4, 1) var(--relic-delay, 0ms) both;
+}
+
+/* O primeiro quadro é INVISÍVEL de propósito. Com `both` e um atraso, é ele
+   que fica na tela durante a espera — e é o que segura a peça escondida até o
+   dono acabar de ser apagado. Os 2% seguintes só a acendem, sem mover nada. */
+@keyframes relic-fall {
+  0%   { transform: translate(-50%, -100%) rotate(0deg); opacity: 0; }
+  2%   { transform: translate(-50%, -100%) rotate(0deg); opacity: 1; }
+  55%  { transform: translate(-50%, calc(-100% + var(--relic-fall) * 0.92)) rotate(64deg); }
+  74%  { transform: translate(-50%, calc(-100% + var(--relic-fall) * 0.74)) rotate(71deg); }
+  100% { transform: translate(-50%, calc(-100% + var(--relic-fall))) rotate(78deg); opacity: 1; }
+}
+
+/* Reabsorvida: quem volta pelo código puxa a própria relíquia de volta.
+   O quadro inicial REPETE o transform final da queda de propósito — trocar o
+   animation-name zera a pose anterior, e sem isso o cabelo pularia de volta
+   para a cabeça antes de sumir. */
+#fx-layer .relic.is-gone {
+  animation: relic-gone var(--relic-ms, 900ms) ease-in var(--relic-delay, 0ms) both;
+}
+
+@keyframes relic-gone {
+  0%   { transform: translate(-50%, calc(-100% + var(--relic-fall))) rotate(78deg); opacity: 1; }
+  100% { transform: translate(-50%, calc(-100% + var(--relic-fall) * 0.3)) rotate(38deg); opacity: 0; }
+}

@@ -154,13 +154,14 @@ A base da tela inunda aos ~3s, ele emerge com o tridente.
 
 ### 6.4 `maligno-portal` — Pedro Maligno
 
-Uma fenda roxa se abre atrás do Pedro aos ~5s.
+A tela erra duas vezes antes de qualquer coisa acontecer; então uma fenda roxa se abre à ESQUERDA do Pedro, aos ~5,8s, e sai de lá a cópia dele. Uma fala só — "Só pode existir um Pedro." — e um estalo de dedos.
+
+É a única cena em que a bomba não mata ninguém: o estalo apaga o Pedro, a bomba e o próprio mostrador. Sobra o cabelo, caído no vazio, e é ele que separa os dois finais.
 
 | ID | Título do final | Peso | Descrição |
 | --- | --- | --- | --- |
-| `mal-paradoxo` | **PARADOXO** | 3 | Acelera o timer de 6 para 0. Explosão dupla, os dois morrem |
-| `mal-troca` | **TROCA DE UNIVERSOS** | 3 | Troca de lugar com o Pedro. O bom é salvo, o maligno explode rindo |
-| `mal-censurado` | **[DADOS CORROMPIDOS]** | 2 | Desarma a bomba só para fazer algo pior. Corte para tela preta. Pedro tecnicamente não explodiu |
+| `mal-deletado` | **SÓ PODE EXISTIR UM** | 3 | O Pedro é consumido por código verde e some. Sobra o cabelo no chão. Nada explode |
+| `mal-backup` | **BACKUP CAPILAR** | 2 | Começa idêntico — e o cabelo caído sobe de volta em código e remonta o Pedro. O maligno foge pela fenda |
 
 ### 6.5 `jp-de-baixo` — JP from the South
 
