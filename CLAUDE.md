@@ -155,3 +155,5 @@ Constantes de tuning ficam todas em `src/config.js`.
 ## Observações sobre a documentação
 
 - `roles/` são prompts de subagente do trabalho acadêmico, não guia de implementação. `roles/dev-frontend.md` descreve uma stack antiga (arquivo único, Canvas 2D, sem build) que **não** corresponde ao projeto atual — não siga.
+
+eu estive aqui :)
